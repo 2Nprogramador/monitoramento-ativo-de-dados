@@ -279,7 +279,7 @@ function renderizarGraficos(metrics) {
     });
 
     // 3. Categorias de Produtos (Barra Horizontal)
-    const categorias = metrics.linha_produto.map(item => item.Product_line);
+    const categorias = metrics.linha_produto.map(item => item['Product line']);
     const quantCategorias = metrics.linha_produto.map(item => item.Quantity);
     const faturamentoCategorias = metrics.linha_produto.map(item => item.Total);
 
