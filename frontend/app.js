@@ -67,7 +67,6 @@ async function carregarRelatorio(data) {
         // Atualizar interface
         atualizarKPIs(dataPayload.metrics);
         atualizarAlertas(dataPayload.alertas);
-        atualizarMetricasNovas(dataPayload.metrics.novas);
         renderizarGraficos(dataPayload.metrics);
 
     } catch (error) {
@@ -138,82 +137,90 @@ function atualizarKPIs(metrics) {
     const avgRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Média_Rating, 0) / ratings.length : 0;
     const varRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Var_Média_Rating, 0) / ratings.length : 0;
     
-    document.getElementById('kpi-avg-rating').textContent = `${avgRating.toFixed(1)} / 10`;
+    document.getElementById('kpi-avg-rating').textContent = avgRating.toFixed(1) + ' / 10';
     atualizarVariacaoElement('kpi-var-rating', varRating, avgRating, false, true);
+
+    // --- Novas Metricas (integradas aqui para garantir execucao) ---
+    try {
+        const novas = metrics.novas;
+        if (novas) {
+            // UPV
+            const upvEl = document.getElementById('kpi-upv');
+            if (upvEl) upvEl.textContent = formatarMoeda(novas.upv ? novas.upv.atual : 0);
+            const upvVarEl = document.getElementById('kpi-var-upv');
+            if (upvVarEl) {
+                const upvVar = novas.upv ? novas.upv.variacao : null;
+                if (upvVar === null || upvVar === undefined) {
+                    upvVarEl.className = 'kpi-variation variation-neutral';
+                    upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+                } else {
+                    const upvAnt = (novas.upv.atual || 0) - upvVar;
+                    if (upvAnt > 0) {
+                        const pct = ((upvVar / upvAnt) * 100).toFixed(1);
+                        if (upvVar > 0) {
+                            upvVarEl.className = 'kpi-variation variation-up';
+                            upvVarEl.innerHTML = '<i class="fa-solid fa-caret-up"></i> +' + pct + '%';
+                        } else if (upvVar < 0) {
+                            upvVarEl.className = 'kpi-variation variation-down';
+                            upvVarEl.innerHTML = '<i class="fa-solid fa-caret-down"></i> ' + pct + '%';
+                        } else {
+                            upvVarEl.className = 'kpi-variation variation-neutral';
+                            upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
+                        }
+                    } else {
+                        upvVarEl.className = 'kpi-variation variation-neutral';
+                        upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+                    }
+                }
+            }
+
+            // Hora de Pico
+            const horaEl = document.getElementById('kpi-hora-pico');
+            const horaSubEl = document.getElementById('kpi-hora-pico-sub');
+            if (horaEl) horaEl.textContent = (novas.hora_pico ? novas.hora_pico.hora : '--') + 'h';
+            if (horaSubEl) horaSubEl.textContent = formatarMoeda(novas.hora_pico ? novas.hora_pico.total : 0) + ' nesta hora';
+
+            // Produto Destaque
+            const prodEl = document.getElementById('kpi-produto-top');
+            const prodValorEl = document.getElementById('kpi-produto-top-valor');
+            if (prodEl) prodEl.textContent = (novas.produto_top && novas.produto_top.nome) ? novas.produto_top.nome : '--';
+            if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top ? novas.produto_top.total : 0);
+
+            // Mix Digital
+            const mixPct = novas.mix_digital_pct !== undefined ? novas.mix_digital_pct : 0;
+            const mixEl = document.getElementById('kpi-mix-digital');
+            if (mixEl) mixEl.textContent = mixPct + '%';
+            const mixSubEl = document.getElementById('kpi-mix-digital-sub');
+            if (mixSubEl) {
+                mixSubEl.className = mixPct < 60 ? 'kpi-variation variation-down' : 'kpi-variation variation-up';
+                mixSubEl.textContent = mixPct < 60 ? 'Abaixo do ideal (60%)' : 'Pix + Cartao + Debito';
+            }
+
+            // Concentracao Geografica
+            const concGeo = novas.concentracao_geografica || {};
+            const concPct = concGeo.percentual || 0;
+            const concCidade = concGeo.cidade || '--';
+            const concEl = document.getElementById('kpi-conc-geo');
+            if (concEl) concEl.textContent = concPct + '%';
+            const concSubEl = document.getElementById('kpi-conc-geo-sub');
+            if (concSubEl) {
+                concSubEl.className = concPct > 70 ? 'kpi-variation variation-down' : 'kpi-variation variation-neutral';
+                concSubEl.textContent = concCidade + (concPct > 70 ? ' - Risco!' : ' - Estavel');
+            }
+
+            // Eficiencia Noturna
+            const noturnoEl = document.getElementById('kpi-noturno');
+            if (noturnoEl) noturnoEl.textContent = (novas.eficiencia_noturna_pct || 0) + '%';
+            const noturnoSubEl = document.getElementById('kpi-noturno-sub');
+            if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diario';
+        }
+    } catch(e) {
+        console.warn('Erro ao atualizar novas metricas:', e);
+    }
 }
 
 function atualizarMetricasNovas(novas) {
-    if (!novas) return;
-
-    // M6. UPV
-    const upvEl = document.getElementById('kpi-upv');
-    const upvVarEl = document.getElementById('kpi-var-upv');
-    if (upvEl) upvEl.textContent = formatarMoeda(novas.upv?.atual || 0);
-    if (upvVarEl) {
-        const upvVar = novas.upv?.variacao;
-        if (upvVar === null || upvVar === undefined) {
-            upvVarEl.className = 'kpi-variation variation-neutral';
-            upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-        } else {
-            const upvAnt = (novas.upv?.atual || 0) - upvVar;
-            if (upvAnt > 0) {
-                const pct = ((upvVar / upvAnt) * 100).toFixed(1);
-                if (upvVar > 0) {
-                    upvVarEl.className = 'kpi-variation variation-up';
-                    upvVarEl.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${pct}%`;
-                } else if (upvVar < 0) {
-                    upvVarEl.className = 'kpi-variation variation-down';
-                    upvVarEl.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${pct}%`;
-                } else {
-                    upvVarEl.className = 'kpi-variation variation-neutral';
-                    upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
-                }
-            } else {
-                upvVarEl.className = 'kpi-variation variation-neutral';
-                upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-            }
-        }
-    }
-
-    // M3. Hora de Pico
-    const horaEl = document.getElementById('kpi-hora-pico');
-    const horaSubEl = document.getElementById('kpi-hora-pico-sub');
-    if (horaEl) horaEl.textContent = `${novas.hora_pico?.hora ?? '--'}h`;
-    if (horaSubEl) horaSubEl.textContent = `${formatarMoeda(novas.hora_pico?.total || 0)} nesta hora`;
-
-    // M2. Produto Destaque
-    const prodEl = document.getElementById('kpi-produto-top');
-    const prodValorEl = document.getElementById('kpi-produto-top-valor');
-    if (prodEl) prodEl.textContent = novas.produto_top?.nome || '--';
-    if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top?.total || 0);
-
-    // M7. Mix Digital
-    const mixEl = document.getElementById('kpi-mix-digital');
-    if (mixEl) mixEl.textContent = `${novas.mix_digital_pct ?? 0}%`;
-    const mixSubEl = document.getElementById('kpi-mix-digital-sub');
-    if (mixSubEl) {
-        mixSubEl.className = novas.mix_digital_pct < 60
-            ? 'kpi-variation variation-down'
-            : 'kpi-variation variation-up';
-        mixSubEl.textContent = novas.mix_digital_pct < 60 ? 'Abaixo do ideal (60%)' : 'Pix + Cartão + Débito';
-    }
-
-    // M5. Concentração Geográfica
-    const concEl = document.getElementById('kpi-conc-geo');
-    const concSubEl = document.getElementById('kpi-conc-geo-sub');
-    if (concEl) concEl.textContent = `${novas.concentracao_geografica?.percentual ?? 0}%`;
-    if (concSubEl) {
-        const cidade = novas.concentracao_geografica?.cidade || '--';
-        const pct = novas.concentracao_geografica?.percentual || 0;
-        concSubEl.className = pct > 70 ? 'kpi-variation variation-down' : 'kpi-variation variation-neutral';
-        concSubEl.textContent = `${cidade} — ${pct > 70 ? 'Risco!' : 'Estável'}`;
-    }
-
-    // M10. Eficiência Noturna
-    const noturnoEl = document.getElementById('kpi-noturno');
-    const noturnoSubEl = document.getElementById('kpi-noturno-sub');
-    if (noturnoEl) noturnoEl.textContent = `${novas.eficiencia_noturna_pct ?? 0}%`;
-    if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diário';
+    // Mantida para compatibilidade - novas metricas ja integradas em atualizarKPIs
 }
 
 function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRating = false) {
