@@ -641,7 +641,8 @@ function renderizarGraficos(metrics) {
         });
 
         // 8. Diurno vs Noturno (Doughnut)
-        const pctNoturno = metrics.novas.eficiencia_noturna_pct || 0;
+        const eficNot = metrics.novas.eficiencia_noturna_pct;
+        const pctNoturno = (typeof eficNot === 'object' && eficNot !== null) ? eficNot.atual : (eficNot || 0);
         const pctDiurno = parseFloat((100 - pctNoturno).toFixed(1));
         criarGrafico('chart-nocturnal', {
             type: 'doughnut',
