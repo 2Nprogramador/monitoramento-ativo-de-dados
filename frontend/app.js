@@ -20,6 +20,9 @@ function inicializarApp() {
     });
 
     document.getElementById('simulate-btn').addEventListener('click', executarSimulacao);
+    
+    // Injetar tooltips de explicacao de negocio
+    inicializarHelpers();
 }
 
 // --- FUNÇÕES DE API ---
@@ -576,3 +579,120 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
     }, 4000);
 }
+
+// --- HELPERS DE NEGOCIO ---
+const helperMappings = {
+    'Faturamento Total': {
+        desc: 'Soma total de todas as vendas realizadas na data selecionada.',
+        dor: 'Falta de visibilidade imediata sobre a receita diária do negócio.'
+    },
+    'Quantidade Vendida': {
+        desc: 'Número total de itens vendidos no dia.',
+        dor: 'Desconhecimento do volume de saída de estoque diário.'
+    },
+    'Ticket Médio': {
+        desc: 'Faturamento Total dividido pelo número de vendas (clientes) no dia.',
+        dor: 'Dificuldade em entender quanto cada cliente gasta em média.'
+    },
+    'Satisfação Geral (Rating)': {
+        desc: 'Média das notas (1 a 10) dadas pelos clientes às compras do dia.',
+        dor: 'Falta de termômetro sobre a qualidade do serviço ou produto percebida.'
+    },
+    'Preço Médio / Unidade': {
+        desc: 'Faturamento Total dividido pela Quantidade de itens vendidos.',
+        dor: 'Não saber se os clientes estão levando itens mais baratos ou mais caros (poder de compra).'
+    },
+    'Hora de Pico': {
+        desc: 'A hora do dia (0-23h) em que houve o maior volume financeiro de vendas.',
+        dor: 'Incapacidade de alocar equipe extra de forma eficiente nos horários de maior fluxo.'
+    },
+    'Produto Destaque': {
+        desc: 'A linha de produtos que gerou a maior receita no dia.',
+        dor: 'Dificuldade em identificar rapidamente qual categoria impulsionou o faturamento.'
+    },
+    'Pagamentos Digitais': {
+        desc: 'Percentual de vendas pagas via Pix, Cartão de Crédito ou Débito.',
+        dor: 'Risco e custo de gerenciar muito dinheiro em espécie no caixa físico.'
+    },
+    'Concentração Geográfica': {
+        desc: 'O percentual que a cidade com mais vendas representa no faturamento total.',
+        dor: 'Risco de dependência excessiva do negócio em apenas uma região.'
+    },
+    'Eficiência Noturna': {
+        desc: 'O percentual do faturamento diário que ocorre após o horário comercial padrão.',
+        dor: 'Dúvida sobre a viabilidade de manter a loja aberta no período noturno.'
+    },
+    // Charts
+    'Desempenho por Cidade': {
+        desc: 'Comparativo de faturamento entre diferentes cidades. Variações mostram o crescimento vs. dia anterior.',
+        dor: 'Desconhecimento sobre quais filiais ou regiões puxam o faturamento para cima.'
+    },
+    'Vendas por Hora': {
+        desc: 'Distribuição do faturamento ao longo do dia.',
+        dor: 'Não entender a dinâmica de fluxo de caixa intra-dia.'
+    },
+    'Vendas por Linha de Produto': {
+        desc: 'Volume de itens vendidos divididos por cada categoria de produto.',
+        dor: 'Desconhecimento sobre giro de estoque e mix de produtos popular.'
+    },
+    'Métodos de Pagamento': {
+        desc: 'Faturamento fatiado pelas diferentes formas de pagamento.',
+        dor: 'Falta de dados para renegociar taxas com adquirentes ou incentivar Pix.'
+    },
+    'Perfil do Cliente': {
+        desc: 'Proporção de compradores identificados como Homem ou Mulher.',
+        dor: 'Falta de clareza do perfil demográfico para direcionar marketing.'
+    },
+    'Faturamento por Gênero': {
+        desc: 'Volume financeiro (R$) total trazido por cada gênero.',
+        dor: 'Marketing focando em um público que traz volume de pessoas, mas não receita.'
+    },
+    'Preço Médio por Produto (UPV)': {
+        desc: 'Valor médio que os clientes estão pagando por cada unidade dentro de cada categoria.',
+        dor: 'Dificuldade em precificar produtos ou identificar categorias subvalorizadas.'
+    },
+    'Faturamento Diurno vs. Noturno': {
+        desc: 'Comparativo da receita antes das 18h (Diurno) e a partir das 18h (Noturno).',
+        dor: 'Falta de dados para otimizar os turnos da equipe de vendas ou segurança.'
+    },
+    // Alertas
+    'Insights e Alertas Automáticos': {
+        desc: 'Motor de regras que monitora ativamente as métricas e alerta para anomalias, variações bruscas ou metas atingidas.',
+        dor: 'Ter que analisar dezenas de números cruamente para descobrir se algo está bom ou ruim (Carga cognitiva para o gestor).'
+    }
+};
+
+function inicializarHelpers() {
+    // Busca H3 (kpis, graficos) e H2 (alertas)
+    const targetElements = document.querySelectorAll('.kpi-info h3, .chart-header h3, .section-title h2');
+    
+    targetElements.forEach(el => {
+        // Obter o texto ignorando tags HTML internas, para remover spans ou icones, se houver, 
+        // embora no layout eles estao ao lado
+        const text = el.innerText.trim();
+        const mapping = helperMappings[text];
+        
+        if (mapping) {
+            // Verificar alinhamento para evitar corte do tooltip nos graficos da direita
+            const isLeftEdge = el.closest('.chart-card:nth-child(even)'); 
+            const tipClass = isLeftEdge ? ' tip-left' : '';
+            
+            const helperHtml = `
+                <div class="helper-wrapper${tipClass}">
+                    <i class="helper-icon">?</i>
+                    <div class="helper-tooltip">
+                        <div class="helper-tooltip-label">O que é</div>
+                        <div class="helper-tooltip-text">${mapping.desc}</div>
+                        <div class="helper-tooltip-pain">
+                            <div class="helper-tooltip-label">Dor Resolvida</div>
+                            <div class="helper-tooltip-text">${mapping.dor}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Adiciona o tooltip sem quebrar o innerHTML atual
+            el.innerHTML = el.innerHTML + helperHtml;
+        }
+    });
+}
+

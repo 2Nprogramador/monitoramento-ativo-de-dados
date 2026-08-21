@@ -502,3 +502,117 @@ body {
         min-width: 140px;
     }
 }
+
+/* --- HELPER TOOLTIP --- */
+.helper-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.helper-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    font-size: 0.6rem;
+    font-weight: 700;
+    cursor: help;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-style: normal;
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.helper-icon:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.helper-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    background: rgba(10, 14, 26, 0.98);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    z-index: 9999;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.helper-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(99, 102, 241, 0.3);
+}
+
+.helper-wrapper:hover .helper-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.helper-tooltip-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6366f1;
+    margin-bottom: 0.2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.helper-tooltip-text {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}
+
+.helper-tooltip-pain {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.helper-tooltip-pain .helper-tooltip-label {
+    color: #f59e0b;
+}
+
+.helper-wrapper.tip-left .helper-tooltip {
+    left: auto;
+    right: 0;
+    transform: none;
+}
+
+.helper-wrapper.tip-left .helper-tooltip::after {
+    left: auto;
+    right: 10px;
+    transform: none;
+}
+
+.kpi-info h3, .chart-header h3, .section-title h2 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
