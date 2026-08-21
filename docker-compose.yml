@@ -1,41 +1,69 @@
-version: '3.8'
+version: '3.7'
 
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: proposta-rabbitmq
+    container_name: monitoramento-rabbitmq
     restart: unless-stopped
-    ports:
-      - "5672:5672"     # Porta padrão do protocolo AMQP
-      - "15672:15672"   # Porta do painel web de gerenciamento (Management UI)
+    networks:
+      - 2nnet
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
   web:
-    build: .
-    container_name: proposta-web
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:latest
+    container_name: monitoramento-web
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    networks:
+      - 2nnet
     environment:
-      - DATABASE_URL=postgresql://postgres:sua_senha_segura@ip_da_vps:5432/vendas?sslmode=require
+      - DATABASE_URL=postgresql://postgres:SUA_SENHA_REAL_DO_POSTGRES@172.17.0.1:5432/projeto?sslmode=require
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-    depends_on:
-      - rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.monitoramento.rule=Host(`2nprogramacao.com.br`)
+        - traefik.http.services.monitoramento.loadbalancer.server.port=8000
+        - traefik.http.routers.monitoramento.service=monitoramento
+        - traefik.http.routers.monitoramento.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.monitoramento.entrypoints=websecure
+        - traefik.http.routers.monitoramento.tls=true
 
   worker:
-    build: .
-    container_name: proposta-worker
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:latest
+    container_name: monitoramento-worker
     restart: unless-stopped
     command: python backend/worker.py
+    networks:
+      - 2nnet
     environment:
-      - DATABASE_URL=postgresql://postgres:sua_senha_segura@ip_da_vps:5432/vendas?sslmode=require
+      - DATABASE_URL=postgresql://postgres:SUA_SENHA_REAL_DO_POSTGRES@172.17.0.1:5432/projeto?sslmode=require
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-    depends_on:
-      - rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 volumes:
   rabbitmq_data:
+
+networks:
+  2nnet:
+    name: 2nnet
+    external: true
