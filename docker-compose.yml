@@ -36,7 +36,7 @@ services:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.monitoramento.rule=Host(`2nprogramacao.com.br`)
+        - traefik.http.routers.monitoramento.rule=Host(`projetodados.2nprogramacao.com.br`)
         - traefik.http.services.monitoramento.loadbalancer.server.port=8000
         - traefik.http.routers.monitoramento.service=monitoramento
         - traefik.http.routers.monitoramento.tls.certresolver=letsencryptresolver
