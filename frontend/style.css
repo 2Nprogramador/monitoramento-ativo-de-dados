@@ -301,7 +301,7 @@ body {
 
 @media (min-width: 1200px) {
     .top-dashboard-section {
-        grid-template-columns: 350px 1fr;
+        grid-template-columns: 2fr 3fr; /* 2/5 para alertas, 3/5 para KPIs */
     }
 }
 
@@ -325,7 +325,7 @@ body {
 .kpi-slide {
     flex: 0 0 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* 3 cartões por linha (total 6 por slide) */
     gap: 1.25rem;
     min-width: 0;
 }

@@ -133,10 +133,6 @@
                 </div>
             </div>
             
-            </div> <!-- End Slide 1 -->
-            
-            <div class="kpi-slide">
-            
             <!-- KPI 6: Hora de Pico -->
             <div class="kpi-card">
                 <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #8b5cf622, #8b5cf644); color: #8b5cf6;">
@@ -148,6 +144,10 @@
                     <span id="kpi-hora-pico-sub" class="kpi-variation variation-neutral">Maior faturamento</span>
                 </div>
             </div>
+            
+            </div> <!-- End Slide 1 -->
+            
+            <div class="kpi-slide">
 
             <!-- KPI 7: Produto Top -->
             <div class="kpi-card">
@@ -194,6 +194,30 @@
                     <h3>Vendas após 18h</h3>
                     <p id="kpi-noturno">0%</p>
                     <span id="kpi-noturno-sub" class="kpi-variation variation-neutral">Do faturamento diário</span>
+                </div>
+            </div>
+
+            <!-- KPI 11: Itens por Compra -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #f59e0b22, #f59e0b44); color: #f59e0b;">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Itens por Compra</h3>
+                    <p id="kpi-itens-compra">0</p>
+                    <span id="kpi-var-itens" class="kpi-variation variation-neutral">Cesta média</span>
+                </div>
+            </div>
+
+            <!-- KPI 12: Maior Venda -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #14b8a622, #14b8a644); color: #14b8a6;">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Maior Venda (Ticket)</h3>
+                    <p id="kpi-maior-venda">R$ 0,00</p>
+                    <span id="kpi-var-maior-venda" class="kpi-variation variation-neutral">No dia selecionado</span>
                 </div>
             </div>
             
@@ -323,6 +347,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.22"></script>
+    <script src="app.js?v=1.0.23"></script>
 </body>
 </html>

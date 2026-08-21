@@ -198,6 +198,20 @@ function atualizarKPIs(metrics) {
             }
             const noturnoSubEl = document.getElementById('kpi-noturno-sub');
             if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diario';
+
+            // Itens por Compra (KPI 11)
+            const itensCompraEl = document.getElementById('kpi-itens-compra');
+            if (itensCompraEl && novas.itens_por_compra) {
+                itensCompraEl.textContent = novas.itens_por_compra.atual.toFixed(1);
+                atualizarVariacaoElement('kpi-var-itens', novas.itens_por_compra.variacao, novas.itens_por_compra.atual, false);
+            }
+
+            // Maior Venda (KPI 12)
+            const maiorVendaEl = document.getElementById('kpi-maior-venda');
+            if (maiorVendaEl && novas.maior_venda) {
+                maiorVendaEl.textContent = formatarMoeda(novas.maior_venda.atual);
+                atualizarVariacaoElement('kpi-var-maior-venda', novas.maior_venda.variacao, novas.maior_venda.atual, true);
+            }
         }
     } catch(e) {
         console.warn('Erro ao atualizar novas metricas:', e);
@@ -764,6 +778,14 @@ const helperMappings = {
     'vendasapsh': { // 'Vendas apos 18h'
         desc: 'O percentual do faturamento diario que ocorre apos o horario comercial.',
         dor: 'Duvida sobre a viabilidade de manter a loja aberta a noite.'
+    },
+    'itensporcompra': { // 'Itens por Compra'
+        desc: 'A quantidade media de produtos (itens) que os clientes compram em um unico pedido.',
+        dor: 'Falta de metricas para campanhas de upsell ou ofertas combinadas.'
+    },
+    'maiorvendaticket': { // 'Maior Venda (Ticket)'
+        desc: 'O valor da transacao mais alta registrada no dia (limite de gasto do melhor cliente).',
+        dor: 'Dificuldade em identificar o teto de gastos do publico-alvo para promover itens premium.'
     },
     // Charts
     'vendastotaisporcidade': { // 'Vendas Totais por Cidade'

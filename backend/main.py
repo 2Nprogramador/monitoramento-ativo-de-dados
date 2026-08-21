@@ -265,6 +265,22 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     else:
         efic_variacao = None
 
+    # M11. Itens por Compra (Cesta Media)
+    itens_compra_atual = round(float(df_dia["Quantity"].mean()), 1) if not df_dia.empty and not pd.isna(df_dia["Quantity"].mean()) else 0.0
+    if not df_dia_anterior.empty:
+        itens_compra_ant = round(float(df_dia_anterior["Quantity"].mean()), 1) if not pd.isna(df_dia_anterior["Quantity"].mean()) else 0.0
+        itens_compra_var = round(itens_compra_atual - itens_compra_ant, 1)
+    else:
+        itens_compra_var = None
+
+    # M12. Maior Venda do Dia
+    maior_venda_atual = round(float(df_dia["Total"].max()), 2) if not df_dia.empty and not pd.isna(df_dia["Total"].max()) else 0.0
+    if not df_dia_anterior.empty:
+        maior_venda_ant = round(float(df_dia_anterior["Total"].max()), 2) if not pd.isna(df_dia_anterior["Total"].max()) else 0.0
+        maior_venda_var = round(maior_venda_atual - maior_venda_ant, 2)
+    else:
+        maior_venda_var = None
+
     novas_metricas = {
         "taxa_tipo_cliente": {k: float(v) for k, v in tx_tipo_pct.items()},
         "produto_top": {"nome": produto_top, "total": round(float(produto_top_valor), 2)},
@@ -275,7 +291,9 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "mix_digital_pct": mix_digital_pct,
         "volume_por_genero": vol_genero,
         "linhas_sem_venda": linhas_sem_venda,
-        "eficiencia_noturna_pct": {"atual": efic_noturna_pct, "variacao": efic_variacao}
+        "eficiencia_noturna_pct": {"atual": efic_noturna_pct, "variacao": efic_variacao},
+        "itens_por_compra": {"atual": itens_compra_atual, "variacao": itens_compra_var},
+        "maior_venda": {"atual": maior_venda_atual, "variacao": maior_venda_var}
     }
 
     return {
