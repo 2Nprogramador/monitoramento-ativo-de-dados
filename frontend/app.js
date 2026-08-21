@@ -834,7 +834,7 @@ function inicializarHelpers() {
                 </div>
             `;
             // Append do HTML do helper
-            el.innerHTML = el.innerHTML + helperHtml;
+            el.innerHTML = el.innerHTML + ' ' + helperHtml;
         }
     });
 }

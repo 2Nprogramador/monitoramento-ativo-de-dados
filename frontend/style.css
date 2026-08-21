@@ -508,7 +508,7 @@ body {
     position: relative;
     display: inline-flex;
     align-items: center;
-    margin-left: 0.5rem;
+    margin-left: 0.15rem;
     vertical-align: middle;
 }
 
@@ -612,9 +612,8 @@ body {
 }
 
 .kpi-info h3, .chart-header h3, .section-title h2 {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
+    display: block;
+    line-height: 1.4;
 }
 
 /* --- Modal Glossario --- */
