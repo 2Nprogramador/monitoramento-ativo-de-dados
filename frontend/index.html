@@ -109,6 +109,78 @@
                     <span id="kpi-var-rating" class="kpi-variation">--</span>
                 </div>
             </div>
+
+            <!-- KPI 5: UPV (Preço Médio por Unidade) -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #f59e0b22, #f59e0b44); color: #f59e0b;">
+                    <i class="fa-solid fa-tag"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Preço Médio / Unidade</h3>
+                    <p id="kpi-upv">R$ 0,00</p>
+                    <span id="kpi-var-upv" class="kpi-variation">--</span>
+                </div>
+            </div>
+
+            <!-- KPI 6: Hora de Pico -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #8b5cf622, #8b5cf644); color: #8b5cf6;">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Hora de Pico</h3>
+                    <p id="kpi-hora-pico">--h</p>
+                    <span id="kpi-hora-pico-sub" class="kpi-variation variation-neutral">Maior faturamento</span>
+                </div>
+            </div>
+
+            <!-- KPI 7: Produto Top -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #10b98122, #10b98144); color: #10b981;">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Produto Destaque</h3>
+                    <p id="kpi-produto-top" style="font-size: 1rem;">--</p>
+                    <span id="kpi-produto-top-valor" class="kpi-variation variation-neutral">--</span>
+                </div>
+            </div>
+
+            <!-- KPI 8: Mix Digital -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #06b6d422, #06b6d444); color: #06b6d4;">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Pagamentos Digitais</h3>
+                    <p id="kpi-mix-digital">0%</p>
+                    <span id="kpi-mix-digital-sub" class="kpi-variation variation-neutral">Pix + Cartão + Débito</span>
+                </div>
+            </div>
+
+            <!-- KPI 9: Concentração Geográfica -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #ef444422, #ef444444); color: #ef4444;">
+                    <i class="fa-solid fa-map-pin"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Concentração Geográfica</h3>
+                    <p id="kpi-conc-geo">0%</p>
+                    <span id="kpi-conc-geo-sub" class="kpi-variation variation-neutral">Cidade líder</span>
+                </div>
+            </div>
+
+            <!-- KPI 10: Eficiência Noturna -->
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #6366f122, #6366f144); color: #6366f1;">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Vendas após 18h</h3>
+                    <p id="kpi-noturno">0%</p>
+                    <span id="kpi-noturno-sub" class="kpi-variation variation-neutral">Do faturamento diário</span>
+                </div>
+            </div>
         </section>
 
         <!-- Grade dos Gráficos -->
@@ -165,6 +237,39 @@
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-customer"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 6: Faturamento por Gênero -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-venus-mars"></i> Faturamento por Gênero</h3>
+                    <p>Comparativo de receita entre perfis de compradores</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-gender-revenue"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 7: UPV por Linha de Produto -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-tag"></i> Preço Médio por Produto (UPV)</h3>
+                    <p>Valor médio pago por unidade em cada categoria</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-upv"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 8: Diurno vs Noturno -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-sun"></i> Faturamento Diurno vs. Noturno</h3>
+                    <p>Distribuição de receita antes e após as 18h</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-nocturnal"></canvas>
                 </div>
             </div>
         </main>

@@ -67,6 +67,7 @@ async function carregarRelatorio(data) {
         // Atualizar interface
         atualizarKPIs(dataPayload.metrics);
         atualizarAlertas(dataPayload.alertas);
+        atualizarMetricasNovas(dataPayload.metrics.novas);
         renderizarGraficos(dataPayload.metrics);
 
     } catch (error) {
@@ -139,6 +140,80 @@ function atualizarKPIs(metrics) {
     
     document.getElementById('kpi-avg-rating').textContent = `${avgRating.toFixed(1)} / 10`;
     atualizarVariacaoElement('kpi-var-rating', varRating, avgRating, false, true);
+}
+
+function atualizarMetricasNovas(novas) {
+    if (!novas) return;
+
+    // M6. UPV
+    const upvEl = document.getElementById('kpi-upv');
+    const upvVarEl = document.getElementById('kpi-var-upv');
+    if (upvEl) upvEl.textContent = formatarMoeda(novas.upv?.atual || 0);
+    if (upvVarEl) {
+        const upvVar = novas.upv?.variacao;
+        if (upvVar === null || upvVar === undefined) {
+            upvVarEl.className = 'kpi-variation variation-neutral';
+            upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+        } else {
+            const upvAnt = (novas.upv?.atual || 0) - upvVar;
+            if (upvAnt > 0) {
+                const pct = ((upvVar / upvAnt) * 100).toFixed(1);
+                if (upvVar > 0) {
+                    upvVarEl.className = 'kpi-variation variation-up';
+                    upvVarEl.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${pct}%`;
+                } else if (upvVar < 0) {
+                    upvVarEl.className = 'kpi-variation variation-down';
+                    upvVarEl.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${pct}%`;
+                } else {
+                    upvVarEl.className = 'kpi-variation variation-neutral';
+                    upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
+                }
+            } else {
+                upvVarEl.className = 'kpi-variation variation-neutral';
+                upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+            }
+        }
+    }
+
+    // M3. Hora de Pico
+    const horaEl = document.getElementById('kpi-hora-pico');
+    const horaSubEl = document.getElementById('kpi-hora-pico-sub');
+    if (horaEl) horaEl.textContent = `${novas.hora_pico?.hora ?? '--'}h`;
+    if (horaSubEl) horaSubEl.textContent = `${formatarMoeda(novas.hora_pico?.total || 0)} nesta hora`;
+
+    // M2. Produto Destaque
+    const prodEl = document.getElementById('kpi-produto-top');
+    const prodValorEl = document.getElementById('kpi-produto-top-valor');
+    if (prodEl) prodEl.textContent = novas.produto_top?.nome || '--';
+    if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top?.total || 0);
+
+    // M7. Mix Digital
+    const mixEl = document.getElementById('kpi-mix-digital');
+    if (mixEl) mixEl.textContent = `${novas.mix_digital_pct ?? 0}%`;
+    const mixSubEl = document.getElementById('kpi-mix-digital-sub');
+    if (mixSubEl) {
+        mixSubEl.className = novas.mix_digital_pct < 60
+            ? 'kpi-variation variation-down'
+            : 'kpi-variation variation-up';
+        mixSubEl.textContent = novas.mix_digital_pct < 60 ? 'Abaixo do ideal (60%)' : 'Pix + Cartão + Débito';
+    }
+
+    // M5. Concentração Geográfica
+    const concEl = document.getElementById('kpi-conc-geo');
+    const concSubEl = document.getElementById('kpi-conc-geo-sub');
+    if (concEl) concEl.textContent = `${novas.concentracao_geografica?.percentual ?? 0}%`;
+    if (concSubEl) {
+        const cidade = novas.concentracao_geografica?.cidade || '--';
+        const pct = novas.concentracao_geografica?.percentual || 0;
+        concSubEl.className = pct > 70 ? 'kpi-variation variation-down' : 'kpi-variation variation-neutral';
+        concSubEl.textContent = `${cidade} — ${pct > 70 ? 'Risco!' : 'Estável'}`;
+    }
+
+    // M10. Eficiência Noturna
+    const noturnoEl = document.getElementById('kpi-noturno');
+    const noturnoSubEl = document.getElementById('kpi-noturno-sub');
+    if (noturnoEl) noturnoEl.textContent = `${novas.eficiencia_noturna_pct ?? 0}%`;
+    if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diário';
 }
 
 function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRating = false) {
@@ -333,16 +408,7 @@ function renderizarGraficos(metrics) {
         }
     });
 
-    // 5. Perfil de Clientes (Barra Empilhada por Tipo e Cidade)
-    // Extrai cidades do crosstab cidade_tipo_cliente
-    const crosstab = metrics.metrics ? metrics.metrics.cidade : []; 
-    // Como a API já manda o crosstab processado no JSON, vamos montá-lo
-    // a partir do "crosstab_cidade_tipo_cliente" mapeado
-    // Vamos usar a estrutura mapeada direto da API (pode estar em metrics.tipo_cliente ou demográfico)
-    
-    // Mapeamento alternativo simples: Tipo de cliente por Cidade
-    const cidadesCli = [...new Set(metrics.cidade.map(item => item.City))];
-    // Para simplificar, faremos um gráfico de Pizza mostrando a distribuição total Gênero
+    // 5. Perfil de Clientes (Pizza Gênero)
     const totalMulheres = metrics.genero.find(item => item.Gender === 'Mulher')?.Total || 0;
     const totalHomens = metrics.genero.find(item => item.Gender === 'Homem')?.Total || 0;
 
@@ -367,6 +433,83 @@ function renderizarGraficos(metrics) {
             }
         }
     });
+
+    // 6. Faturamento por Gênero (Barra Horizontal)
+    if (metrics.novas) {
+        const generoLabels = Object.keys(metrics.novas.volume_por_genero || {});
+        const generoVals = Object.values(metrics.novas.volume_por_genero || {});
+        criarGrafico('chart-gender-revenue', {
+            type: 'bar',
+            data: {
+                labels: generoLabels,
+                datasets: [{
+                    label: 'Faturamento (R$)',
+                    data: generoVals,
+                    backgroundColor: ['#ec4899', '#3b82f6', '#10b981'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 7. UPV por Linha de Produto
+        const upvLabels = metrics.linha_produto.map(item => item['Product line']);
+        const upvVals = metrics.linha_produto.map(item => {
+            const qty = item.Quantity || 0;
+            const total = item.Total || 0;
+            return qty > 0 ? parseFloat((total / qty).toFixed(2)) : 0;
+        });
+        criarGrafico('chart-upv', {
+            type: 'bar',
+            data: {
+                labels: upvLabels,
+                datasets: [{
+                    label: 'Preço Médio / Unidade (R$)',
+                    data: upvVals,
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 8. Diurno vs Noturno (Doughnut)
+        const pctNoturno = metrics.novas.eficiencia_noturna_pct || 0;
+        const pctDiurno = parseFloat((100 - pctNoturno).toFixed(1));
+        criarGrafico('chart-nocturnal', {
+            type: 'doughnut',
+            data: {
+                labels: ['Diurno (até 17h)', 'Noturno (18h+)'],
+                datasets: [{
+                    data: [pctDiurno, pctNoturno],
+                    backgroundColor: ['#f59e0b', '#6366f1'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                }
+            }
+        });
+    }
 }
 
 function criarGrafico(canvasId, config) {

@@ -188,6 +188,86 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     rating_produto, var_rating_produto = calcular_media_e_variacao(df_dia, df_dia_anterior, "Product line", "Rating", "Média_Rating")
     rating_pagamento, var_rating_pagamento = calcular_media_e_variacao(df_dia, df_dia_anterior, "Payment", "Rating", "Média_Rating")
 
+    # --- Novas Métricas de Negócio ---
+
+    # M1. Taxa de Conversão por Tipo de Cliente
+    total_geral_dia = df_dia["Total"].sum()
+    tx_tipo = df_dia.groupby("Customer type")["Total"].sum()
+    tx_tipo_pct = (tx_tipo / total_geral_dia * 100).round(1) if total_geral_dia > 0 else tx_tipo * 0
+
+    # M2. Produto mais lucrativo do dia
+    if not df_dia.empty:
+        produto_top = df_dia.groupby("Product line")["Total"].sum().idxmax()
+        produto_top_valor = df_dia.groupby("Product line")["Total"].sum().max()
+    else:
+        produto_top = "N/A"
+        produto_top_valor = 0.0
+
+    # M3. Hora de pico de vendas
+    df_hora = df_dia.copy()
+    df_hora["Hora"] = df_hora["Time"].astype(str).str.split(":").str[0].astype(int)
+    if not df_hora.empty:
+        hora_pico = int(df_hora.groupby("Hora")["Total"].sum().idxmax())
+        hora_pico_valor = float(df_hora.groupby("Hora")["Total"].sum().max())
+    else:
+        hora_pico = 0
+        hora_pico_valor = 0.0
+
+    # M4. Taxa de satisfação crítica (% de vendas com rating < 5.0)
+    total_vendas_dia = len(df_dia)
+    criticas = len(df_dia[df_dia["Rating"] < 5.0])
+    taxa_critica = round((criticas / total_vendas_dia * 100), 1) if total_vendas_dia > 0 else 0.0
+
+    # M5. Concentração geográfica (% da cidade top)
+    total_cidade = df_dia.groupby("City")["Total"].sum()
+    if not total_cidade.empty and total_geral_dia > 0:
+        cidade_top = total_cidade.idxmax()
+        conc_geo_pct = round((total_cidade.max() / total_geral_dia * 100), 1)
+    else:
+        cidade_top = "N/A"
+        conc_geo_pct = 0.0
+
+    # M6. Preço médio por unidade (UPV = Total / Quantity)
+    total_qty_dia = df_dia["Quantity"].sum()
+    upv_atual = round((total_geral_dia / total_qty_dia), 2) if total_qty_dia > 0 else 0.0
+    if not df_dia_anterior.empty:
+        upv_anterior = round((df_dia_anterior["Total"].sum() / df_dia_anterior["Quantity"].sum()), 2)
+        upv_variacao = round(upv_atual - upv_anterior, 2)
+    else:
+        upv_anterior = 0.0
+        upv_variacao = None
+
+    # M7. Mix de pagamentos digitais (Pix + Cartão de Crédito + Débito)
+    pagamentos_digitais = ["Pix", "Cartao de Credito", "Debito", "Credit card", "Ewallet"]
+    total_digital = df_dia[df_dia["Payment"].isin(pagamentos_digitais)]["Total"].sum()
+    mix_digital_pct = round((total_digital / total_geral_dia * 100), 1) if total_geral_dia > 0 else 0.0
+
+    # M8. Volume de vendas por gênero
+    vol_genero = df_dia.groupby("Gender")["Total"].sum().round(2).to_dict()
+
+    # M9. Linhas de produto sem vendas no dia
+    todas_linhas = df["Product line"].unique().tolist()
+    linhas_com_venda = df_dia["Product line"].unique().tolist()
+    linhas_sem_venda = [l for l in todas_linhas if l not in linhas_com_venda]
+
+    # M10. Eficiência de horário tardio (% do faturamento após 18h)
+    df_tardio = df_hora[df_hora["Hora"] >= 18]
+    total_tardio = df_tardio["Total"].sum()
+    efic_noturna_pct = round((total_tardio / total_geral_dia * 100), 1) if total_geral_dia > 0 else 0.0
+
+    novas_metricas = {
+        "taxa_tipo_cliente": {k: float(v) for k, v in tx_tipo_pct.items()},
+        "produto_top": {"nome": produto_top, "total": round(float(produto_top_valor), 2)},
+        "hora_pico": {"hora": hora_pico, "total": round(hora_pico_valor, 2)},
+        "taxa_satisfacao_critica": taxa_critica,
+        "concentracao_geografica": {"cidade": cidade_top, "percentual": conc_geo_pct},
+        "upv": {"atual": upv_atual, "variacao": upv_variacao},
+        "mix_digital_pct": mix_digital_pct,
+        "volume_por_genero": vol_genero,
+        "linhas_sem_venda": linhas_sem_venda,
+        "eficiencia_noturna_pct": efic_noturna_pct
+    }
+
     return {
         "total_por_cidade": total_por_cidade, "variacao_cidade": variacao_cidade,
         "total_por_tipo_cliente": total_por_tipo_cliente, "variacao_tipo_cliente": variacao_tipo_cliente,
@@ -201,7 +281,8 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "ticket_medio_cidade": ticket_medio_cidade, "var_ticket_medio_cidade": var_ticket_medio_cidade,
         "vendas_por_hora": vendas_hora_atual, "var_vendas_por_hora": var_vendas_hora,
         "rating_produto": rating_produto, "var_rating_produto": var_rating_produto,
-        "rating_pagamento": rating_pagamento, "var_rating_pagamento": var_rating_pagamento
+        "rating_pagamento": rating_pagamento, "var_rating_pagamento": var_rating_pagamento,
+        "novas_metricas": novas_metricas
     }
 
 def calcular_alertas_dia(relatorio):
@@ -254,6 +335,52 @@ def calcular_alertas_dia(relatorio):
         if not produtos_acima_400.empty:
             produtos_str = ", ".join(produtos_acima_400.index)
             alertas_positivos.append(f"Os produtos **{produtos_str}** tiveram mais de 400 vendas.")
+
+    # --- Novos alertas das 10 métricas ---
+    novas = relatorio.get("novas_metricas", {})
+
+    # M1. Taxa de cliente Normal muito baixa
+    tx_tipo = novas.get("taxa_tipo_cliente", {})
+    perc_normal = tx_tipo.get("Normal", tx_tipo.get("normal", 0))
+    if perc_normal > 0 and perc_normal < 30:
+        alertas_negativos.append(f"Clientes **Não-Membros** representam apenas **{perc_normal:.1f}%** das vendas — concentração excessiva em membros.")
+
+    # M4. Taxa de satisfação crítica > 15%
+    taxa_critica = novas.get("taxa_satisfacao_critica", 0)
+    if taxa_critica > 15:
+        alertas_negativos.append(f"**{taxa_critica:.1f}%** das vendas tiveram rating abaixo de 5.0 — nível de insatisfação crítico.")
+
+    # M5. Concentração geográfica > 70%
+    conc = novas.get("concentracao_geografica", {})
+    if conc.get("percentual", 0) > 70:
+        alertas_negativos.append(f"A cidade **{conc.get('cidade')}** concentra **{conc.get('percentual')}%** do faturamento — risco de dependência geográfica.")
+
+    # M6. Queda de UPV > 20%
+    upv = novas.get("upv", {})
+    upv_var = upv.get("variacao")
+    upv_atual_val = upv.get("atual", 0)
+    if upv_var is not None and upv_atual_val > 0:
+        upv_ant = upv_atual_val - upv_var
+        if upv_ant > 0:
+            queda_upv = (upv_var / upv_ant) * 100
+            if queda_upv < -20:
+                alertas_negativos.append(f"O Preço Médio por Unidade (UPV) caiu **{abs(queda_upv):.1f}%** em relação ao dia anterior.")
+
+    # M7. Mix digital abaixo de 60%
+    mix_digital = novas.get("mix_digital_pct", 100)
+    if mix_digital < 60:
+        alertas_negativos.append(f"Pagamentos digitais representam apenas **{mix_digital:.1f}%** do faturamento — queda na adesão digital.")
+
+    # M9. Linhas de produto sem vendas
+    linhas_sem = novas.get("linhas_sem_venda", [])
+    if linhas_sem:
+        linhas_str = ", ".join(linhas_sem)
+        alertas_negativos.append(f"As linhas **{linhas_str}** não registraram nenhuma venda no dia.")
+
+    # M2. Destaque positivo: produto top do dia
+    prod_top = novas.get("produto_top", {})
+    if prod_top.get("nome") and prod_top.get("nome") != "N/A":
+        alertas_positivos.append(f"🏆 Produto destaque do dia: **{prod_top.get('nome')}** com R$ {prod_top.get('total', 0):,.2f} em faturamento.")
 
     return {
         "alertas_positivos": alertas_positivos,
@@ -311,7 +438,8 @@ def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-
                 "ticket_medio_cidade": format_dataframe_for_json(relatorio["ticket_medio_cidade"], relatorio["var_ticket_medio_cidade"]),
                 "rating_produto": format_dataframe_for_json(relatorio["rating_produto"], relatorio["var_rating_produto"]),
                 "rating_pagamento": format_dataframe_for_json(relatorio["rating_pagamento"], relatorio["var_rating_pagamento"]),
-                "vendas_por_hora": format_dataframe_for_json(relatorio["vendas_por_hora"], relatorio["var_vendas_por_hora"])
+                "vendas_por_hora": format_dataframe_for_json(relatorio["vendas_por_hora"], relatorio["var_vendas_por_hora"]),
+                "novas": relatorio["novas_metricas"]
             }
         }
         return response
