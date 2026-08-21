@@ -761,7 +761,7 @@ const helperMappings = {
         desc: 'O percentual que a cidade com mais vendas representa no faturamento.',
         dor: 'Risco de dependencia excessiva do negocio em apenas uma regiao.'
     },
-    'vendasapsrh': { // 'Vendas apos 18h'
+    'vendasapsh': { // 'Vendas apos 18h'
         desc: 'O percentual do faturamento diario que ocorre apos o horario comercial.',
         dor: 'Duvida sobre a viabilidade de manter a loja aberta a noite.'
     },
