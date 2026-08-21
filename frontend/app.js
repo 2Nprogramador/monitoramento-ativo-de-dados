@@ -147,32 +147,25 @@ function atualizarKPIs(metrics) {
     try {
         const novas = metrics.novas;
         if (novas) {
-            // UPV
-            const upvEl = document.getElementById('kpi-upv');
-            if (upvEl) upvEl.textContent = formatarMoeda(novas.upv ? novas.upv.atual : 0);
-            const upvVarEl = document.getElementById('kpi-var-upv');
-            if (upvVarEl) {
-                const upvVar = novas.upv ? novas.upv.variacao : null;
-                if (upvVar === null || upvVar === undefined) {
-                    upvVarEl.className = 'kpi-variation variation-neutral';
-                    upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+            // Vendas Noturnas
+            const notEl = document.getElementById('kpi-vendas-noturnas');
+            if (notEl) notEl.textContent = (novas.eficiencia_noturna_pct ? novas.eficiencia_noturna_pct.atual : 0).toFixed(1) + '%';
+            const notVarEl = document.getElementById('kpi-var-vendas-noturnas');
+            if (notVarEl) {
+                const notVar = novas.eficiencia_noturna_pct ? novas.eficiencia_noturna_pct.variacao : null;
+                if (notVar === null || notVar === undefined) {
+                    notVarEl.className = 'kpi-variation variation-neutral';
+                    notVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
                 } else {
-                    const upvAnt = (novas.upv.atual || 0) - upvVar;
-                    if (upvAnt > 0) {
-                        const pct = ((upvVar / upvAnt) * 100).toFixed(1);
-                        if (upvVar > 0) {
-                            upvVarEl.className = 'kpi-variation variation-up';
-                            upvVarEl.innerHTML = '<i class="fa-solid fa-caret-up"></i> +' + pct + '%';
-                        } else if (upvVar < 0) {
-                            upvVarEl.className = 'kpi-variation variation-down';
-                            upvVarEl.innerHTML = '<i class="fa-solid fa-caret-down"></i> ' + pct + '%';
-                        } else {
-                            upvVarEl.className = 'kpi-variation variation-neutral';
-                            upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
-                        }
+                    if (notVar > 0) {
+                        notVarEl.className = 'kpi-variation variation-up';
+                        notVarEl.innerHTML = '<i class="fa-solid fa-caret-up"></i> +' + notVar.toFixed(1) + '%';
+                    } else if (notVar < 0) {
+                        notVarEl.className = 'kpi-variation variation-down';
+                        notVarEl.innerHTML = '<i class="fa-solid fa-caret-down"></i> ' + notVar.toFixed(1) + '%';
                     } else {
-                        upvVarEl.className = 'kpi-variation variation-neutral';
-                        upvVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+                        notVarEl.className = 'kpi-variation variation-neutral';
+                        notVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
                     }
                 }
             }
@@ -758,9 +751,9 @@ const helperMappings = {
         desc: 'Media das notas (1 a 10) dadas pelos clientes as compras do dia.',
         dor: 'Falta de termometro sobre a qualidade do servico ou produto.'
     },
-    'preomdiounidade': {
-        desc: 'Faturamento Total dividido pela Quantidade de itens vendidos.',
-        dor: 'Nao saber se clientes levam itens mais baratos ou mais caros.'
+    'vendasnoturnas': {
+        desc: 'Percentual do faturamento total que ocorreu após as 18:00.',
+        dor: 'Permite avaliar a necessidade de manter o atendimento noturno.'
     },
     'horadepico': {
         desc: 'A hora do dia (0-23h) com o maior volume financeiro de vendas.',

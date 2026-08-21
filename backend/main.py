@@ -254,6 +254,16 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     df_tardio = df_hora[df_hora["Hora"] >= 18]
     total_tardio = df_tardio["Total"].sum()
     efic_noturna_pct = round((total_tardio / total_geral_dia * 100), 1) if total_geral_dia > 0 else 0.0
+    
+    if not df_dia_anterior.empty:
+        df_hora_ant = df_dia_anterior.copy()
+        df_hora_ant["Hora"] = pd.to_datetime(df_hora_ant["Time"], format='%H:%M').dt.hour
+        total_tardio_ant = df_hora_ant[df_hora_ant["Hora"] >= 18]["Total"].sum()
+        total_geral_ant = df_dia_anterior["Total"].sum()
+        efic_noturna_ant = round((total_tardio_ant / total_geral_ant * 100), 1) if total_geral_ant > 0 else 0.0
+        efic_variacao = round(efic_noturna_pct - efic_noturna_ant, 1)
+    else:
+        efic_variacao = None
 
     novas_metricas = {
         "taxa_tipo_cliente": {k: float(v) for k, v in tx_tipo_pct.items()},
@@ -265,7 +275,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "mix_digital_pct": mix_digital_pct,
         "volume_por_genero": vol_genero,
         "linhas_sem_venda": linhas_sem_venda,
-        "eficiencia_noturna_pct": efic_noturna_pct
+        "eficiencia_noturna_pct": {"atual": efic_noturna_pct, "variacao": efic_variacao}
     }
 
     return {
