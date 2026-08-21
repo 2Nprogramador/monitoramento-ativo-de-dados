@@ -582,98 +582,98 @@ function showToast(message, type = 'info') {
 
 // --- HELPERS DE NEGOCIO ---
 const helperMappings = {
-    'Faturamento Total': {
+    'faturamentototal': {
         desc: 'Soma total de todas as vendas realizadas na data selecionada.',
-        dor: 'Falta de visibilidade imediata sobre a receita diária do negócio.'
+        dor: 'Falta de visibilidade imediata sobre a receita diaria do negocio.'
     },
-    'Quantidade Vendida': {
-        desc: 'Número total de itens vendidos no dia.',
-        dor: 'Desconhecimento do volume de saída de estoque diário.'
+    'quantidadevendida': {
+        desc: 'Numero total de itens vendidos no dia.',
+        dor: 'Desconhecimento do volume de saida de estoque diario.'
     },
-    'Ticket Médio': {
-        desc: 'Faturamento Total dividido pelo número de vendas (clientes) no dia.',
-        dor: 'Dificuldade em entender quanto cada cliente gasta em média.'
+    'ticketmdio': {
+        desc: 'Faturamento Total dividido pelo numero de vendas (clientes) no dia.',
+        dor: 'Dificuldade em entender quanto cada cliente gasta em media.'
     },
-    'Satisfação Geral (Rating)': {
-        desc: 'Média das notas (1 a 10) dadas pelos clientes às compras do dia.',
-        dor: 'Falta de termômetro sobre a qualidade do serviço ou produto percebida.'
+    'satisfaogeralrating': {
+        desc: 'Media das notas (1 a 10) dadas pelos clientes as compras do dia.',
+        dor: 'Falta de termometro sobre a qualidade do servico ou produto.'
     },
-    'Preço Médio / Unidade': {
+    'preomdiounidade': {
         desc: 'Faturamento Total dividido pela Quantidade de itens vendidos.',
-        dor: 'Não saber se os clientes estão levando itens mais baratos ou mais caros (poder de compra).'
+        dor: 'Nao saber se clientes levam itens mais baratos ou mais caros.'
     },
-    'Hora de Pico': {
-        desc: 'A hora do dia (0-23h) em que houve o maior volume financeiro de vendas.',
-        dor: 'Incapacidade de alocar equipe extra de forma eficiente nos horários de maior fluxo.'
+    'horadepico': {
+        desc: 'A hora do dia (0-23h) com o maior volume financeiro de vendas.',
+        dor: 'Incapacidade de alocar equipe de forma eficiente nos picos.'
     },
-    'Produto Destaque': {
+    'produtodestaque': {
         desc: 'A linha de produtos que gerou a maior receita no dia.',
-        dor: 'Dificuldade em identificar rapidamente qual categoria impulsionou o faturamento.'
+        dor: 'Dificuldade em identificar rapidamente qual categoria traciona vendas.'
     },
-    'Pagamentos Digitais': {
-        desc: 'Percentual de vendas pagas via Pix, Cartão de Crédito ou Débito.',
-        dor: 'Risco e custo de gerenciar muito dinheiro em espécie no caixa físico.'
+    'pagamentosdigitais': {
+        desc: 'Percentual de vendas pagas via Pix, Cartao de Credito ou Debito.',
+        dor: 'Risco e custo de gerenciar muito dinheiro em especie no caixa fisico.'
     },
-    'Concentração Geográfica': {
-        desc: 'O percentual que a cidade com mais vendas representa no faturamento total.',
-        dor: 'Risco de dependência excessiva do negócio em apenas uma região.'
+    'concentraogeogrfica': {
+        desc: 'O percentual que a cidade com mais vendas representa no faturamento.',
+        dor: 'Risco de dependencia excessiva do negocio em apenas uma regiao.'
     },
-    'Eficiência Noturna': {
-        desc: 'O percentual do faturamento diário que ocorre após o horário comercial padrão.',
-        dor: 'Dúvida sobre a viabilidade de manter a loja aberta no período noturno.'
+    'vendasapsrh': { // 'Vendas apos 18h'
+        desc: 'O percentual do faturamento diario que ocorre apos o horario comercial.',
+        dor: 'Duvida sobre a viabilidade de manter a loja aberta a noite.'
     },
     // Charts
-    'Desempenho por Cidade': {
-        desc: 'Comparativo de faturamento entre diferentes cidades. Variações mostram o crescimento vs. dia anterior.',
-        dor: 'Desconhecimento sobre quais filiais ou regiões puxam o faturamento para cima.'
+    'vendastotaisporcidade': { // 'Vendas Totais por Cidade'
+        desc: 'Comparativo de faturamento entre cidades. Variacoes mostram o crescimento.',
+        dor: 'Desconhecimento sobre quais filiais ou regioes puxam o faturamento.'
     },
-    'Vendas por Hora': {
-        desc: 'Distribuição do faturamento ao longo do dia.',
-        dor: 'Não entender a dinâmica de fluxo de caixa intra-dia.'
+    'faturamentoporhora': { // 'Faturamento por Hora'
+        desc: 'Distribuicao do faturamento ao longo do dia.',
+        dor: 'Nao entender a dinamica de fluxo de caixa intra-dia.'
     },
-    'Vendas por Linha de Produto': {
+    'categoriasdeprodutos': { // 'Categorias de Produtos'
         desc: 'Volume de itens vendidos divididos por cada categoria de produto.',
         dor: 'Desconhecimento sobre giro de estoque e mix de produtos popular.'
     },
-    'Métodos de Pagamento': {
+    'mtodosdepagamento': { // 'Mtodos de Pagamento'
         desc: 'Faturamento fatiado pelas diferentes formas de pagamento.',
-        dor: 'Falta de dados para renegociar taxas com adquirentes ou incentivar Pix.'
+        dor: 'Falta de dados para renegociar taxas com adquirentes.'
     },
-    'Perfil do Cliente': {
-        desc: 'Proporção de compradores identificados como Homem ou Mulher.',
-        dor: 'Falta de clareza do perfil demográfico para direcionar marketing.'
+    'perfildocliente': {
+        desc: 'Proporcao de compradores identificados como Homem ou Mulher.',
+        dor: 'Falta de clareza do perfil demografico para direcionar marketing.'
     },
-    'Faturamento por Gênero': {
-        desc: 'Volume financeiro (R$) total trazido por cada gênero.',
-        dor: 'Marketing focando em um público que traz volume de pessoas, mas não receita.'
+    'faturamentoporgnero': {
+        desc: 'Volume financeiro (R$) total trazido por cada genero.',
+        dor: 'Marketing focando em um publico que traz volume mas nao receita.'
     },
-    'Preço Médio por Produto (UPV)': {
-        desc: 'Valor médio que os clientes estão pagando por cada unidade dentro de cada categoria.',
+    'preomdioporprodutoupv': {
+        desc: 'Valor medio que os clientes estao pagando por cada unidade nas categorias.',
         dor: 'Dificuldade em precificar produtos ou identificar categorias subvalorizadas.'
     },
-    'Faturamento Diurno vs. Noturno': {
+    'faturamentodiurnovsnoturno': {
         desc: 'Comparativo da receita antes das 18h (Diurno) e a partir das 18h (Noturno).',
-        dor: 'Falta de dados para otimizar os turnos da equipe de vendas ou segurança.'
+        dor: 'Falta de dados para otimizar os turnos da equipe de vendas.'
     },
     // Alertas
-    'Insights e Alertas Automáticos': {
-        desc: 'Motor de regras que monitora ativamente as métricas e alerta para anomalias, variações bruscas ou metas atingidas.',
-        dor: 'Ter que analisar dezenas de números cruamente para descobrir se algo está bom ou ruim (Carga cognitiva para o gestor).'
+    'insightsealertasautomticos': {
+        desc: 'Motor de regras que alerta para anomalias, variacoes bruscas ou metas.',
+        dor: 'Ter que analisar dezenas de numeros manualmente (Carga cognitiva).'
     }
 };
 
 function inicializarHelpers() {
-    // Busca H3 (kpis, graficos) e H2 (alertas)
     const targetElements = document.querySelectorAll('.kpi-info h3, .chart-header h3, .section-title h2');
     
     targetElements.forEach(el => {
-        // Obter o texto ignorando tags HTML internas, para remover spans ou icones, se houver, 
-        // embora no layout eles estao ao lado
-        const text = el.innerText.trim();
-        const mapping = helperMappings[text];
+        // Limpar o texto de acentos e caracteres especiais para casar perfeitamente
+        // Usa textContent para ignorar transformacoes CSS como UPPERCASE no innerText
+        const rawText = el.textContent || "";
+        const cleanKey = rawText.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        
+        const mapping = helperMappings[cleanKey];
         
         if (mapping) {
-            // Verificar alinhamento para evitar corte do tooltip nos graficos da direita
             const isLeftEdge = el.closest('.chart-card:nth-child(even)'); 
             const tipClass = isLeftEdge ? ' tip-left' : '';
             
@@ -681,7 +681,7 @@ function inicializarHelpers() {
                 <div class="helper-wrapper${tipClass}">
                     <i class="helper-icon">?</i>
                     <div class="helper-tooltip">
-                        <div class="helper-tooltip-label">O que é</div>
+                        <div class="helper-tooltip-label">O que eh</div>
                         <div class="helper-tooltip-text">${mapping.desc}</div>
                         <div class="helper-tooltip-pain">
                             <div class="helper-tooltip-label">Dor Resolvida</div>
@@ -690,9 +690,8 @@ function inicializarHelpers() {
                     </div>
                 </div>
             `;
-            // Adiciona o tooltip sem quebrar o innerHTML atual
+            // Append do HTML do helper
             el.innerHTML = el.innerHTML + helperHtml;
         }
     });
 }
-
