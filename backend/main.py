@@ -202,7 +202,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "crosstab_cidade_product": crosstab_cidade_product, "variacao_cidade_product": variacao_cidade_product,
         "crosstab_cidade_payment": crosstab_cidade_payment, "variacao_cidade_payment": variacao_cidade_payment,
         "ticket_medio_cidade": ticket_medio_cidade, "var_ticket_medio_cidade": var_ticket_medio_cidade,
-        "vendas_por_hora": vendas_hora_atual, "var_vendas_por_hora": var_vendas_por_hora,
+        "vendas_por_hora": vendas_hora_atual, "var_vendas_por_hora": var_vendas_hora,
         "rating_produto": rating_produto, "var_rating_produto": var_rating_produto,
         "rating_pagamento": rating_pagamento, "var_rating_pagamento": var_rating_pagamento
     }
