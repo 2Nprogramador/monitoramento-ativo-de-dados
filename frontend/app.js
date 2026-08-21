@@ -741,37 +741,37 @@ const alertasGlossario = [
         dor: 'Previne ruptura de estoque (falta do produto), permitindo reposicao agil.'
     },
     {
-        key: 'concentra鈬o excessiva em membros',
+        key: 'concentração excessiva em membros',
         title: 'Baixa Aquisicao de Novos Clientes',
         desc: 'Avisa quando clientes normais representam menos de 20% das vendas totais.',
         dor: 'Sinaliza que a loja parou de atrair publico novo, dependendo apenas da base fiel.'
     },
     {
-        key: 'n咩el de insatisfa鈬o cr咜ico',
+        key: 'nível de insatisfação crítico',
         title: 'Alerta Critico de Satisfacao',
         desc: 'Dispara quando mais de 5% das vendas recebem uma avaliacao abaixo de 5 (Numa escala de 1 a 10).',
         dor: 'Permite identificar dias de mal atendimento ou produtos defeituosos rapidamente.'
     },
     {
-        key: 'risco de depend麩cia geogr畴ica',
+        key: 'risco de dependência geográfica',
         title: 'Risco de Concentracao Geografica',
         desc: 'Alerta quando uma unica cidade representa mais de 60% de todo o faturamento da empresa.',
         dor: 'Sinaliza vulnerabilidade: um feriado ou problema nessa cidade compromete o caixa total.'
     },
     {
-        key: 'Pre輟 M馘io por Unidade (UPV) caiu',
+        key: 'Preço Médio por Unidade (UPV) caiu',
         title: 'Queda de Preco Medio (UPV)',
         desc: 'Avisa quando o cliente passa a levar produtos mais baratos que a media historica.',
         dor: 'Mostra perda de poder aquisitivo ou ineficacia nas campanhas de up-sell dos vendedores.'
     },
     {
-        key: 'queda na ades縊 digital',
+        key: 'queda na adesão digital',
         title: 'Queda de Pagamentos Digitais',
         desc: 'Alerta quando menos de 70% dos pagamentos sao feitos via meios digitais.',
         dor: 'Mais dinheiro vivo circulando significa maior risco de seguranca e custo com transporte de valores.'
     },
     {
-        key: 'n縊 registraram nenhuma venda no dia',
+        key: 'não registraram nenhuma venda no dia',
         title: 'Linha de Produto Zerada',
         desc: 'Sinaliza categorias que nao venderam absolutamente nada durante todo o expediente.',
         dor: 'Giro de estoque zero significa dinheiro parado. Exige promocao ou reposicionamento na vitrine.'
