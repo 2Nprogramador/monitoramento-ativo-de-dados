@@ -1,15 +1,24 @@
-version: '3.7'
+version: '3.8'
+
+secrets:
+  db_password:
+    external: true
+  rabbitmq_password:
+    external: true
+  app_password:
+    external: true
 
 services:
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3.13-management-alpine
     container_name: monitoramento-rabbitmq
-    restart: unless-stopped
     networks:
       - 2nnet
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: admin_monitoramento
+      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitmq_password
+    secrets:
+      - rabbitmq_password
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     deploy:
@@ -18,22 +27,41 @@ services:
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   web:
-    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:latest
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.0
     container_name: monitoramento-web
-    restart: unless-stopped
     networks:
       - 2nnet
+    secrets:
+      - db_password
+      - rabbitmq_password
+      - app_password
     environment:
-      - DATABASE_URL=postgresql://postgres:SUA_SENHA_REAL_DO_POSTGRES@172.17.0.1:5432/projeto?sslmode=require
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - APP_USER=admin
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=projeto
+      - DB_USER=postgres
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin_monitoramento
+      - RABBITMQ_PASSWORD_FILE=/run/secrets/rabbitmq_password
+      - APP_PASSWORD_FILE=/run/secrets/app_password
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
       labels:
         - traefik.enable=true
         - traefik.http.routers.monitoramento.rule=Host(`projetodados.2nprogramacao.com.br`)
@@ -44,21 +72,31 @@ services:
         - traefik.http.routers.monitoramento.tls=true
 
   worker:
-    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:latest
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.0
     container_name: monitoramento-worker
-    restart: unless-stopped
     command: python backend/worker.py
     networks:
       - 2nnet
+    secrets:
+      - db_password
+      - rabbitmq_password
     environment:
-      - DATABASE_URL=postgresql://postgres:SUA_SENHA_REAL_DO_POSTGRES@172.17.0.1:5432/projeto?sslmode=require
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=admin_monitoramento
+      - RABBITMQ_PASSWORD_FILE=/run/secrets/rabbitmq_password
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
 
 volumes:
   rabbitmq_data:
