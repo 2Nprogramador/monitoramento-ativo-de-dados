@@ -116,7 +116,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         total_atual = df_atual.groupby(col_agrupadora)[["Total", "Quantity"]].sum()
         if is_first_day or df_anterior.empty:
             variacao = total_atual.copy()
-            variacao[:] = pd.NA 
+            variacao[:] = None 
             return total_atual, variacao
         else:
             total_anterior = df_anterior.groupby(col_agrupadora)[["Total", "Quantity"]].sum()
@@ -129,7 +129,8 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     def calcular_crosstab_e_variacao(df_atual, df_anterior, idx_cols, col_cols):
         atual = df_atual.groupby(idx_cols)[col_cols].value_counts().unstack(fill_value=0)
         if is_first_day or df_anterior.empty:
-            variacao = atual.apply(lambda x: pd.NA)
+            variacao = atual.copy()
+            variacao[:] = None
             return atual, variacao
         else:
             anterior = df_anterior.groupby(idx_cols)[col_cols].value_counts().unstack(fill_value=0)
@@ -145,7 +146,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         media_atual.columns = [nome_metrica]
         if is_first_day or df_anterior.empty:
             variacao = media_atual.copy()
-            variacao[:] = pd.NA
+            variacao[:] = None
             return media_atual, variacao
         else:
             media_anterior = df_anterior.groupby(col_agrupadora)[[col_valor]].mean()
@@ -179,7 +180,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     vendas_hora_atual = extrair_hora_e_agrupar(df_dia)
     if is_first_day or df_dia_anterior.empty:
          var_vendas_hora = vendas_hora_atual.copy()
-         var_vendas_hora[:] = pd.NA
+         var_vendas_hora[:] = None
     else:
          vendas_hora_anterior = extrair_hora_e_agrupar(df_dia_anterior)
          idx_h = vendas_hora_atual.index.union(vendas_hora_anterior.index)
