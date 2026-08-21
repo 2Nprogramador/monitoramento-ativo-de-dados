@@ -291,11 +291,65 @@ body {
     color: var(--color-success);
 }
 
-/* --- GRADE DE KPIS --- */
-.kpi-grid {
+/* --- LAYOUT SUPERIOR (Alertas + KPIs) --- */
+.top-dashboard-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1200px) {
+    .top-dashboard-section {
+        grid-template-columns: 350px 1fr;
+    }
+}
+
+/* --- CARROSSEL DE KPIS --- */
+.kpi-carousel-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.kpi-carousel-track {
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 100%;
+    flex: 1;
+}
+
+.kpi-slide {
+    flex: 0 0 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.25rem;
+    min-width: 0;
+}
+
+.kpi-nav-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.kpi-nav-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
 }
 
 .kpi-card {

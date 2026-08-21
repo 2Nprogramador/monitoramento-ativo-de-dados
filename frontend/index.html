@@ -52,6 +52,7 @@
             </div>
         </header>
 
+        <div class="top-dashboard-section">
         <!-- Central de Alertas -->
         <section class="alerts-section">
             <div class="section-title-wrapper" id="alerts-toggle">
@@ -70,7 +71,12 @@
         </section>
 
         <!-- Grade de KPIs principais -->
-        <section class="kpi-grid">
+        <section class="kpi-carousel-container">
+            <button class="kpi-nav-btn kpi-prev" onclick="moveKpiCarousel(-1)" aria-label="KPIs anteriores">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="kpi-carousel-track" id="kpi-track">
+                <div class="kpi-slide">
             <div class="kpi-card">
                 <div class="kpi-icon-wrapper kpi-revenue">
                     <i class="fa-solid fa-wallet"></i>
@@ -126,7 +132,11 @@
                     <span id="kpi-var-fidelizados" class="kpi-variation variation-neutral">Do total de clientes</span>
                 </div>
             </div>
-
+            
+            </div> <!-- End Slide 1 -->
+            
+            <div class="kpi-slide">
+            
             <!-- KPI 6: Hora de Pico -->
             <div class="kpi-card">
                 <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #8b5cf622, #8b5cf644); color: #8b5cf6;">
@@ -186,7 +196,16 @@
                     <span id="kpi-noturno-sub" class="kpi-variation variation-neutral">Do faturamento diário</span>
                 </div>
             </div>
+            
+            </div> <!-- End Slide 2 -->
+            
+            </div> <!-- End kpi-carousel-track -->
+            <button class="kpi-nav-btn kpi-next" onclick="moveKpiCarousel(1)" aria-label="Próximos KPIs">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </section>
+        
+        </div> <!-- End top-dashboard-section -->
 
         <!-- Grade dos Gráficos -->
         <main class="charts-grid">
@@ -304,6 +323,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.21"></script>
+    <script src="app.js?v=1.0.22"></script>
 </body>
 </html>

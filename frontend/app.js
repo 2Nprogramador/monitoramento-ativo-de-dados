@@ -838,3 +838,17 @@ function inicializarHelpers() {
         }
     });
 }
+
+/* --- CARROSSEL DE KPIS --- */
+let currentKpiSlide = 0;
+function moveKpiCarousel(direction) {
+    const track = document.getElementById('kpi-track');
+    const slides = document.querySelectorAll('.kpi-slide');
+    if (!track || slides.length === 0) return;
+    
+    currentKpiSlide += direction;
+    if (currentKpiSlide < 0) currentKpiSlide = slides.length - 1;
+    if (currentKpiSlide >= slides.length) currentKpiSlide = 0;
+    
+    track.style.transform = `translateX(-${currentKpiSlide * 100}%)`;
+}
