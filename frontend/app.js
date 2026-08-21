@@ -150,7 +150,7 @@ function atualizarKPIs(metrics) {
             // Clientes Fidelizados
             const fidEl = document.getElementById('kpi-fidelizados');
             if (fidEl && novas.taxa_tipo_cliente) {
-                fidEl.textContent = (novas.taxa_tipo_cliente.Member || 0).toFixed(1) + '%';
+                fidEl.textContent = (novas.taxa_tipo_cliente.Membro || 0).toFixed(1) + '%';
             }
 
             // Hora de Pico
