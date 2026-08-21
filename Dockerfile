@@ -15,6 +15,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar todo o código do projeto
 COPY . .
 
+# Criar grupo e usuário sem privilégios de root para segurança do container
+RUN groupadd -g 10001 appgroup && \
+    useradd -u 10001 -g appgroup -d /app -s /sbin/nologin appuser && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE 8000
 
 # Comando padrão (para a API web)

@@ -8,12 +8,9 @@ import pandas as pd
 import pika
 from sqlalchemy import text
 
-# Importar o engine de banco de dados
+# Importar o engine de banco de dados e URL do RabbitMQ
 from database import engine
-
-# Carregar o dotenv para ler as variáveis de ambiente
-from dotenv import load_dotenv
-load_dotenv()
+from config import RABBITMQ_URL
 
 def obter_ultima_data_db():
     """
@@ -124,7 +121,7 @@ def main():
     """
     Inicializa o consumidor RabbitMQ. Roda indefinidamente aguardando novas tarefas.
     """
-    rabbitmq_url = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+    rabbitmq_url = RABBITMQ_URL
     print(f"[Worker] Iniciando conexão com o RabbitMQ em {rabbitmq_url}...")
     
     while True:

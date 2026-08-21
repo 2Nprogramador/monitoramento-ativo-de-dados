@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import pika
 
 from .database import engine, get_db
+from .config import RABBITMQ_URL, APP_USER, APP_PASSWORD
 
 app = FastAPI(title="Monitoramento Ativo de Dados API", version="2.0.0")
 
@@ -33,8 +34,8 @@ app.add_middleware(
 security = HTTPBasic()
 
 def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
-    correct_username = secrets.compare_digest(credentials.username, os.getenv("APP_USER", "admin"))
-    correct_password = secrets.compare_digest(credentials.password, os.getenv("APP_PASSWORD", "m2n_seguro_app_pass"))
+    correct_username = secrets.compare_digest(credentials.username, APP_USER)
+    correct_password = secrets.compare_digest(credentials.password, APP_PASSWORD)
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -349,7 +350,7 @@ def trigger_sales_simulation(username: str = Depends(authenticate)):
     Coloca uma mensagem na fila do RabbitMQ para gerar vendas fictícias para o próximo dia em segundo plano.
     Garante tempo de resposta imediato sem prender o servidor web.
     """
-    rabbitmq_url = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+    rabbitmq_url = RABBITMQ_URL
     try:
         params = pika.URLParameters(rabbitmq_url)
         # Timeout curto para conexões rápidas
@@ -454,6 +455,15 @@ def n8n_compatibility_endpoint(
 
     except Exception as e:
         return {"erro": str(e)}
+
+# --- ROTA DE HEALTHCHECK ---
+
+@app.get("/api/health")
+def health_check():
+    """
+    Endpoint simples de healthcheck para monitoramento e controle do Traefik.
+    """
+    return {"status": "healthy", "timestamp": datetime.datetime.now().isoformat()}
 
 # --- MONTAR FRONTEND ---
 # O frontend estático será servido diretamente a partir do diretório /frontend na raiz do domínio

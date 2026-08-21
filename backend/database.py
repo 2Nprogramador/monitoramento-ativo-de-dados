@@ -1,16 +1,7 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente do arquivo .env se existir
-load_dotenv()
-
-# Obter a URL de conexão do banco de dados (padrão local caso não definida)
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql://postgres:sua_senha_segura@localhost:5432/vendas"
-)
+from .config import DATABASE_URL
 
 # Configurações de conexão estáveis e seguras:
 # - pool_size: Mantém um pool de 10 conexões abertas
