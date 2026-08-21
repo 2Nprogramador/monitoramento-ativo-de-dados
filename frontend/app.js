@@ -1,7 +1,7 @@
-// Cache global para instâncias dos gráficos (evita erro de Canvas já utilizado)
+// Cache global para instﾃ｢ncias dos grﾃ｡ficos (evita erro de Canvas jﾃ｡ utilizado)
 const chartInstances = {};
 
-// Configuração padrão de fontes e estilo do Chart.js para combinar com o tema escuro
+// Configuraﾃｧﾃ｣o padrﾃ｣o de fontes e estilo do Chart.js para combinar com o tema escuro
 Chart.defaults.color = '#94a3b8';
 Chart.defaults.font.family = "'Inter', sans-serif";
 
@@ -25,7 +25,7 @@ function inicializarApp() {
     inicializarHelpers();
 }
 
-// --- FUNÇÕES DE API ---
+// --- FUNﾃ�髭S DE API ---
 
 async function carregarDatas(dataParaSelecionar = null) {
     try {
@@ -49,7 +49,7 @@ async function carregarDatas(dataParaSelecionar = null) {
             select.appendChild(option);
         });
 
-        // Selecionar a data especificada ou a mais recente por padrão
+        // Selecionar a data especificada ou a mais recente por padrﾃ｣o
         const dataAtiva = dataParaSelecionar || datas[0];
         select.value = dataAtiva;
         carregarRelatorio(dataAtiva);
@@ -89,11 +89,11 @@ async function executarSimulacao() {
         const result = await response.json();
 
         if (response.ok) {
-            showToast('Simulação agendada! O processamento está sendo executado via RabbitMQ.', 'success');
+            showToast('Simulaﾃｧﾃ｣o agendada! O processamento estﾃ｡ sendo executado via RabbitMQ.', 'success');
             
-            // Aguardar 2 segundos para o worker rodar e então recarregar as datas
+            // Aguardar 2 segundos para o worker rodar e entﾃ｣o recarregar as datas
             setTimeout(async () => {
-                // Obter a lista mais recente e selecionar a última data inserida
+                // Obter a lista mais recente e selecionar a ﾃｺltima data inserida
                 await carregarDatas();
                 btn.disabled = false;
                 btn.innerHTML = originalText;
@@ -104,28 +104,28 @@ async function executarSimulacao() {
 
     } catch (error) {
         console.error(error);
-        showToast(`Erro ao iniciar simulação: ${error.message}`, 'danger');
+        showToast(`Erro ao iniciar simulaﾃｧﾃ｣o: ${error.message}`, 'danger');
         btn.disabled = false;
         btn.innerHTML = originalText;
     }
 }
 
-// --- ATUALIZAÇÕES DA INTERFACE ---
+// --- ATUALIZAﾃ�髭S DA INTERFACE ---
 
 function atualizarKPIs(metrics) {
-    // 1. Calcular Faturamento Total e Variação
+    // 1. Calcular Faturamento Total e Variaﾃｧﾃ｣o
     const totalRevenue = metrics.cidade.reduce((sum, item) => sum + item.Total, 0);
     const varRevenue = metrics.cidade.reduce((sum, item) => sum + item.Var_Total, 0);
     document.getElementById('kpi-total-revenue').textContent = formatarMoeda(totalRevenue);
     atualizarVariacaoElement('kpi-var-revenue', varRevenue, totalRevenue, true);
 
-    // 2. Calcular Quantidade Total e Variação
+    // 2. Calcular Quantidade Total e Variaﾃｧﾃ｣o
     const totalSales = metrics.cidade.reduce((sum, item) => sum + item.Quantity, 0);
     const varSales = metrics.cidade.reduce((sum, item) => sum + item.Var_Quantity, 0);
     document.getElementById('kpi-total-sales').textContent = totalSales.toLocaleString();
     atualizarVariacaoElement('kpi-var-sales', varSales, totalSales, false);
 
-    // 3. Calcular Ticket Médio e Variação
+    // 3. Calcular Ticket Mﾃｩdio e Variaﾃｧﾃ｣o
     const avgTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
     const prevSales = totalSales - varSales;
     const prevRevenue = totalRevenue - varRevenue;
@@ -135,10 +135,10 @@ function atualizarKPIs(metrics) {
     document.getElementById('kpi-avg-ticket').textContent = formatarMoeda(avgTicket);
     atualizarVariacaoElement('kpi-var-ticket', varTicket, avgTicket, true);
 
-    // 4. Calcular Satisfação (Rating) e Variação
+    // 4. Calcular Satisfaﾃｧﾃ｣o (Rating) e Variaﾃｧﾃ｣o
     const ratings = metrics.rating_produto;
-    const avgRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Média_Rating, 0) / ratings.length : 0;
-    const varRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Var_Média_Rating, 0) / ratings.length : 0;
+    const avgRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Mﾃｩdia_Rating, 0) / ratings.length : 0;
+    const varRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Var_Mﾃｩdia_Rating, 0) / ratings.length : 0;
     
     document.getElementById('kpi-avg-rating').textContent = avgRating.toFixed(1) + ' / 10';
     atualizarVariacaoElement('kpi-var-rating', varRating, avgRating, false, true);
@@ -229,7 +229,7 @@ function atualizarMetricasNovas(novas) {
 function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRating = false) {
     const el = document.getElementById(elementId);
     
-    // Se o valor de variação for zero ou nulo (ex: primeiro dia de dados)
+    // Se o valor de variaﾃｧﾃ｣o for zero ou nulo (ex: primeiro dia de dados)
     if (valorVar === null || valorVar === undefined || isNaN(valorVar) || (valorAtual - valorVar) <= 0) {
         el.className = 'kpi-variation variation-neutral';
         el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
@@ -248,13 +248,31 @@ function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRa
         text = `<i class="fa-solid fa-caret-up"></i> ${sign}${percentual.toFixed(1)}%`;
     } else if (valorVar < 0) {
         el.className = 'kpi-variation variation-down';
-        text = `<i class="fa-solid fa-caret-down"></i> ${percentual.toFixed(1)}%`; // Sinal de menos já vem no float
+        text = `<i class="fa-solid fa-caret-down"></i> ${percentual.toFixed(1)}%`; // Sinal de menos jﾃ｡ vem no float
     } else {
         el.className = 'kpi-variation variation-neutral';
         text = '<i class="fa-solid fa-minus"></i> 0.0%';
     }
     
     el.innerHTML = text;
+}
+
+function gerarHelperHtmlParaAlerta(alertaTexto) {
+    const alertaDef = alertasGlossario.find(a => alertaTexto.includes(a.key));
+    if (!alertaDef) return '';
+    return `
+        <div class="helper-wrapper alert-helper tip-left">
+            <i class="helper-icon">?</i>
+            <div class="helper-tooltip">
+                <div class="helper-tooltip-label">Por que avisamos?</div>
+                <div class="helper-tooltip-text">${alertaDef.desc}</div>
+                <div class="helper-tooltip-pain">
+                    <div class="helper-tooltip-label">Dor Resolvida</div>
+                    <div class="helper-tooltip-text">${alertaDef.dor}</div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function atualizarAlertas(alertas) {
@@ -269,7 +287,7 @@ function atualizarAlertas(alertas) {
         container.innerHTML = `
             <div class="no-alerts">
                 <i class="fa-regular fa-circle-check"></i>
-                Nenhum alerta crítico para a data selecionada.
+                Nenhum alerta crﾃｭtico para a data selecionada.
             </div>
         `;
         badge.className = 'badge';
@@ -282,7 +300,7 @@ function atualizarAlertas(alertas) {
     alertas_negativos.forEach(alerta => {
         const item = document.createElement('div');
         item.className = 'alert-item negative';
-        item.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${formatarMarkdownNegrito(alerta)}</span>`;
+        item.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${formatarMarkdownNegrito(alerta)}</span> ${gerarHelperHtmlParaAlerta(alerta)}`;
         container.appendChild(item);
     });
 
@@ -290,15 +308,15 @@ function atualizarAlertas(alertas) {
     alertas_positivos.forEach(alerta => {
         const item = document.createElement('div');
         item.className = 'alert-item positive';
-        item.innerHTML = `<i class="fa-solid fa-circle-arrow-up"></i> <span>${formatarMarkdownNegrito(alerta)}</span>`;
+        item.innerHTML = `<i class="fa-solid fa-circle-arrow-up"></i> <span>${formatarMarkdownNegrito(alerta)}</span> ${gerarHelperHtmlParaAlerta(alerta)}`;
         container.appendChild(item);
     });
 }
 
-// --- RENDERIZAÇÃO DOS GRÁFICOS (CHART.JS) ---
+// --- RENDERIZAﾃグ DOS GRﾃ：ICOS (CHART.JS) ---
 
 function renderizarGraficos(metrics) {
-    // 1. Gráfico de Vendas por Cidade (Barra Dupla)
+    // 1. Grﾃ｡fico de Vendas por Cidade (Barra Dupla)
     const cidades = metrics.cidade.map(item => item.City);
     const faturamentoCidades = metrics.cidade.map(item => item.Total);
     const variacaoCidades = metrics.cidade.map(item => item.Var_Total);
@@ -315,7 +333,7 @@ function renderizarGraficos(metrics) {
                     borderRadius: 6,
                 },
                 {
-                    label: 'Variação do Dia (R$)',
+                    label: 'Variaﾃｧﾃ｣o do Dia (R$)',
                     data: variacaoCidades,
                     backgroundColor: '#ec4899',
                     borderRadius: 6,
@@ -332,8 +350,8 @@ function renderizarGraficos(metrics) {
         }
     });
 
-    // 2. Gráfico Temporal por Hora (Linha)
-    // Garantir que as horas estão ordenadas
+    // 2. Grﾃ｡fico Temporal por Hora (Linha)
+    // Garantir que as horas estﾃ｣o ordenadas
     const dadosHora = metrics.vendas_por_hora.sort((a, b) => a.Hora - b.Hora);
     const horas = dadosHora.map(item => `${item.Hora}h`);
     const faturamentoHora = dadosHora.map(item => item.Total);
@@ -392,7 +410,7 @@ function renderizarGraficos(metrics) {
         }
     });
 
-    // 4. Métodos de Pagamento (Doughnut)
+    // 4. Mﾃｩtodos de Pagamento (Doughnut)
     const pagamentos = metrics.pagamento.map(item => item.Payment);
     const faturamentoPagamento = metrics.pagamento.map(item => item.Total);
 
@@ -418,7 +436,7 @@ function renderizarGraficos(metrics) {
         }
     });
 
-    // 5. Perfil de Clientes (Pizza Gênero)
+    // 5. Perfil de Clientes (Pizza Gﾃｪnero)
     const totalMulheres = metrics.genero.find(item => item.Gender === 'Mulher')?.Total || 0;
     const totalHomens = metrics.genero.find(item => item.Gender === 'Homem')?.Total || 0;
 
@@ -444,7 +462,7 @@ function renderizarGraficos(metrics) {
         }
     });
 
-    // 6. Faturamento por Gênero (Barra Horizontal)
+    // 6. Faturamento por Gﾃｪnero (Barra Horizontal)
     if (metrics.novas) {
         const generoLabels = Object.keys(metrics.novas.volume_por_genero || {});
         const generoVals = Object.values(metrics.novas.volume_por_genero || {});
@@ -482,7 +500,7 @@ function renderizarGraficos(metrics) {
             data: {
                 labels: upvLabels,
                 datasets: [{
-                    label: 'Preço Médio / Unidade (R$)',
+                    label: 'Preﾃｧo Mﾃｩdio / Unidade (R$)',
                     data: upvVals,
                     backgroundColor: '#f59e0b',
                     borderRadius: 6
@@ -504,7 +522,7 @@ function renderizarGraficos(metrics) {
         criarGrafico('chart-nocturnal', {
             type: 'doughnut',
             data: {
-                labels: ['Diurno (até 17h)', 'Noturno (18h+)'],
+                labels: ['Diurno (atﾃｩ 17h)', 'Noturno (18h+)'],
                 datasets: [{
                     data: [pctDiurno, pctNoturno],
                     backgroundColor: ['#f59e0b', '#6366f1'],
@@ -523,7 +541,7 @@ function renderizarGraficos(metrics) {
 }
 
 function criarGrafico(canvasId, config) {
-    // Destruir instância antiga se já existir
+    // Destruir instﾃ｢ncia antiga se jﾃ｡ existir
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
     }
@@ -695,3 +713,99 @@ function inicializarHelpers() {
         }
     });
 }
+
+// --- GLOSSARIO DE ALERTAS ---
+const alertasGlossario = [
+    {
+        key: 'ultrapassaram R$30.000',
+        title: 'Meta de Vendas por Cidade',
+        desc: 'Sinaliza quando uma cidade ultrapassa a marca de R$ 30.000,00 em um unico dia.',
+        dor: 'Permite bonificar equipes locais ou aumentar investimento em marketing na regiao.'
+    },
+    {
+        key: 'queda superior a 30% nas vendas',
+        title: 'Queda Brusca de Vendas (Cidade)',
+        desc: 'Alerta disparado se o faturamento de uma cidade cai mais de 30% em relacao ao dia anterior.',
+        dor: 'Possibilita acao rapida para investigar problemas na loja fisica ou instabilidades regionais.'
+    },
+    {
+        key: 'Pix apresentou um aumento',
+        title: 'Aumento de Pagamentos via Pix',
+        desc: 'Notifica se o uso do Pix subiu mais de 30% frente ao dia anterior.',
+        dor: 'Indica sucesso em campanhas de reducao de taxas de maquininha, melhorando a margem de lucro.'
+    },
+    {
+        key: 'mais de 400 vendas',
+        title: 'Alta Demanda de Produto',
+        desc: 'Alerta para categorias que ultrapassaram a marca critica de 400 unidades vendidas no dia.',
+        dor: 'Previne ruptura de estoque (falta do produto), permitindo reposicao agil.'
+    },
+    {
+        key: 'concentra鈬o excessiva em membros',
+        title: 'Baixa Aquisicao de Novos Clientes',
+        desc: 'Avisa quando clientes normais representam menos de 20% das vendas totais.',
+        dor: 'Sinaliza que a loja parou de atrair publico novo, dependendo apenas da base fiel.'
+    },
+    {
+        key: 'n咩el de insatisfa鈬o cr咜ico',
+        title: 'Alerta Critico de Satisfacao',
+        desc: 'Dispara quando mais de 5% das vendas recebem uma avaliacao abaixo de 5 (Numa escala de 1 a 10).',
+        dor: 'Permite identificar dias de mal atendimento ou produtos defeituosos rapidamente.'
+    },
+    {
+        key: 'risco de depend麩cia geogr畴ica',
+        title: 'Risco de Concentracao Geografica',
+        desc: 'Alerta quando uma unica cidade representa mais de 60% de todo o faturamento da empresa.',
+        dor: 'Sinaliza vulnerabilidade: um feriado ou problema nessa cidade compromete o caixa total.'
+    },
+    {
+        key: 'Pre輟 M馘io por Unidade (UPV) caiu',
+        title: 'Queda de Preco Medio (UPV)',
+        desc: 'Avisa quando o cliente passa a levar produtos mais baratos que a media historica.',
+        dor: 'Mostra perda de poder aquisitivo ou ineficacia nas campanhas de up-sell dos vendedores.'
+    },
+    {
+        key: 'queda na ades縊 digital',
+        title: 'Queda de Pagamentos Digitais',
+        desc: 'Alerta quando menos de 70% dos pagamentos sao feitos via meios digitais.',
+        dor: 'Mais dinheiro vivo circulando significa maior risco de seguranca e custo com transporte de valores.'
+    },
+    {
+        key: 'n縊 registraram nenhuma venda no dia',
+        title: 'Linha de Produto Zerada',
+        desc: 'Sinaliza categorias que nao venderam absolutamente nada durante todo o expediente.',
+        dor: 'Giro de estoque zero significa dinheiro parado. Exige promocao ou reposicionamento na vitrine.'
+    },
+    {
+        key: 'Produto destaque do dia',
+        title: 'Campeao de Vendas',
+        desc: 'Aponta o item que mais gerou dinheiro no dia atual.',
+        dor: 'Informa o gestor sobre qual produto esta "pagando as contas" no momento.'
+    }
+];
+
+function toggleGlossary() {
+    const modal = document.getElementById('glossary-modal');
+    if (modal.classList.contains('show')) {
+        modal.classList.remove('show');
+    } else {
+        renderGlossary();
+        modal.classList.add('show');
+    }
+}
+
+function renderGlossary() {
+    const body = document.getElementById('glossary-body');
+    body.innerHTML = alertasGlossario.map(alerta => `
+        <div class="glossary-item">
+            <div class="glossary-item-title">
+                <i class="fa-solid fa-bell"></i> ${alerta.title}
+            </div>
+            <div class="glossary-item-desc">${alerta.desc}</div>
+            <div class="glossary-item-pain">
+                <strong>Dor Solucionada:</strong> ${alerta.dor}
+            </div>
+        </div>
+    `).join('');
+}
+
