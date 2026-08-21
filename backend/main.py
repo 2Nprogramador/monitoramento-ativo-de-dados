@@ -12,14 +12,36 @@ from .database import engine, get_db
 
 app = FastAPI(title="Monitoramento Ativo de Dados API", version="2.0.0")
 
-# Permitir CORS caso o frontend seja hospedado em outra porta durante desenvolvimento
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import status
+import secrets
+
+# Configurar middleware de CORS restrito para os domínios reais da aplicação
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://projetodados.2nprogramacao.com.br",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Fábrica de autenticação básica para proteção dos dados comerciais
+security = HTTPBasic()
+
+def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, os.getenv("APP_USER", "admin"))
+    correct_password = secrets.compare_digest(credentials.password, os.getenv("APP_PASSWORD", "m2n_seguro_app_pass"))
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciais incorretas",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 # --- FUNÇÕES AUXILIARES DE LÓGICA DE DADOS ---
 
@@ -244,7 +266,7 @@ def calcular_alertas_dia(relatorio):
 # --- ROTAS DA API ---
 
 @app.get("/api/dates")
-def get_available_dates():
+def get_available_dates(username: str = Depends(authenticate)):
     """
     Retorna a lista de datas com vendas registradas no banco, ordenadas do mais recente ao mais antigo.
     """
@@ -260,7 +282,7 @@ def get_available_dates():
         raise HTTPException(status_code=500, detail=f"Erro ao buscar datas: {str(e)}")
 
 @app.get("/api/report")
-def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-DD")):
+def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-DD"), username: str = Depends(authenticate)):
     """
     Retorna o relatório analítico completo de um dia selecionado (dados + variações + alertas).
     """
@@ -322,7 +344,7 @@ def format_dataframe_for_json(df_main, df_var):
 # --- ROTA DE SIMULAÇÃO (PUBLICAÇÃO EM FILA RABBITMQ) ---
 
 @app.post("/api/simulate")
-def trigger_sales_simulation():
+def trigger_sales_simulation(username: str = Depends(authenticate)):
     """
     Coloca uma mensagem na fila do RabbitMQ para gerar vendas fictícias para o próximo dia em segundo plano.
     Garante tempo de resposta imediato sem prender o servidor web.
@@ -364,7 +386,8 @@ def trigger_sales_simulation():
 def n8n_compatibility_endpoint(
     request_type: str = Query(..., description="get_report ou get_alerts"),
     target_date: str = Query(..., description="Data YYYY-MM-DD"),
-    report_name: str = Query(None, description="Nome da tabela/relatório caso get_report")
+    report_name: str = Query(None, description="Nome da tabela/relatório caso get_report"),
+    username: str = Depends(authenticate)
 ):
     """
     Endpoint de compatibilidade exata com as requisições HTTP enviadas pela ferramenta n8n do proposta-sheets original.
