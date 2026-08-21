@@ -1,7 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from .config import DATABASE_URL
+try:
+    from .config import DATABASE_URL
+except ImportError:
+    from config import DATABASE_URL
 
 # Configurações de conexão estáveis e seguras:
 # - pool_size: Mantém um pool de 10 conexões abertas
