@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Ativo de Dados | 2N Programação</title>
+    
+    <!-- Fonte Google Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Folha de estilo personalizada -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Fundo dinâmico com gradientes -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar / Topbar Superior -->
+        <header class="dashboard-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-chart-line logo-icon"></i>
+                <div class="logo-text">
+                    <h1>2N<span>Programação</span></h1>
+                    <p>Monitoramento Ativo de Dados</p>
+                </div>
+            </div>
+            
+            <div class="controls-area">
+                <div class="select-wrapper">
+                    <i class="fa-regular fa-calendar-days select-icon"></i>
+                    <select id="date-select" aria-label="Selecione a data para visualização">
+                        <option value="">Carregando datas...</option>
+                    </select>
+                </div>
+                
+                <button id="simulate-btn" class="btn btn-primary">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Simular Próximo Dia</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Central de Alertas -->
+        <section class="alerts-section">
+            <div class="section-title-wrapper" id="alerts-toggle">
+                <div class="section-title">
+                    <i class="fa-solid fa-bell 🚨-bell"></i>
+                    <h2>Alertas Importantes do Dia</h2>
+                </div>
+                <span id="alerts-count-badge" class="badge">0 alertas</span>
+            </div>
+            <div id="alerts-container" class="alerts-grid">
+                <div class="no-alerts">
+                    <i class="fa-regular fa-circle-check"></i>
+                    Nenhum alerta crítico para a data selecionada.
+                </div>
+            </div>
+        </section>
+
+        <!-- Grade de KPIs principais -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper kpi-revenue">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Faturamento Total</h3>
+                    <p id="kpi-total-revenue">R$ 0,00</p>
+                    <span id="kpi-var-revenue" class="kpi-variation">--</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper kpi-sales">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Quantidade Vendida</h3>
+                    <p id="kpi-total-sales">0</p>
+                    <span id="kpi-var-sales" class="kpi-variation">--</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper kpi-ticket">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Ticket Médio</h3>
+                    <p id="kpi-avg-ticket">R$ 0,00</p>
+                    <span id="kpi-var-ticket" class="kpi-variation">--</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon-wrapper kpi-satisfaction">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <div class="kpi-info">
+                    <h3>Satisfação Geral (Rating)</h3>
+                    <p id="kpi-avg-rating">0.0 / 10</p>
+                    <span id="kpi-var-rating" class="kpi-variation">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grade dos Gráficos -->
+        <main class="charts-grid">
+            <!-- Gráfico 1: Vendas por Cidade -->
+            <div class="chart-card card-double-width">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-city"></i> Vendas Totais por Cidade</h3>
+                    <p>Comparativo de faturamento real vs. variação com o dia anterior</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-city"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Vendas por Hora -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-regular fa-clock"></i> Faturamento por Hora</h3>
+                    <p>Distribuição temporal das transações no dia</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-hourly"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 3: Distribuição por Linha de Produto -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-boxes-stacked"></i> Categorias de Produtos</h3>
+                    <p>Faturamento e quantidade por linha de produto</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-product-line"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 4: Métodos de Pagamento -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-credit-card"></i> Métodos de Pagamento</h3>
+                    <p>Participação de cada tipo de transação</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-payment"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 5: Perfil Demográfico -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-users"></i> Perfil do Cliente</h3>
+                    <p>Distribuição por tipo de associação e gênero</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-customer"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification para Simulação e Alertas -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="fa-solid fa-info-circle toast-icon"></i>
+            <span id="toast-message">Mensagem do sistema</span>
+        </div>
+    </div>
+
+    <!-- Chart.js de alta performance -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Script lógico principal -->
+    <script src="app.js"></script>
+</body>
+</html>

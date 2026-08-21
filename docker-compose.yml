@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: proposta-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"     # Porta padrão do protocolo AMQP
+      - "15672:15672"   # Porta do painel web de gerenciamento (Management UI)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  web:
+    build: .
+    container_name: proposta-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:sua_senha_segura@ip_da_vps:5432/vendas?sslmode=require
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+
+  worker:
+    build: .
+    container_name: proposta-worker
+    restart: unless-stopped
+    command: python backend/worker.py
+    environment:
+      - DATABASE_URL=postgresql://postgres:sua_senha_segura@ip_da_vps:5432/vendas?sslmode=require
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+
+volumes:
+  rabbitmq_data:
