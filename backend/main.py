@@ -188,8 +188,8 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
          vendas_hora_atual = atual_h
          var_vendas_hora = atual_h - ant_h
 
-    rating_produto, var_rating_produto = calcular_media_e_variacao(df_dia, df_dia_anterior, "Product line", "Rating", "Média Rating")
-    rating_pagamento, var_rating_pagamento = calcular_media_e_variacao(df_dia, df_dia_anterior, "Payment", "Rating", "Média Rating")
+    rating_produto, var_rating_produto = calcular_media_e_variacao(df_dia, df_dia_anterior, "Product line", "Rating", "Média_Rating")
+    rating_pagamento, var_rating_pagamento = calcular_media_e_variacao(df_dia, df_dia_anterior, "Payment", "Rating", "Média_Rating")
 
     return {
         "total_por_cidade": total_por_cidade, "variacao_cidade": variacao_cidade,
