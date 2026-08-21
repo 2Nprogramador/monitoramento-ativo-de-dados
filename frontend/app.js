@@ -147,27 +147,10 @@ function atualizarKPIs(metrics) {
     try {
         const novas = metrics.novas;
         if (novas) {
-            // Vendas Noturnas
-            const notEl = document.getElementById('kpi-vendas-noturnas');
-            if (notEl) notEl.textContent = (novas.eficiencia_noturna_pct ? novas.eficiencia_noturna_pct.atual : 0).toFixed(1) + '%';
-            const notVarEl = document.getElementById('kpi-var-vendas-noturnas');
-            if (notVarEl) {
-                const notVar = novas.eficiencia_noturna_pct ? novas.eficiencia_noturna_pct.variacao : null;
-                if (notVar === null || notVar === undefined) {
-                    notVarEl.className = 'kpi-variation variation-neutral';
-                    notVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-                } else {
-                    if (notVar > 0) {
-                        notVarEl.className = 'kpi-variation variation-up';
-                        notVarEl.innerHTML = '<i class="fa-solid fa-caret-up"></i> +' + notVar.toFixed(1) + '%';
-                    } else if (notVar < 0) {
-                        notVarEl.className = 'kpi-variation variation-down';
-                        notVarEl.innerHTML = '<i class="fa-solid fa-caret-down"></i> ' + notVar.toFixed(1) + '%';
-                    } else {
-                        notVarEl.className = 'kpi-variation variation-neutral';
-                        notVarEl.innerHTML = '<i class="fa-solid fa-minus"></i> 0.0%';
-                    }
-                }
+            // Clientes Fidelizados
+            const fidEl = document.getElementById('kpi-fidelizados');
+            if (fidEl && novas.taxa_tipo_cliente) {
+                fidEl.textContent = (novas.taxa_tipo_cliente.Member || 0).toFixed(1) + '%';
             }
 
             // Hora de Pico
@@ -204,9 +187,15 @@ function atualizarKPIs(metrics) {
                 concSubEl.textContent = concCidade + (concPct > 70 ? ' - Risco!' : ' - Estavel');
             }
 
-            // Eficiencia Noturna
+            // Eficiencia Noturna (KPI 10)
             const noturnoEl = document.getElementById('kpi-noturno');
-            if (noturnoEl) noturnoEl.textContent = (novas.eficiencia_noturna_pct || 0) + '%';
+            if (noturnoEl) {
+                // Suporta o formato antigo (numero) e o novo (objeto com atual e variacao)
+                const atual = (typeof novas.eficiencia_noturna_pct === 'object' && novas.eficiencia_noturna_pct !== null) 
+                    ? novas.eficiencia_noturna_pct.atual 
+                    : (novas.eficiencia_noturna_pct || 0);
+                noturnoEl.textContent = atual.toFixed(1) + '%';
+            }
             const noturnoSubEl = document.getElementById('kpi-noturno-sub');
             if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diario';
         }
@@ -751,9 +740,9 @@ const helperMappings = {
         desc: 'Media das notas (1 a 10) dadas pelos clientes as compras do dia.',
         dor: 'Falta de termometro sobre a qualidade do servico ou produto.'
     },
-    'vendasnoturnas': {
-        desc: 'Percentual do faturamento total que ocorreu após as 18:00.',
-        dor: 'Permite avaliar a necessidade de manter o atendimento noturno.'
+    'clientesfidelizados': {
+        desc: 'Percentual de vendas realizadas por clientes cadastrados no programa de fidelidade.',
+        dor: 'Permite medir o sucesso na retencao de clientes recorrentes.'
     },
     'horadepico': {
         desc: 'A hora do dia (0-23h) com o maior volume financeiro de vendas.',
