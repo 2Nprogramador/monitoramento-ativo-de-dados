@@ -124,41 +124,57 @@ def disparar_alertas_webhook(dia_date):
         alertas = calcular_alertas_dia(relatorio)
         total_alertas = alertas.get("total_alertas", 0)
 
-        # Formatação amigável para o WhatsApp (substituindo ** por * simples)
+        # Formatação amigável para o WhatsApp (substituindo ** por * simples e removendo emotes)
         def formatar_para_whatsapp(texto):
-            return texto.replace("**", "*")
+            import re
+            try:
+                emoji_pattern = re.compile(
+                    "["
+                    "\U0001f600-\U0001f64f|"  # emoticons
+                    "\U0001f300-\U0001f5ff|"  # symbols & pictographs
+                    "\U0001f680-\U0001f6ff|"  # transport & map symbols
+                    "\U0001f1e0-\U0001f1ff|"  # flags (iOS)
+                    "\U00002700-\U000027bf|"  # dingbats
+                    "\U00002600-\U000026ff|"  # miscellaneous symbols
+                    "\U0001f900-\U0001f9ff|"  # supplemental symbols and pictographs
+                    "\U0001fa00-\U0001faff"   # symbols and pictographs extended
+                    "]+", flags=re.UNICODE
+                )
+                texto = emoji_pattern.sub(r"", texto).strip()
+            except Exception:
+                for em in ["🏆", "⭐", "📊", "📅", "🟢", "🔴", "✅", "⚠️", "💡", "🚨"]:
+                    texto = texto.replace(em, "")
+            
+            return texto.replace("**", "*").strip()
 
         dia_formatado = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
         
-        mensagem = f"📊 *DASHBOARD DE ALERTAS DIÁRIOS*\n"
-        mensagem += f"📅 *Data:* {dia_formatado}\n\n"
+        mensagem = f"*RELATÓRIO DE ALERTAS DIÁRIOS*\n"
+        mensagem += f"*Data:* {dia_formatado}\n\n"
         mensagem += "────────────────────────\n\n"
 
         positivos = alertas.get("alertas_positivos", [])
         negativos = alertas.get("alertas_negativos", [])
 
         if positivos:
-            mensagem += "🟢 *HIGHLIGHTS POSITIVOS*\n\n"
+            mensagem += "*HIGHLIGHTS POSITIVOS*\n\n"
             for p in positivos:
                 p_fmt = formatar_para_whatsapp(p)
-                if p_fmt.startswith("🏆") or p_fmt.startswith("⭐"):
-                    mensagem += f"{p_fmt}\n\n"
-                else:
-                    mensagem += f"✅ {p_fmt}\n\n"
+                mensagem += f"- {p_fmt}\n\n"
             mensagem += "────────────────────────\n\n"
 
         if negativos:
-            mensagem += "🔴 *PONTOS DE ATENÇÃO*\n\n"
+            mensagem += "*PONTOS DE ATENÇÃO*\n\n"
             for n in negativos:
                 n_fmt = formatar_para_whatsapp(n)
-                mensagem += f"⚠️ {n_fmt}\n\n"
+                mensagem += f"- {n_fmt}\n\n"
             mensagem += "────────────────────────\n\n"
 
         if not positivos and not negativos:
             mensagem += "Nenhum alerta relevante foi gerado para esta data.\n\n"
             mensagem += "────────────────────────\n\n"
 
-        mensagem += "💡 _Acesse o painel para ver o relatório completo e gráficos._"
+        mensagem += "_Acesse o painel para ver o relatório completo e gráficos._"
 
         # Montar o payload
         payload = {
