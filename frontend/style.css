@@ -301,7 +301,7 @@ body {
 
 @media (min-width: 1200px) {
     .top-dashboard-section {
-        grid-template-columns: 2fr 3fr; /* 2/5 para alertas, 3/5 para KPIs */
+        grid-template-columns: 3fr 7fr; /* 30% para alertas, 70% para KPIs */
     }
 }
 
@@ -797,9 +797,4 @@ body {
 }
 .kpi-info {
     min-width: 0;
-}
-.kpi-info h3, .kpi-info p, .kpi-info span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
