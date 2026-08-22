@@ -325,9 +325,21 @@ body {
 .kpi-slide {
     flex: 0 0 100%;
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 cartões por linha (total 6 por slide) */
+    grid-template-columns: 1fr; /* Mobile-first: 1 cartao por linha */
     gap: 1.25rem;
     min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .kpi-slide {
+        grid-template-columns: repeat(2, 1fr); /* Tablets: 2 por linha */
+    }
+}
+
+@media (min-width: 1200px) {
+    .kpi-slide {
+        grid-template-columns: repeat(3, 1fr); /* Desktop/Notebook: 3 por linha */
+    }
 }
 
 .kpi-nav-btn {
