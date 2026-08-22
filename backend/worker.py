@@ -124,27 +124,41 @@ def disparar_alertas_webhook(dia_date):
         alertas = calcular_alertas_dia(relatorio)
         total_alertas = alertas.get("total_alertas", 0)
 
-        # Formatação amigável para o WhatsApp
+        # Formatação amigável para o WhatsApp (substituindo ** por * simples)
+        def formatar_para_whatsapp(texto):
+            return texto.replace("**", "*")
+
         dia_formatado = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
-        mensagem = f"📊 *Relatório de Alertas - Dia {dia_formatado}* 📊\n\n"
+        
+        mensagem = f"📊 *DASHBOARD DE ALERTAS DIÁRIOS*\n"
+        mensagem += f"📅 *Data:* {dia_formatado}\n\n"
+        mensagem += "────────────────────────\n\n"
 
         positivos = alertas.get("alertas_positivos", [])
         negativos = alertas.get("alertas_negativos", [])
 
         if positivos:
-            mensagem += "🟢 *Alertas Positivos:*\n"
+            mensagem += "🟢 *HIGHLIGHTS POSITIVOS*\n\n"
             for p in positivos:
-                mensagem += f"- {p}\n"
-            mensagem += "\n"
+                p_fmt = formatar_para_whatsapp(p)
+                if p_fmt.startswith("🏆") or p_fmt.startswith("⭐"):
+                    mensagem += f"{p_fmt}\n\n"
+                else:
+                    mensagem += f"✅ {p_fmt}\n\n"
+            mensagem += "────────────────────────\n\n"
 
         if negativos:
-            mensagem += "🔴 *Alertas Negativos:*\n"
+            mensagem += "🔴 *PONTOS DE ATENÇÃO*\n\n"
             for n in negativos:
-                mensagem += f"- {n}\n"
-            mensagem += "\n"
+                n_fmt = formatar_para_whatsapp(n)
+                mensagem += f"⚠️ {n_fmt}\n\n"
+            mensagem += "────────────────────────\n\n"
 
         if not positivos and not negativos:
-            mensagem += "Nenhum alerta relevante foi gerado para esta data."
+            mensagem += "Nenhum alerta relevante foi gerado para esta data.\n\n"
+            mensagem += "────────────────────────\n\n"
+
+        mensagem += "💡 _Acesse o painel para ver o relatório completo e gráficos._"
 
         # Montar o payload
         payload = {
