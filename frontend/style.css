@@ -312,6 +312,7 @@ body {
     gap: 1rem;
     position: relative;
     width: 100%;
+    min-width: 0; /* Impede que o flexbox force a coluna do grid a vazar */
     overflow: hidden;
 }
 
@@ -375,6 +376,7 @@ body {
     align-items: center;
     gap: 1.25rem;
     transition: var(--transition-smooth);
+    min-width: 0;
 }
 
 .kpi-card:hover {
@@ -787,4 +789,12 @@ body {
 }
 .btn-secondary:hover {
     border-color: var(--color-accent);
+}
+.kpi-info {
+    min-width: 0;
+}
+.kpi-info h3, .kpi-info p, .kpi-info span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
