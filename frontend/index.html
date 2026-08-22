@@ -75,8 +75,9 @@
             <button class="kpi-nav-btn kpi-prev" onclick="moveKpiCarousel(-1)" aria-label="KPIs anteriores">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <div class="kpi-carousel-track" id="kpi-track">
-                <div class="kpi-slide">
+            <div class="kpi-carousel-viewport">
+                <div class="kpi-carousel-track" id="kpi-track">
+                    <div class="kpi-slide">
             <div class="kpi-card">
                 <div class="kpi-icon-wrapper kpi-revenue">
                     <i class="fa-solid fa-wallet"></i>
@@ -224,6 +225,7 @@
             </div> <!-- End Slide 2 -->
             
             </div> <!-- End kpi-carousel-track -->
+            </div> <!-- End kpi-carousel-viewport -->
             <button class="kpi-nav-btn kpi-next" onclick="moveKpiCarousel(1)" aria-label="Próximos KPIs">
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
@@ -347,6 +349,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.26"></script>
+    <script src="app.js?v=1.0.27"></script>
 </body>
 </html>

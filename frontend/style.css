@@ -313,14 +313,19 @@ body {
     position: relative;
     width: 100%;
     min-width: 0; /* Impede que o flexbox force a coluna do grid a vazar */
+}
+
+.kpi-carousel-viewport {
     overflow: hidden;
+    flex: 1;
+    position: relative;
+    width: 100%;
 }
 
 .kpi-carousel-track {
     display: flex;
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     width: 100%;
-    flex: 1;
 }
 
 .kpi-slide {
