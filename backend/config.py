@@ -47,3 +47,7 @@ if not RABBITMQ_URL:
 # --- 3. DADOS DE LOGIN DA APLICAÇÃO ---
 APP_USER = get_secret("APP_USER", "admin")
 APP_PASSWORD = get_secret("APP_PASSWORD", "m2n_seguro_app_pass")
+
+# --- 4. CONFIGURAÇÃO DO WEBHOOK N8N ---
+N8N_WEBHOOK_URL = get_secret("N8N_WEBHOOK_URL", "")
+

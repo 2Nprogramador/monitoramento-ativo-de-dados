@@ -8,9 +8,18 @@ import pandas as pd
 import pika
 from sqlalchemy import text
 
+import urllib.request
+import urllib.error
+
 # Importar o engine de banco de dados e URL do RabbitMQ
 from database import engine
-from config import RABBITMQ_URL
+from config import RABBITMQ_URL, N8N_WEBHOOK_URL
+
+try:
+    from report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+except ImportError:
+    from .report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+
 
 def obter_ultima_data_db():
     """
@@ -92,6 +101,76 @@ def salvar_dados_postgres(df_novos_dados):
         print(f"[Worker] Erro ao gravar dados no PostgreSQL: {e}")
         return False
 
+def disparar_alertas_webhook(dia_date):
+    """
+    Carrega dados do banco, gera alertas para dia_date e dispara para o Webhook do n8n.
+    """
+    if not N8N_WEBHOOK_URL:
+        print("[Worker] N8N_WEBHOOK_URL não configurado. Pulando disparo de alertas.")
+        return
+
+    try:
+        print(f"[Worker] Calculando alertas para o dia {dia_date}...")
+        df = fetch_data_from_db()
+        if df.empty:
+            print("[Worker] Nenhum dado retornado do banco para cálculo de alertas.")
+            return
+
+        relatorio = relatorio_por_dia_com_variacoes(dia_date, df)
+        if not relatorio:
+            print(f"[Worker] Relatório vazio para o dia {dia_date}.")
+            return
+
+        alertas = calcular_alertas_dia(relatorio)
+        total_alertas = alertas.get("total_alertas", 0)
+
+        # Formatação amigável para o WhatsApp
+        dia_formatado = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
+        mensagem = f"📊 *Relatório de Alertas - Dia {dia_formatado}* 📊\n\n"
+
+        positivos = alertas.get("alertas_positivos", [])
+        negativos = alertas.get("alertas_negativos", [])
+
+        if positivos:
+            mensagem += "🟢 *Alertas Positivos:*\n"
+            for p in positivos:
+                mensagem += f"- {p}\n"
+            mensagem += "\n"
+
+        if negativos:
+            mensagem += "🔴 *Alertas Negativos:*\n"
+            for n in negativos:
+                mensagem += f"- {n}\n"
+            mensagem += "\n"
+
+        if not positivos and not negativos:
+            mensagem += "Nenhum alerta relevante foi gerado para esta data."
+
+        # Montar o payload
+        payload = {
+            "date": str(dia_date),
+            "total_alertas": total_alertas,
+            "alertas": alertas,
+            "message": mensagem
+        }
+
+        data_bytes = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            N8N_WEBHOOK_URL,
+            data=data_bytes,
+            headers={"Content-Type": "application/json"}
+        )
+
+        print(f"[Worker] Enviando {total_alertas} alerta(s) para o n8n: {N8N_WEBHOOK_URL}")
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_body = response.read().decode("utf-8")
+            print(f"[Worker] Webhook n8n respondido com sucesso (Status {response.status}): {res_body}")
+
+    except urllib.error.URLError as ue:
+        print(f"[Worker] Falha ao conectar ao Webhook do n8n: {ue}")
+    except Exception as e:
+        print(f"[Worker] Erro ao processar ou disparar alertas: {e}")
+
 def callback(ch, method, properties, body):
     """
     Função de processamento chamada sempre que uma nova mensagem chega na fila.
@@ -106,6 +185,16 @@ def callback(ch, method, properties, body):
             sucesso = salvar_dados_postgres(df_simulado)
             if sucesso:
                 print(f"[Worker] Tarefa de simulação executada com sucesso!")
+                try:
+                    if not df_simulado.empty:
+                        dia_gerado = df_simulado["data"].iloc[0]
+                        if hasattr(dia_gerado, "date"):
+                            dia_gerado = dia_gerado.date()
+                        elif isinstance(dia_gerado, str):
+                            dia_gerado = datetime.datetime.strptime(dia_gerado[:10], "%Y-%m-%d").date()
+                        disparar_alertas_webhook(dia_gerado)
+                except Exception as ex:
+                    print(f"[Worker] Erro ao disparar alertas pós-simulação: {ex}")
             else:
                 print(f"[Worker] Falha ao processar simulação.")
         else:
