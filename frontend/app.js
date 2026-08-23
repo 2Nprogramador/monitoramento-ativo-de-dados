@@ -169,6 +169,12 @@ function atualizarKPIs(metrics) {
             const mixPct = novas.mix_digital_pct !== undefined ? novas.mix_digital_pct : 0;
             const mixEl = document.getElementById('kpi-mix-digital');
             if (mixEl) mixEl.textContent = mixPct + '%';
+            
+            const mixVarEl = document.getElementById('kpi-var-mix-digital');
+            if (mixVarEl && novas.mix_digital) {
+                atualizarVariacaoElement('kpi-var-mix-digital', novas.mix_digital.variacao, novas.mix_digital.atual, false);
+            }
+            
             const mixSubEl = document.getElementById('kpi-mix-digital-sub');
             if (mixSubEl) {
                 mixSubEl.className = mixPct < 60 ? 'kpi-variation variation-down' : 'kpi-variation variation-up';

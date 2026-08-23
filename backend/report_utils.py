@@ -202,6 +202,13 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     pagamentos_digitais = ["Pix", "Cartao de Credito", "Debito", "Credit card", "Ewallet"]
     total_digital = df_dia[df_dia["Payment"].isin(pagamentos_digitais)]["Total"].sum()
     mix_digital_pct = round((total_digital / total_geral_dia * 100), 1) if total_geral_dia > 0 else 0.0
+    
+    # Variação das vendas digitais em relação ao dia anterior
+    if not df_dia_anterior.empty:
+        total_digital_anterior = df_dia_anterior[df_dia_anterior["Payment"].isin(pagamentos_digitais)]["Total"].sum()
+        mix_digital_variacao = round(float(total_digital - total_digital_anterior), 2)
+    else:
+        mix_digital_variacao = 0.0
 
     # M8. Volume de vendas por gênero
     vol_genero = df_dia.groupby("Gender")["Total"].sum().round(2).to_dict()
@@ -250,6 +257,10 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "concentracao_geografica": {"cidade": cidade_top, "percentual": conc_geo_pct},
         "upv": {"atual": upv_atual, "variacao": upv_variacao},
         "mix_digital_pct": mix_digital_pct,
+        "mix_digital": {
+            "atual": float(total_digital),
+            "variacao": mix_digital_variacao
+        },
         "volume_por_genero": vol_genero,
         "linhas_sem_venda": linhas_sem_venda,
         "eficiencia_noturna_pct": {"atual": efic_noturna_pct, "variacao": efic_variacao},
