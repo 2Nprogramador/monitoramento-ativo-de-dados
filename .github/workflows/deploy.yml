@@ -27,10 +27,8 @@ jobs:
         run: gitleaks detect --verbose --redact
 
       - name: Run TruffleHog Scan
-        uses: trufflesecurity/trufflehog-actions-scan@v2
-        with:
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+        run: |
+          docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --only-verified
 
   build-and-push:
     needs: security-scan
