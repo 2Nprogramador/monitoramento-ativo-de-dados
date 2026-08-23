@@ -238,11 +238,25 @@ function atualizarKPIs(metrics) {
                     row.style.alignItems = 'center';
                     row.style.gap = '0.5rem';
                     
-                    const labelSpan = document.createElement('span');
-                    labelSpan.style.fontSize = '0.8rem';
-                    labelSpan.style.fontWeight = '500';
-                    labelSpan.style.color = 'var(--text-secondary)';
-                    labelSpan.textContent = `${c.City} (${pctHoje.toFixed(1)}%)`;
+                    // Container para o nome da cidade e porcentagem (coluna esquerda)
+                    const cityInfoDiv = document.createElement('div');
+                    cityInfoDiv.style.display = 'flex';
+                    cityInfoDiv.style.flexDirection = 'column';
+                    cityInfoDiv.style.alignItems = 'flex-start';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.style.fontSize = '0.8rem';
+                    nameSpan.style.fontWeight = '500';
+                    nameSpan.style.color = 'var(--text-secondary)';
+                    nameSpan.textContent = c.City;
+                    
+                    const pctSpan = document.createElement('span');
+                    pctSpan.style.fontSize = '0.75rem';
+                    pctSpan.style.color = 'var(--text-muted)';
+                    pctSpan.textContent = `(${pctHoje.toFixed(1)}%)`;
+                    
+                    cityInfoDiv.appendChild(nameSpan);
+                    cityInfoDiv.appendChild(pctSpan);
                     
                     const varSpan = document.createElement('span');
                     varSpan.className = 'kpi-variation';
@@ -258,7 +272,7 @@ function atualizarKPIs(metrics) {
                         varSpan.innerHTML = `<i class="fa-solid fa-minus"></i> 0.0%`;
                     }
                     
-                    row.appendChild(labelSpan);
+                    row.appendChild(cityInfoDiv);
                     row.appendChild(varSpan);
                     geoContainer.appendChild(row);
                 });
