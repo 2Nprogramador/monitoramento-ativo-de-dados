@@ -184,9 +184,17 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     if not total_cidade.empty and total_geral_dia > 0:
         cidade_top = total_cidade.idxmax()
         conc_geo_pct = round((total_cidade.max() / total_geral_dia * 100), 1)
+        if not df_dia_anterior.empty:
+            total_cidade_ant = df_dia_anterior.groupby("City")["Total"].sum()
+            total_geral_ant = df_dia_anterior["Total"].sum()
+            conc_geo_ant = round((total_cidade_ant.get(cidade_top, 0.0) / total_geral_ant * 100), 1) if total_geral_ant > 0 else 0.0
+            conc_geo_var = round(conc_geo_pct - conc_geo_ant, 1)
+        else:
+            conc_geo_var = 0.0
     else:
         cidade_top = "N/A"
         conc_geo_pct = 0.0
+        conc_geo_var = 0.0
 
     # M6. Preço médio por unidade (UPV = Total / Quantity)
     total_qty_dia = df_dia["Quantity"].sum()
@@ -254,7 +262,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "produto_top": {"nome": produto_top, "total": round(float(produto_top_valor), 2)},
         "hora_pico": {"hora": hora_pico, "total": round(hora_pico_valor, 2)},
         "taxa_satisfacao_critica": taxa_critica,
-        "concentracao_geografica": {"cidade": cidade_top, "percentual": conc_geo_pct},
+        "concentracao_geografica": {"cidade": cidade_top, "percentual": conc_geo_pct, "variacao": conc_geo_var},
         "upv": {"atual": upv_atual, "variacao": upv_variacao},
         "mix_digital_pct": mix_digital_pct,
         "mix_digital": {

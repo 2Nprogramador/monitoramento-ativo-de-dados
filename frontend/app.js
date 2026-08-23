@@ -215,12 +215,28 @@ function atualizarKPIs(metrics) {
             const concGeo = novas.concentracao_geografica || {};
             const concPct = concGeo.percentual || 0;
             const concCidade = concGeo.cidade || '--';
+            const concVar = concGeo.variacao !== undefined ? concGeo.variacao : 0;
+            
             const concEl = document.getElementById('kpi-conc-geo');
-            if (concEl) concEl.textContent = concPct + '%';
+            if (concEl) concEl.textContent = concPct.toFixed(1) + '%';
+            
             const concSubEl = document.getElementById('kpi-conc-geo-sub');
             if (concSubEl) {
-                concSubEl.className = concPct > 70 ? 'kpi-variation variation-down' : 'kpi-variation variation-neutral';
-                concSubEl.textContent = concCidade + (concPct > 70 ? ' - Risco!' : ' - Estavel');
+                concSubEl.textContent = 'Cidade líder: ' + concCidade;
+            }
+
+            const concVarEl = document.getElementById('kpi-var-conc-geo');
+            if (concVarEl) {
+                if (concVar > 0) {
+                    concVarEl.className = 'kpi-variation variation-up';
+                    concVarEl.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${concVar.toFixed(1)}%`;
+                } else if (concVar < 0) {
+                    concVarEl.className = 'kpi-variation variation-down';
+                    concVarEl.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${concVar.toFixed(1)}%`;
+                } else {
+                    concVarEl.className = 'kpi-variation variation-neutral';
+                    concVarEl.innerHTML = `<i class="fa-solid fa-minus"></i> 0.0%`;
+                }
             }
 
             // Eficiencia Noturna (KPI 10)
