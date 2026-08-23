@@ -165,20 +165,46 @@ function atualizarKPIs(metrics) {
             if (prodEl) prodEl.textContent = (novas.produto_top && novas.produto_top.nome) ? novas.produto_top.nome : '--';
             if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top ? novas.produto_top.total : 0);
 
-            // Mix Digital
-            const mixPct = novas.mix_digital_pct !== undefined ? novas.mix_digital_pct : 0;
-            const mixEl = document.getElementById('kpi-mix-digital');
-            if (mixEl) mixEl.textContent = mixPct + '%';
+            // Variação dos Métodos de Pagamento Digitais
+            const pagamentos = metrics.pagamento || [];
             
-            const mixVarEl = document.getElementById('kpi-var-mix-digital');
-            if (mixVarEl && novas.mix_digital) {
-                atualizarVariacaoElement('kpi-var-mix-digital', novas.mix_digital.variacao, novas.mix_digital.atual, false);
+            const findPaymentData = (names) => {
+                let total = 0;
+                let varTotal = 0;
+                let found = false;
+                pagamentos.forEach(p => {
+                    if (names.includes(p.Payment)) {
+                        total += p.Total || 0;
+                        varTotal += p.Var_Total || 0;
+                        found = true;
+                    }
+                });
+                return found ? { Total: total, Var_Total: varTotal } : null;
+            };
+
+            const pixData = findPaymentData(['Pix']);
+            const cartaoData = findPaymentData(['Cartao de Credito', 'Credit card']);
+            const debitoData = findPaymentData(['Debito', 'Ewallet']);
+
+            if (pixData) {
+                atualizarVariacaoElement('kpi-var-pix', pixData.Var_Total, pixData.Total, false);
+            } else {
+                const el = document.getElementById('kpi-var-pix');
+                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
             }
-            
-            const mixSubEl = document.getElementById('kpi-mix-digital-sub');
-            if (mixSubEl) {
-                mixSubEl.className = mixPct < 60 ? 'kpi-variation variation-down' : 'kpi-variation variation-up';
-                mixSubEl.textContent = mixPct < 60 ? 'Abaixo do ideal (60%)' : 'Pix + Cartao + Debito';
+
+            if (cartaoData) {
+                atualizarVariacaoElement('kpi-var-cartao', cartaoData.Var_Total, cartaoData.Total, false);
+            } else {
+                const el = document.getElementById('kpi-var-cartao');
+                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+            }
+
+            if (debitoData) {
+                atualizarVariacaoElement('kpi-var-debito', debitoData.Var_Total, debitoData.Total, false);
+            } else {
+                const el = document.getElementById('kpi-var-debito');
+                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
             }
 
             // Concentracao Geografica

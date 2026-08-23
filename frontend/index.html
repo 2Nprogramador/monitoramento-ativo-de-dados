@@ -169,11 +169,20 @@
                 </div>
                 <div class="kpi-info">
                     <h3>Pagamentos Digitais</h3>
-                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                        <p id="kpi-mix-digital" style="margin: 0;">0%</p>
-                        <span id="kpi-var-mix-digital" class="kpi-variation variation-neutral">--</span>
+                    <div class="digital-methods-container" style="display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.25rem; min-width: 120px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);">Pix</span>
+                            <span id="kpi-var-pix" class="kpi-variation variation-neutral">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);">Cartão</span>
+                            <span id="kpi-var-cartao" class="kpi-variation variation-neutral">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);">Débito</span>
+                            <span id="kpi-var-debito" class="kpi-variation variation-neutral">--</span>
+                        </div>
                     </div>
-                    <span id="kpi-mix-digital-sub" class="kpi-variation variation-neutral">Pix + Cartão + Débito</span>
                 </div>
             </div>
 
