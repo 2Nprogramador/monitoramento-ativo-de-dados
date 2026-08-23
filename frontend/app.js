@@ -143,6 +143,52 @@ function atualizarKPIs(metrics) {
     document.getElementById('kpi-avg-rating').textContent = avgRating.toFixed(1) + ' / 10';
     atualizarVariacaoElement('kpi-var-rating', varRating, avgRating, false, true);
 
+    // Variação dos Métodos de Pagamento Digitais
+    try {
+        const pagamentos = metrics.pagamento || [];
+        
+        const findPaymentData = (names) => {
+            let total = 0;
+            let varTotal = 0;
+            let found = false;
+            pagamentos.forEach(p => {
+                if (names.includes(p.Payment)) {
+                    total += p.Total || 0;
+                    varTotal += p.Var_Total || 0;
+                    found = true;
+                }
+            });
+            return found ? { Total: total, Var_Total: varTotal } : null;
+        };
+
+        const pixData = findPaymentData(['Pix']);
+        const cartaoData = findPaymentData(['Cartao de Credito', 'Credit card']);
+        const debitoData = findPaymentData(['Debito', 'Ewallet']);
+
+        if (pixData) {
+            atualizarVariacaoElement('kpi-var-pix', pixData.Var_Total, pixData.Total, false);
+        } else {
+            const el = document.getElementById('kpi-var-pix');
+            if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+        }
+
+        if (cartaoData) {
+            atualizarVariacaoElement('kpi-var-cartao', cartaoData.Var_Total, cartaoData.Total, false);
+        } else {
+            const el = document.getElementById('kpi-var-cartao');
+            if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+        }
+
+        if (debitoData) {
+            atualizarVariacaoElement('kpi-var-debito', debitoData.Var_Total, debitoData.Total, false);
+        } else {
+            const el = document.getElementById('kpi-var-debito');
+            if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
+        }
+    } catch (e) {
+        console.warn('Erro ao atualizar variacao de pagamentos digitais:', e);
+    }
+
     // --- Novas Metricas (integradas aqui para garantir execucao) ---
     try {
         const novas = metrics.novas;
@@ -164,48 +210,6 @@ function atualizarKPIs(metrics) {
             const prodValorEl = document.getElementById('kpi-produto-top-valor');
             if (prodEl) prodEl.textContent = (novas.produto_top && novas.produto_top.nome) ? novas.produto_top.nome : '--';
             if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top ? novas.produto_top.total : 0);
-
-            // Variação dos Métodos de Pagamento Digitais
-            const pagamentos = metrics.pagamento || [];
-            
-            const findPaymentData = (names) => {
-                let total = 0;
-                let varTotal = 0;
-                let found = false;
-                pagamentos.forEach(p => {
-                    if (names.includes(p.Payment)) {
-                        total += p.Total || 0;
-                        varTotal += p.Var_Total || 0;
-                        found = true;
-                    }
-                });
-                return found ? { Total: total, Var_Total: varTotal } : null;
-            };
-
-            const pixData = findPaymentData(['Pix']);
-            const cartaoData = findPaymentData(['Cartao de Credito', 'Credit card']);
-            const debitoData = findPaymentData(['Debito', 'Ewallet']);
-
-            if (pixData) {
-                atualizarVariacaoElement('kpi-var-pix', pixData.Var_Total, pixData.Total, false);
-            } else {
-                const el = document.getElementById('kpi-var-pix');
-                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-            }
-
-            if (cartaoData) {
-                atualizarVariacaoElement('kpi-var-cartao', cartaoData.Var_Total, cartaoData.Total, false);
-            } else {
-                const el = document.getElementById('kpi-var-cartao');
-                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-            }
-
-            if (debitoData) {
-                atualizarVariacaoElement('kpi-var-debito', debitoData.Var_Total, debitoData.Total, false);
-            } else {
-                const el = document.getElementById('kpi-var-debito');
-                if (el) el.innerHTML = '<i class="fa-solid fa-minus"></i> N/A';
-            }
 
             // Concentracao Geografica
             const concGeo = novas.concentracao_geografica || {};
