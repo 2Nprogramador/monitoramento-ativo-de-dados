@@ -46,7 +46,7 @@ if not RABBITMQ_URL:
 
 # --- 3. DADOS DE LOGIN DA APLICAÇÃO ---
 APP_USER = get_secret("APP_USER", "admin")
-APP_PASSWORD = get_secret("APP_PASSWORD", "m2n_seguro_app_pass")
+APP_PASSWORD = get_secret("APP_PASSWORD", "m2n_seguro_app_pass")  # gitleaks:allow
 
 # --- 4. CONFIGURAÇÃO DO WEBHOOK N8N ---
 N8N_WEBHOOK_URL = get_secret("N8N_WEBHOOK_URL", "")
@@ -60,6 +60,6 @@ if DB_HOST_CHECK != "localhost":
          raise ValueError("[Segurança] ERRO CRÍTICO: Senha do banco de dados está usando o valor padrão ou está ausente!")
 
     # 2. Garante que as credenciais do admin da aplicação foram alteradas em relação ao padrão
-    if APP_PASSWORD == "m2n_seguro_app_pass" or not APP_PASSWORD:
+    if APP_PASSWORD == "m2n_seguro_app_pass" or not APP_PASSWORD:  # gitleaks:allow
          raise ValueError("[Segurança] ERRO CRÍTICO: Senha padrão do administrador (APP_PASSWORD) não foi alterada!")
 

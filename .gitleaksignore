@@ -1,0 +1,6 @@
+# .gitleaksignore
+# Ignora falso positivo de senha padrão do HashiCorp TF Password no config.py
+b07148d5ad8b998b79c59c79c1d4ce1c10afde49:backend/config.py:hashicorp-tf-password:63
+b07148d5ad8b998b79c59c79c1d4ce1c10afde49:backend/config.py:hashicorp-tf-password:64
+# Ignorar qualquer ocorrência futura de m2n_seguro_app_pass no config.py
+:backend/config.py:hashicorp-tf-password
