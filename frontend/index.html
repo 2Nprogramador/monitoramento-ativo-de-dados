@@ -191,11 +191,11 @@
                 <div class="kpi-icon-wrapper" style="background: linear-gradient(135deg, #ef444422, #ef444444); color: #ef4444;">
                     <i class="fa-solid fa-map-pin"></i>
                 </div>
-                <div class="kpi-info">
+                <div class="kpi-info" style="width: 100%;">
                     <h3>Concentração Geográfica</h3>
-                    <p id="kpi-conc-geo">0%</p>
-                    <span id="kpi-var-conc-geo" class="kpi-variation">--</span>
-                    <span id="kpi-conc-geo-sub" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem; display: block;">Cidade líder: --</span>
+                    <div id="geo-cities-container" style="display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.25rem; min-width: 120px;">
+                        <!-- Preenchido dinamicamente via JS -->
+                    </div>
                 </div>
             </div>
 

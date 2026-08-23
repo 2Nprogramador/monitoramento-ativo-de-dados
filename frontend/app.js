@@ -211,32 +211,57 @@ function atualizarKPIs(metrics) {
             if (prodEl) prodEl.textContent = (novas.produto_top && novas.produto_top.nome) ? novas.produto_top.nome : '--';
             if (prodValorEl) prodValorEl.textContent = formatarMoeda(novas.produto_top ? novas.produto_top.total : 0);
 
-            // Concentracao Geografica
-            const concGeo = novas.concentracao_geografica || {};
-            const concPct = concGeo.percentual || 0;
-            const concCidade = concGeo.cidade || '--';
-            const concVar = concGeo.variacao !== undefined ? concGeo.variacao : 0;
+            // Concentracao Geografica Dinamica por Cidade
+            const cidadesList = [...(metrics.cidade || [])];
             
-            const concEl = document.getElementById('kpi-conc-geo');
-            if (concEl) concEl.textContent = concPct.toFixed(1) + '%';
+            // Ordenar cidades do maior para o menor faturamento
+            cidadesList.sort((a, b) => (b.Total || 0) - (a.Total || 0));
             
-            const concSubEl = document.getElementById('kpi-conc-geo-sub');
-            if (concSubEl) {
-                concSubEl.textContent = 'Cidade líder: ' + concCidade;
-            }
-
-            const concVarEl = document.getElementById('kpi-var-conc-geo');
-            if (concVarEl) {
-                if (concVar > 0) {
-                    concVarEl.className = 'kpi-variation variation-up';
-                    concVarEl.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${concVar.toFixed(1)}%`;
-                } else if (concVar < 0) {
-                    concVarEl.className = 'kpi-variation variation-down';
-                    concVarEl.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${concVar.toFixed(1)}%`;
-                } else {
-                    concVarEl.className = 'kpi-variation variation-neutral';
-                    concVarEl.innerHTML = `<i class="fa-solid fa-minus"></i> 0.0%`;
-                }
+            const totalGeralHoje = cidadesList.reduce((sum, item) => sum + (item.Total || 0), 0);
+            const totalGeralOntem = cidadesList.reduce((sum, item) => sum + ((item.Total || 0) - (item.Var_Total || 0)), 0);
+            
+            const geoContainer = document.getElementById('geo-cities-container');
+            if (geoContainer) {
+                geoContainer.innerHTML = '';
+                
+                cidadesList.forEach(c => {
+                    const totalHoje = c.Total || 0;
+                    const totalOntem = totalHoje - (c.Var_Total || 0);
+                    
+                    const pctHoje = totalGeralHoje > 0 ? (totalHoje / totalGeralHoje) * 100 : 0;
+                    const pctOntem = totalGeralOntem > 0 ? (totalOntem / totalGeralOntem) * 100 : 0;
+                    const variacaoPct = pctHoje - pctOntem;
+                    
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.gap = '0.5rem';
+                    
+                    const labelSpan = document.createElement('span');
+                    labelSpan.style.fontSize = '0.8rem';
+                    labelSpan.style.fontWeight = '500';
+                    labelSpan.style.color = 'var(--text-secondary)';
+                    labelSpan.textContent = `${c.City} (${pctHoje.toFixed(1)}%)`;
+                    
+                    const varSpan = document.createElement('span');
+                    varSpan.className = 'kpi-variation';
+                    
+                    if (variacaoPct > 0) {
+                        varSpan.classList.add('variation-up');
+                        varSpan.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${variacaoPct.toFixed(1)}%`;
+                    } else if (variacaoPct < 0) {
+                        varSpan.classList.add('variation-down');
+                        varSpan.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${variacaoPct.toFixed(1)}%`;
+                    } else {
+                        varSpan.classList.add('variation-neutral');
+                        varSpan.innerHTML = `<i class="fa-solid fa-minus"></i> 0.0%`;
+                    }
+                    
+                    row.appendChild(labelSpan);
+                    row.appendChild(varSpan);
+                    geoContainer.appendChild(row);
+                });
             }
 
             // Eficiencia Noturna (KPI 10)
