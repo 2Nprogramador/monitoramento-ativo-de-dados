@@ -51,3 +51,15 @@ APP_PASSWORD = get_secret("APP_PASSWORD", "m2n_seguro_app_pass")
 # --- 4. CONFIGURAÇÃO DO WEBHOOK N8N ---
 N8N_WEBHOOK_URL = get_secret("N8N_WEBHOOK_URL", "")
 
+# --- 5. VALIDAÇÃO DE SEGURANÇA (SANITY CHECK EM PRODUÇÃO) ---
+DB_HOST_CHECK = get_secret("DB_HOST", "localhost")
+if DB_HOST_CHECK != "localhost":
+    # 1. Garante que a senha do banco de dados não seja o valor padrão de teste
+    db_pass_check = get_secret("DB_PASSWORD")
+    if db_pass_check == "sua_senha_segura" or not db_pass_check:
+         raise ValueError("[Segurança] ERRO CRÍTICO: Senha do banco de dados está usando o valor padrão ou está ausente!")
+
+    # 2. Garante que as credenciais do admin da aplicação foram alteradas em relação ao padrão
+    if APP_PASSWORD == "m2n_seguro_app_pass" or not APP_PASSWORD:
+         raise ValueError("[Segurança] ERRO CRÍTICO: Senha padrão do administrador (APP_PASSWORD) não foi alterada!")
+
