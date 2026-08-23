@@ -83,7 +83,8 @@ def force_redeploy_services():
         webhook_token = None
         # Procurar existente
         for w in existing_webhooks:
-            if w.get("ResourceID") == service_id:
+            resource_id_val = w.get("ResourceId") or w.get("ResourceID")
+            if resource_id_val == service_id:
                 webhook_token = w.get("Token")
                 break
                 
