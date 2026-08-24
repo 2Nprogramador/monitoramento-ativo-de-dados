@@ -84,6 +84,7 @@ services:
     secrets:
       - db_password
       - rabbitmq_password
+      - app_password
       - n8n_webhook_url
     environment:
       - DB_HOST=postgres
@@ -92,6 +93,7 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_USER=admin_monitoramento
       - RABBITMQ_PASSWORD_FILE=/run/secrets/rabbitmq_password
+      - APP_PASSWORD_FILE=/run/secrets/app_password
       - N8N_WEBHOOK_URL_FILE=/run/secrets/n8n_webhook_url
     deploy:
       mode: replicated
