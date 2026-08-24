@@ -1044,11 +1044,16 @@ function renderizarGraficos(metrics) {
 }
 
 function criarGrafico(canvasId, config) {
+    const el = document.getElementById(canvasId);
+    if (!el) {
+        console.warn(`Canvas element #${canvasId} não foi encontrado no DOM.`);
+        return;
+    }
     // Destruir instância antiga se já existir
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
     }
-    const ctx = document.getElementById(canvasId).getContext('2d');
+    const ctx = el.getContext('2d');
     chartInstances[canvasId] = new Chart(ctx, config);
 }
 
