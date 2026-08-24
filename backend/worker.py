@@ -182,9 +182,8 @@ def gerar_dados_para_data(data_alvo):
         product_line = prod["line"]
         product_name = prod["name"]
         
-        # Pequena variação de preço (+/- 5%) para simular descontos ou promoções
-        fator_preco = random.uniform(0.95, 1.05)
-        unit_price = round(prod["price"] * fator_preco, 2)
+        # Preço rigorosamente fixo de catálogo para o produto
+        unit_price = round(float(prod["price"]), 2)
         
         quantity = random.randint(1, 12)
         total = round(unit_price * quantity, 2)
