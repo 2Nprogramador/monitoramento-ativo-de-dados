@@ -317,26 +317,26 @@ function atualizarMetricasNovas(novas) {
 // --- GLOSSÁRIO DE ALERTAS ---
 const alertasGlossario = [
     {
-        key: 'ultrapassaram R$30.000',
-        title: 'Meta de Vendas por Cidade',
-        desc: 'Sinaliza quando uma cidade ultrapassa a marca de R$ 30.000,00 em um único dia.',
-        dor: 'Permite bonificar equipes locais ou aumentar o investimento em marketing na região.'
+        key: 'ultrapassaram R$',
+        title: 'Meta de Faturamento por Cidade',
+        desc: 'Sinaliza quando uma ou mais cidades atingem marcos expressivos de faturamento (ex: acima de R$ 30.000,00) no dia.',
+        dor: 'Permite bonificar equipes locais de alta performance e reavaliar o potencial de expansão da praça.'
     },
     {
-        key: 'queda superior a 30% nas vendas',
+        key: 'queda superior a 30%',
         title: 'Queda Brusca de Vendas (Cidade)',
         desc: 'Alerta disparado se o faturamento de uma cidade cair mais de 30% em relação ao dia anterior.',
         dor: 'Possibilita ação rápida para investigar problemas operacionais na filial ou instabilidades regionais.'
     },
     {
-        key: 'apresentou um aumento superior a 30%',
+        key: 'Pix',
         title: 'Aumento de Pagamentos via Pix',
-        desc: 'Notifica se o uso do Pix subiu mais de 30% frente ao dia anterior.',
-        dor: 'Indica sucesso em campanhas de incentivo a meios de menor custo, melhorando a margem líquida.'
+        desc: 'Notifica se o uso do Pix apresentou crescimento relevante frente ao dia anterior.',
+        dor: 'Indica sucesso em campanhas de incentivo a meios de menor custo, melhorando a margem líquida da empresa.'
     },
     {
-        key: 'mais de 400 vendas',
-        title: 'Alta Demanda de Produto',
+        key: '400 vendas',
+        title: 'Alta Demanda de Produtos',
         desc: 'Alerta para categorias que ultrapassaram a marca crítica de 400 unidades vendidas no dia.',
         dor: 'Previne ruptura de estoque (desabastecimento), permitindo reposição ágil de mercadorias.'
     },
@@ -353,31 +353,31 @@ const alertasGlossario = [
         dor: 'Permite identificar dias de mau atendimento, falhas operacionais ou produtos com defeito.'
     },
     {
-        key: 'risco de depend',
+        key: 'dependência geográfica',
         title: 'Risco de Concentração Geográfica',
         desc: 'Alerta quando uma única cidade representa mais de 60% de todo o faturamento da empresa.',
         dor: 'Sinaliza vulnerabilidade: imprevistos ou feriados nessa praça comprometem a receita global.'
     },
     {
-        key: '(UPV) caiu',
+        key: '(UPV)',
         title: 'Queda de Preço Médio (UPV)',
         desc: 'Avisa quando o cliente passa a comprar produtos de menor valor unitário em relação à média.',
         dor: 'Evidencia retração no poder de compra ou ineficácia nas campanhas de up-selling dos vendedores.'
     },
     {
-        key: 'Pagamentos digitais representam',
+        key: 'digitais',
         title: 'Queda de Pagamentos Digitais',
         desc: 'Alerta quando menos de 70% das transações são efetuadas por canais digitais (Pix/Cartões).',
         dor: 'Maior circulação de dinheiro em espécie eleva o risco de segurança e os custos de transporte de valores.'
     },
     {
-        key: 'nenhuma venda no dia',
+        key: 'nenhuma venda',
         title: 'Linha de Produto Zerada',
         desc: 'Sinaliza categorias que não registraram nenhuma transação durante todo o expediente.',
         dor: 'Giro de estoque zero representa capital parado, demandando promoções ou reposicionamento de vitrine.'
     },
     {
-        key: 'Produto destaque do dia',
+        key: 'destaque do dia',
         title: 'Campeão de Vendas',
         desc: 'Destaca o produto ou linha que gerou a maior receita bruta no dia selecionado.',
         dor: 'Informa a liderança com precisão sobre qual produto é o principal motor de faturamento no momento.'
@@ -441,9 +441,14 @@ function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRa
 }
 
 function gerarHelperHtmlParaAlerta(alertaTexto) {
-    const alertaDef = alertasGlossario.find(a => alertaTexto.includes(a.key));
-    if (!alertaDef) return '';
-    return `<button type="button" class="helper-btn alert-helper-btn" data-alert-key="${alertaDef.key}" aria-label="Explicação do alerta" title="Ver explicação">?</button>`;
+    const cleanTexto = alertaTexto.toLowerCase();
+    const alertaDef = alertasGlossario.find(a => cleanTexto.includes(a.key.toLowerCase()));
+    const keyAttr = alertaDef ? alertaDef.key : 'destaque do dia';
+    const customDesc = alertaDef ? alertaDef.desc : 'Notificação automática do motor de inteligência analítica.';
+    const customDor = alertaDef ? alertaDef.dor : 'Alerta preventivo para ação operacional rápida e redução de riscos.';
+    const customTitle = alertaDef ? alertaDef.title : 'Alerta de Desempenho';
+    
+    return `<button type="button" class="helper-btn alert-helper-btn" data-alert-key="${keyAttr}" data-title="${customTitle}" data-custom-desc="${customDesc}" data-custom-dor="${customDor}" aria-label="Explicação do alerta" title="Ver explicação">?</button>`;
 }
 
 function atualizarAlertas(alertas) {
@@ -1418,22 +1423,36 @@ function inicializarHelpers() {
         if (existingBtn) return;
 
         // Limpar o texto de acentos e caracteres especiais para casar perfeitamente
-        const rawText = el.textContent || "";
+        const rawText = (el.textContent || "").trim();
         const cleanKey = rawText.replace(/[^a-zA-Z]/g, '').toLowerCase();
         
-        const mapping = helperMappings[cleanKey];
+        // Tentar encontrar mapping exato ou parcial
+        let mapping = helperMappings[cleanKey];
         
-        if (mapping) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'helper-btn';
-            btn.dataset.helperKey = cleanKey;
-            btn.dataset.title = rawText.trim();
-            btn.title = 'Ver explicação';
-            btn.textContent = '?';
-            btn.setAttribute('aria-label', `Informações sobre ${rawText.trim()}`);
-            el.appendChild(btn);
+        if (!mapping) {
+            // Tentar busca por substring/inclusão
+            const matchedKey = Object.keys(helperMappings).find(k => cleanKey.includes(k) || k.includes(cleanKey));
+            if (matchedKey) {
+                mapping = helperMappings[matchedKey];
+            }
         }
+        
+        // Fallback dinâmico: se houver subtítulo ou descrição associada no card
+        const subtitleEl = el.closest('.chart-header')?.querySelector('.chart-subtitle, p') || el.closest('.kpi-info')?.querySelector('.kpi-variation');
+        const descTexto = mapping?.desc || (subtitleEl ? subtitleEl.textContent.trim() : `Métrica analítica de ${rawText}.`);
+        const dorTexto = mapping?.dor || 'Permite o acompanhamento preciso das operações diárias e tomada de decisão estratégica.';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'helper-btn';
+        btn.dataset.helperKey = cleanKey;
+        btn.dataset.title = rawText;
+        btn.dataset.customDesc = descTexto;
+        btn.dataset.customDor = dorTexto;
+        btn.title = 'Ver explicação';
+        btn.textContent = '?';
+        btn.setAttribute('aria-label', `Informações sobre ${rawText}`);
+        el.appendChild(btn);
     });
 }
 
@@ -1446,8 +1465,8 @@ function exibirHelperGlobal(btnElement) {
     const helperKey = btnElement.dataset.helperKey;
     const alertKey = btnElement.dataset.alertKey;
     
-    let desc = '';
-    let dor = '';
+    let desc = btnElement.dataset.customDesc || '';
+    let dor = btnElement.dataset.customDor || '';
     let title = btnElement.dataset.title || 'Informação';
     let label = 'O QUE É';
     
@@ -1455,7 +1474,8 @@ function exibirHelperGlobal(btnElement) {
         desc = helperMappings[helperKey].desc;
         dor = helperMappings[helperKey].dor;
     } else if (alertKey) {
-        const alertaDef = alertasGlossario.find(a => a.key === alertKey);
+        // Encontrar o alerta por match exato ou por palavras-chave
+        const alertaDef = alertasGlossario.find(a => alertKey.includes(a.key) || a.key.includes(alertKey));
         if (alertaDef) {
             desc = alertaDef.desc;
             dor = alertaDef.dor;
