@@ -335,6 +335,116 @@
                     <canvas id="chart-nocturnal"></canvas>
                 </div>
             </div>
+
+            <!-- Gráfico 9: Curva ABC de Produtos -->
+            <div class="chart-card card-double-width">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-arrow-up-right-dots"></i> Curva ABC de Produtos (Top Faturamento)</h3>
+                    <p>Classificação de relevância e participação acumulada na receita diária</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-curva-abc"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 10: Detecção de Anomalias / Queda de Vendas -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Variação de Desempenho por Categoria</h3>
+                    <p>Comparativo percentual de vendas diárias por linha de produto</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-anomalias"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 11: Matriz Preço Médio vs. Volume (Elasticidade) -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-chart-simple"></i> Preço Médio vs. Volume Vendido</h3>
+                    <p>Relação entre ticket unitário e quantidade comercializada</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-elasticidade"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 12: Perfil do Comprador por Categoria (Membros vs. Normais) -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-id-card-clip"></i> Adesão de Membros por Categoria</h3>
+                    <p>Faturamento gerado por clientes fidelizados vs. normais</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-perfil-membro"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 13: Horários de Pico por Categoria -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-timeline"></i> Turnos de Venda por Categoria</h3>
+                    <p>Distribuição do faturamento por período (Manhã, Tarde e Noite)</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-horarios-categoria"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 14: Índice de Satisfação (Rating) por Categoria -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-star-half-stroke"></i> Avaliação Média (Rating) por Linha</h3>
+                    <p>Média de notas e índice de aprovação dos clientes</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-satisfacao-categoria"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 15: Performance Regional por Cidade -->
+            <div class="chart-card card-double-width">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-map-location-dot"></i> Mix de Categorias por Cidade</h3>
+                    <p>Penetração e receita de cada categoria de produto por praça</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-regional-categoria"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 16: Preferência de Pagamento por Categoria -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-money-bill-transfer"></i> Meios de Pagamento por Categoria</h3>
+                    <p>Distribuição de métodos transacionais por linha de produto</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-pagamento-categoria"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 17: Cesta de Compras e Itens por Cupom -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-basket-shopping"></i> Densidade da Cesta de Compras</h3>
+                    <p>Média e pico de itens por compra em cada categoria</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-cesta-produtos"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 18: Ritmo de Saída e Previsão de Estoque (Burn Rate) -->
+            <div class="chart-card card-double-width">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-boxes-packing"></i> Ritmo de Saída / Burn Rate (Top Produtos)</h3>
+                    <p>Velocidade diária de unidades vendidas e previsão mensal de reposição</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-burn-rate"></canvas>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -400,6 +510,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.31"></script>
+    <script src="app.js?v=1.0.32"></script>
 </body>
 </html>

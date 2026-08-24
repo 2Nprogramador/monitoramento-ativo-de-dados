@@ -709,6 +709,337 @@ function renderizarGraficos(metrics) {
                 }
             }
         });
+
+        const prodAnalises = metrics.novas.produtos_analises || {};
+
+        // 9. Curva ABC de Produtos (Barra Horizontal com Cores por Classe)
+        if (prodAnalises.curva_abc && prodAnalises.curva_abc.length > 0) {
+            const labelsAbc = prodAnalises.curva_abc.map(p => (p['Product name'] || p['Product line'] || p.produto || '').substring(0, 26));
+            const totaisAbc = prodAnalises.curva_abc.map(p => p.Total);
+            const coresAbc = prodAnalises.curva_abc.map(p => p.Classe === 'A' ? '#10b981' : (p.Classe === 'B' ? '#3b82f6' : '#94a3b8'));
+            
+            criarGrafico('chart-curva-abc', {
+                type: 'bar',
+                data: {
+                    labels: labelsAbc,
+                    datasets: [{
+                        label: 'Faturamento (R$)',
+                        data: totaisAbc,
+                        backgroundColor: coresAbc,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 10. Detecção de Anomalias / Queda de Vendas (Barra de Variação %)
+        if (prodAnalises.anomalias_linhas && prodAnalises.anomalias_linhas.length > 0) {
+            const labelsAnomalias = prodAnalises.anomalias_linhas.map(a => a.linha);
+            const varsAnomalias = prodAnalises.anomalias_linhas.map(a => a.variacao_pct);
+            const coresAnomalias = varsAnomalias.map(v => v < -30 ? '#ef4444' : (v < 0 ? '#f59e0b' : '#10b981'));
+
+            criarGrafico('chart-anomalias', {
+                type: 'bar',
+                data: {
+                    labels: labelsAnomalias,
+                    datasets: [{
+                        label: 'Variação vs. Dia Anterior (%)',
+                        data: varsAnomalias,
+                        backgroundColor: coresAnomalias,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 11. Matriz Preço Médio vs Volume (Barra Mista)
+        if (prodAnalises.matriz_elasticidade && prodAnalises.matriz_elasticidade.length > 0) {
+            const labelsElasticidade = prodAnalises.matriz_elasticidade.map(e => e.linha);
+            const precosMedios = prodAnalises.matriz_elasticidade.map(e => e.preco_medio);
+            const qtds = prodAnalises.matriz_elasticidade.map(e => e.quantidade);
+
+            criarGrafico('chart-elasticidade', {
+                type: 'bar',
+                data: {
+                    labels: labelsElasticidade,
+                    datasets: [
+                        {
+                            label: 'Preço Médio Unitário (R$)',
+                            data: precosMedios,
+                            backgroundColor: '#8b5cf6',
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Volume Vendido (Qtd)',
+                            data: qtds,
+                            backgroundColor: '#06b6d4',
+                            borderRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { display: false }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 12. Perfil do Comprador por Categoria (Membro vs Normal Empilhado)
+        if (prodAnalises.perfil_comprador_categoria && prodAnalises.perfil_comprador_categoria.length > 0) {
+            const labelsMembro = prodAnalises.perfil_comprador_categoria.map(p => p.linha);
+            const faturamentoMembros = prodAnalises.perfil_comprador_categoria.map(p => p.membro);
+            const faturamentoNormais = prodAnalises.perfil_comprador_categoria.map(p => p.normal);
+
+            criarGrafico('chart-perfil-membro', {
+                type: 'bar',
+                data: {
+                    labels: labelsMembro,
+                    datasets: [
+                        {
+                            label: 'Membros do Clube (R$)',
+                            data: faturamentoMembros,
+                            backgroundColor: '#ec4899',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Clientes Normais (R$)',
+                            data: faturamentoNormais,
+                            backgroundColor: '#64748b',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 13. Horários de Pico por Categoria (Turnos)
+        if (prodAnalises.horarios_categoria && prodAnalises.horarios_categoria.length > 0) {
+            const labelsHorarios = prodAnalises.horarios_categoria.map(h => h['Product line']);
+            const manha = prodAnalises.horarios_categoria.map(h => h['Manhã (até 12h)'] || 0);
+            const tarde = prodAnalises.horarios_categoria.map(h => h['Tarde (13h-17h)'] || 0);
+            const noite = prodAnalises.horarios_categoria.map(h => h['Noite (18h+)'] || 0);
+
+            criarGrafico('chart-horarios-categoria', {
+                type: 'bar',
+                data: {
+                    labels: labelsHorarios,
+                    datasets: [
+                        { label: 'Manhã', data: manha, backgroundColor: '#f59e0b', borderRadius: 4 },
+                        { label: 'Tarde', data: tarde, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Noite', data: noite, backgroundColor: '#6366f1', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 14. Índice de Satisfação (Rating) por Categoria
+        if (prodAnalises.satisfacao_categoria && prodAnalises.satisfacao_categoria.length > 0) {
+            const labelsSatisfacao = prodAnalises.satisfacao_categoria.map(s => s.linha);
+            const ratings = prodAnalises.satisfacao_categoria.map(s => s.rating_medio);
+            const coresRating = ratings.map(r => r >= 8.5 ? '#10b981' : (r >= 7.0 ? '#f59e0b' : '#ef4444'));
+
+            criarGrafico('chart-satisfacao-categoria', {
+                type: 'bar',
+                data: {
+                    labels: labelsSatisfacao,
+                    datasets: [{
+                        label: 'Rating Médio (1 a 10)',
+                        data: ratings,
+                        backgroundColor: coresRating,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 10, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 15. Performance Regional por Cidade
+        if (prodAnalises.regional_categoria && prodAnalises.regional_categoria.length > 0) {
+            const labelsRegional = prodAnalises.regional_categoria.map(r => r['Product line']);
+            const cidadesDisponiveis = ['São Paulo', 'Rio de Janeiro', 'Manaus', 'Brasília', 'Curitiba'].filter(c => {
+                return prodAnalises.regional_categoria.some(r => r[c] !== undefined);
+            });
+            const coresCidades = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#06b6d4'];
+
+            const datasetsRegional = cidadesDisponiveis.map((cidade, idx) => ({
+                label: cidade,
+                data: prodAnalises.regional_categoria.map(r => r[cidade] || 0),
+                backgroundColor: coresCidades[idx % coresCidades.length],
+                borderRadius: 4
+            }));
+
+            criarGrafico('chart-regional-categoria', {
+                type: 'bar',
+                data: {
+                    labels: labelsRegional,
+                    datasets: datasetsRegional
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 16. Preferência de Pagamento por Categoria (Polar / Doughnut / Radar ou Barra)
+        if (prodAnalises.pagamento_categoria && prodAnalises.pagamento_categoria.length > 0) {
+            const labelsPagtoCat = prodAnalises.pagamento_categoria.map(p => p['Product line']);
+            const pixData = prodAnalises.pagamento_categoria.map(p => p['Pix'] || 0);
+            const cartaoData = prodAnalises.pagamento_categoria.map(p => (p['Cartao de Credito'] || p['Credit card'] || 0));
+            const debitoData = prodAnalises.pagamento_categoria.map(p => (p['Debito'] || p['Ewallet'] || 0));
+
+            criarGrafico('chart-pagamento-categoria', {
+                type: 'bar',
+                data: {
+                    labels: labelsPagtoCat,
+                    datasets: [
+                        { label: 'Pix', data: pixData, backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'Cartão de Crédito', data: cartaoData, backgroundColor: '#6366f1', borderRadius: 4 },
+                        { label: 'Débito', data: debitoData, backgroundColor: '#3b82f6', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 17. Cesta de Compras e Itens por Cupom
+        if (prodAnalises.cesta_produtos && prodAnalises.cesta_produtos.length > 0) {
+            const labelsCesta = prodAnalises.cesta_produtos.map(c => c.linha);
+            const mediasCesta = prodAnalises.cesta_produtos.map(c => c.media_itens_cupom);
+            const maxCesta = prodAnalises.cesta_produtos.map(c => c.max_itens_cupom);
+
+            criarGrafico('chart-cesta-produtos', {
+                type: 'bar',
+                data: {
+                    labels: labelsCesta,
+                    datasets: [
+                        { label: 'Média de Itens por Compra', data: mediasCesta, backgroundColor: '#f59e0b', borderRadius: 4 },
+                        { label: 'Pico de Itens em 1 Compra', data: maxCesta, backgroundColor: '#14b8a6', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 18. Ritmo de Saída / Burn Rate (Top Produtos e Projeção 30d)
+        if (prodAnalises.burn_rate_produtos && prodAnalises.burn_rate_produtos.length > 0) {
+            const labelsBurn = prodAnalises.burn_rate_produtos.map(b => (b.produto || '').substring(0, 24));
+            const saidaDiaria = prodAnalises.burn_rate_produtos.map(b => b.saida_diaria);
+            const projecao30d = prodAnalises.burn_rate_produtos.map(b => b.estoque_estimado_30d);
+
+            criarGrafico('chart-burn-rate', {
+                type: 'bar',
+                data: {
+                    labels: labelsBurn,
+                    datasets: [
+                        {
+                            label: 'Saída Diária (Unidades/Dia)',
+                            data: saidaDiaria,
+                            backgroundColor: '#ec4899',
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Projeção Reposição 30 Dias (Unidades)',
+                            data: projecao30d,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { display: false }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
     }
 }
 
@@ -861,6 +1192,47 @@ const helperMappings = {
     'faturamentodiurnovsnoturno': {
         desc: 'Comparativo da receita obtida antes das 18h (Diurno) versus a partir das 18h (Noturno).',
         dor: 'Falta de subsídios analíticos para otimizar escalas de trabalho e turnos de atendimento.'
+    },
+    // 10 Novos Gráficos de Produtos para Comerciantes
+    'curvaabcdeprodutostopfaturamento': {
+        desc: 'Classificação dos produtos que representam até 80% do faturamento diário (Classe A), identificando os carros-chefe.',
+        dor: 'Evita focar esforços de reposição e marketing em itens secundários, prevenindo falta de estoque nos itens mais rentáveis.'
+    },
+    'variaodedesempenhoporcategoria': {
+        desc: 'Comparativo percentual de vendas diárias de cada linha de produto em relação ao dia anterior.',
+        dor: 'Detecta quedas bruscas de vendas de forma imediata para correção de preços, reposição ou campanhas de marketing.'
+    },
+    'preomdiovsvolumevendido': {
+        desc: 'Cruzamento do preço médio praticado por categoria com o volume total de unidades comercializadas.',
+        dor: 'Avalia elasticidade e comprova se promoções e descontos realmente alavancam o faturamento líquido.'
+    },
+    'adesodemembrosforcategoria': {
+        desc: 'Participação do faturamento de membros do programa de fidelidade comparado a clientes casuais em cada linha.',
+        dor: 'Permite calibrar campanhas de retenção e benefícios exclusivos para o público mais fiel em cada setor.'
+    },
+    'turnosdevendaporcategoria': {
+        desc: 'Distribuição da receita gerada por cada categoria nos turnos da Manhã, Tarde e Noite.',
+        dor: 'Otimiza escalas da equipe de vendas e viabiliza promoções relâmpago nos horários de menor movimento.'
+    },
+    'avaliaomdiaratingporlinha': {
+        desc: 'Média de satisfação dos clientes (escala de 1 a 10) segmentada por linha de produto comercializada.',
+        dor: 'Identifica departamentos com problemas de qualidade, atendimento ou devoluções antes que afetem a reputação da loja.'
+    },
+    'mixdecategoriasporcidade': {
+        desc: 'Volume de vendas e faturamento de cada categoria de produto em cada praça ou filial regional.',
+        dor: 'Evita alocação inadequada de estoque entre praças com perfis de consumo e preferências distintas.'
+    },
+    'meiosdepagamentoporcategoria': {
+        desc: 'Métodos de pagamento (Pix, Cartão, Débito) preferidos pelos clientes em cada linha de produto.',
+        dor: 'Auxilia na estratégia de incentivo ao Pix em linhas de margem apertada e negociação de taxas de cartão.'
+    },
+    'densidadedacestadecompras': {
+        desc: 'Média e quantidade máxima de itens comprados em um único cupom para cada departamento da loja.',
+        dor: 'Oferece base de dados sólida para criação de combos promocionais e técnicas de cross-selling no caixa.'
+    },
+    'ritmodesadaburnratetopprodutos': {
+        desc: 'Velocidade diária de unidades vendidas por produto e projeção de necessidade de reposição para 30 dias.',
+        dor: 'Elimina o achismo na compra com fornecedores, evitando ruptura de gôndola e dinheiro parado em excesso de estoque.'
     },
     // Alertas
     'insightsealertasautomticos': {

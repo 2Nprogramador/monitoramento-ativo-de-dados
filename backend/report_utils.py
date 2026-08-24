@@ -268,6 +268,142 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     else:
         maior_venda_var = None
 
+    # =========================================================================
+    # 10 ANÁLISES ESTRATÉGICAS DE PRODUTOS PARA COMERCIANTES
+    # =========================================================================
+    
+    # 1. Curva ABC de Produtos (Faturamento vs. Volume)
+    col_prod = "Product name" if "Product name" in df_dia.columns else "Product line"
+    prod_grouped = df_dia.groupby(col_prod).agg({"Total": "sum", "Quantity": "sum"}).sort_values(by="Total", ascending=False)
+    if not prod_grouped.empty and total_geral_dia > 0:
+        prod_grouped["Perc_Total"] = (prod_grouped["Total"] / total_geral_dia) * 100
+        prod_grouped["Perc_Acum"] = prod_grouped["Perc_Total"].cumsum()
+        prod_grouped["Classe"] = prod_grouped["Perc_Acum"].apply(lambda x: "A" if x <= 80 else ("B" if x <= 95 else "C"))
+        curva_abc = prod_grouped.head(10).reset_index().to_dict(orient="records")
+        for item in curva_abc:
+            item["Total"] = round(float(item["Total"]), 2)
+            item["Perc_Total"] = round(float(item["Perc_Total"]), 1)
+            item["Perc_Acum"] = round(float(item["Perc_Acum"]), 1)
+    else:
+        curva_abc = []
+
+    # 2. Detecção de Anomalias / Queda Repentina de Vendas (Linhas de Produto)
+    anomalias_linhas = []
+    for linha in total_por_linha_produto.index:
+        tot_atual = float(total_por_linha_produto.loc[linha, "Total"])
+        var_tot = float(variacao_linha_produto.loc[linha, "Total"]) if linha in variacao_linha_produto.index and pd.notna(variacao_linha_produto.loc[linha, "Total"]) else 0.0
+        tot_ant = tot_atual - var_tot
+        pct_var = round((var_tot / tot_ant * 100), 1) if tot_ant > 0 else 0.0
+        anomalias_linhas.append({
+            "linha": linha,
+            "total_atual": round(tot_atual, 2),
+            "total_anterior": round(tot_ant, 2),
+            "variacao_pct": pct_var,
+            "status": "Queda Crítica" if pct_var <= -30 else ("Alerta" if pct_var < 0 else "Crescimento")
+        })
+
+    # 3. Matriz Preço Médio vs. Volume (Elasticidade e Ticket por Linha)
+    matriz_elasticidade = []
+    for linha, row in total_por_linha_produto.iterrows():
+        qtd = int(row["Quantity"])
+        tot = float(row["Total"])
+        preco_med = round(tot / qtd, 2) if qtd > 0 else 0.0
+        matriz_elasticidade.append({
+            "linha": linha,
+            "preco_medio": preco_med,
+            "quantidade": qtd,
+            "total": round(tot, 2)
+        })
+
+    # 4. Perfil do Comprador por Categoria (Membro vs Normal e Gênero)
+    crosstab_prod_membro = df_dia.groupby(["Product line", "Customer type"])["Total"].sum().unstack(fill_value=0)
+    perfil_comprador_categoria = []
+    for linha in crosstab_prod_membro.index:
+        tot_membro = float(crosstab_prod_membro.loc[linha].get("Membro", 0.0))
+        tot_normal = float(crosstab_prod_membro.loc[linha].get("Normal", 0.0))
+        tot_categoria = tot_membro + tot_normal
+        pct_membro = round((tot_membro / tot_categoria * 100), 1) if tot_categoria > 0 else 0.0
+        perfil_comprador_categoria.append({
+            "linha": linha,
+            "membro": round(tot_membro, 2),
+            "normal": round(tot_normal, 2),
+            "pct_membro": pct_membro
+        })
+
+    # 5. Horários de Pico por Categoria (Manhã: até 12h, Tarde: 13-17h, Noite: 18h+)
+    df_horario = df_dia.copy()
+    df_horario["Hora_Num"] = df_horario["Time"].astype(str).str.split(":").str[0].astype(int)
+    df_horario["Turno"] = df_horario["Hora_Num"].apply(lambda h: "Manhã (até 12h)" if h < 13 else ("Tarde (13h-17h)" if h < 18 else "Noite (18h+)"))
+    horarios_categoria = df_horario.groupby(["Product line", "Turno"])["Total"].sum().unstack(fill_value=0).reset_index().to_dict(orient="records")
+    for row in horarios_categoria:
+        for k in ["Manhã (até 12h)", "Tarde (13h-17h)", "Noite (18h+)"]:
+            row[k] = round(float(row.get(k, 0.0)), 2)
+
+    # 6. Índice de Satisfação (Rating) por Categoria de Produto
+    satisfacao_categoria = []
+    for linha in rating_produto.index:
+        nota_med = float(rating_produto.loc[linha, "Média_Rating"])
+        qtd_avaliacoes = int(df_dia[df_dia["Product line"] == linha]["Rating"].count())
+        satisfacao_categoria.append({
+            "linha": linha,
+            "rating_medio": round(nota_med, 1),
+            "total_avaliacoes": qtd_avaliacoes,
+            "nivel": "Excelente" if nota_med >= 8.5 else ("Bom" if nota_med >= 7.0 else "Crítico")
+        })
+
+    # 7. Performance Regional / Por Filial (Linhas por Cidade)
+    regional_categoria = df_dia.groupby(["Product line", "City"])["Total"].sum().unstack(fill_value=0).reset_index().to_dict(orient="records")
+    for row in regional_categoria:
+        for c in ["São Paulo", "Rio de Janeiro", "Manaus", "Brasília", "Curitiba"]:
+            if c in row:
+                row[c] = round(float(row[c]), 2)
+
+    # 8. Preferência de Pagamento por Linha de Produto
+    pagamento_categoria = df_dia.groupby(["Product line", "Payment"])["Total"].sum().unstack(fill_value=0).reset_index().to_dict(orient="records")
+    for row in pagamento_categoria:
+        for p in ["Pix", "Cartao de Credito", "Debito", "Credit card", "Ewallet"]:
+            if p in row:
+                row[p] = round(float(row[p]), 2)
+
+    # 9. Índice de Penetração / Cesta de Compras (Itens Médios por Linha)
+    cesta_produtos = []
+    for linha, group in df_dia.groupby("Product line"):
+        media_qtd_cupom = float(group["Quantity"].mean())
+        maior_cupom = float(group["Quantity"].max())
+        cesta_produtos.append({
+            "linha": linha,
+            "media_itens_cupom": round(media_qtd_cupom, 1),
+            "max_itens_cupom": int(maior_cupom)
+        })
+
+    # 10. Ritmo de Saída / Burn Rate (Velocidade diária de unidades vendidas)
+    burn_rate_produtos = []
+    for prod_name, group in df_dia.groupby(col_prod):
+        unidades_dia = int(group["Quantity"].sum())
+        receita_prod = float(group["Total"].sum())
+        linha_prod = group["Product line"].iloc[0] if "Product line" in group.columns else "Geral"
+        burn_rate_produtos.append({
+            "produto": prod_name,
+            "linha": linha_prod,
+            "saida_diaria": unidades_dia,
+            "receita": round(receita_prod, 2),
+            "estoque_estimado_30d": unidades_dia * 30
+        })
+    burn_rate_produtos = sorted(burn_rate_produtos, key=lambda x: x["saida_diaria"], reverse=True)[:10]
+
+    produtos_analises = {
+        "curva_abc": curva_abc,
+        "anomalias_linhas": anomalias_linhas,
+        "matriz_elasticidade": matriz_elasticidade,
+        "perfil_comprador_categoria": perfil_comprador_categoria,
+        "horarios_categoria": horarios_categoria,
+        "satisfacao_categoria": satisfacao_categoria,
+        "regional_categoria": regional_categoria,
+        "pagamento_categoria": pagamento_categoria,
+        "cesta_produtos": cesta_produtos,
+        "burn_rate_produtos": burn_rate_produtos
+    }
+
     novas_metricas = {
         "taxa_tipo_cliente": {k: float(v) for k, v in tx_tipo_pct.items()},
         "produto_top": {"nome": produto_top, "total": round(float(produto_top_valor), 2)},
@@ -284,7 +420,8 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "linhas_sem_venda": linhas_sem_venda,
         "eficiencia_noturna_pct": {"atual": efic_noturna_pct, "variacao": efic_variacao},
         "itens_por_compra": {"atual": itens_compra_atual, "variacao": itens_compra_var},
-        "maior_venda": {"atual": maior_venda_atual, "variacao": maior_venda_var}
+        "maior_venda": {"atual": maior_venda_atual, "variacao": maior_venda_var},
+        "produtos_analises": produtos_analises
     }
 
     return {
