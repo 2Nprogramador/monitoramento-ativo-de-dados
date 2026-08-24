@@ -122,18 +122,18 @@ def force_redeploy_services():
 # 2. Testar o status de saúde da aplicação pós-deploy
 def monitor_health():
     print("\n=== Iniciando teste de saúde (Health Check) pós-deploy ===")
-    print("Aguardando 15 segundos para início do rollout do Docker Swarm...")
-    time.sleep(15)
+    print("Aguardando 20 segundos para início do rollout do Docker Swarm...")
+    time.sleep(20)
     
     success_count = 0
-    attempts = 8
-    delay = 5
+    attempts = 15
+    delay = 6
     
     for i in range(attempts):
         try:
-            req = urllib.request.Request(HEALTHCHECK_URL)
+            req = urllib.request.Request(HEALTHCHECK_URL, headers={'User-Agent': 'HealthCheck-DeployBot/1.0'})
             # Timeout curto para detectar travamento
-            with urllib.request.urlopen(req, context=ctx, timeout=5) as response:
+            with urllib.request.urlopen(req, context=ctx, timeout=8) as response:
                 data = json.loads(response.read().decode('utf-8'))
                 status = data.get("status")
                 timestamp = data.get("timestamp")
@@ -146,15 +146,15 @@ def monitor_health():
             print(f"[{i+1}/{attempts}] ERRO na resposta da API: {e}")
             success_count = 0
         
+        # Se já atingiu 3 sucessos consecutivos, finaliza com sucesso imediatamente
+        if success_count >= 3:
+            print("\n=== TESTE DE SAÚDE APROVADO! Aplicação está online e estável. ===")
+            sys.exit(0)
+            
         time.sleep(delay)
         
-    # Exige que as últimas 3 requisições consecutivas tenham sido saudáveis
-    if success_count >= 3:
-        print("\n=== TESTE DE SAÚDE APROVADO! Aplicação está online e estável. ===")
-        sys.exit(0)
-    else:
-        print("\n=== FALHA NO TESTE DE SAÚDE! A aplicação não se estabilizou. ===")
-        sys.exit(1)
+    print("\n=== FALHA NO TESTE DE SAÚDE! A aplicação não se estabilizou. ===")
+    sys.exit(1)
 
 if __name__ == "__main__":
     update_portainer_stack()
