@@ -78,7 +78,7 @@ services:
   worker:
     image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.28
     container_name: monitoramento-worker
-    command: python backend/worker.py
+    command: python -u backend/worker.py
     networks:
       - 2nnet
     secrets:
