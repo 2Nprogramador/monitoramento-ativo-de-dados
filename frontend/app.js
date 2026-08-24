@@ -1230,6 +1230,7 @@ function showToast(message, type = 'info') {
 
 // --- HELPERS DE NEGÓCIO ---
 const helperMappings = {
+    // 1. KPIs
     'faturamentototal': {
         desc: 'Soma total de todas as vendas brutas realizadas na data selecionada.',
         dor: 'Falta de visibilidade imediata sobre a receita financeira diária do negócio.'
@@ -1241,6 +1242,10 @@ const helperMappings = {
     'ticketmdio': {
         desc: 'Faturamento total dividido pelo número de transações efetuadas no dia.',
         dor: 'Dificuldade em compreender quanto cada cliente gasta, em média, por compra.'
+    },
+    'satisfaogeral': {
+        desc: 'Média das notas de avaliação (escala de 1,0 a 10,0) atribuídas pelos clientes às compras do dia.',
+        dor: 'Ausência de termômetro sobre a percepção de qualidade do atendimento e dos produtos.'
     },
     'satisfaogeralrating': {
         desc: 'Média das notas de avaliação (escala de 1,0 a 10,0) atribuídas pelos clientes às compras do dia.',
@@ -1255,15 +1260,19 @@ const helperMappings = {
         dor: 'Incapacidade de dimensionar e alocar a equipe de vendas de forma eficiente nos momentos de maior movimento.'
     },
     'produtodestaque': {
-        desc: 'Linha ou categoria de produtos que registrou a maior receita bruta no dia.',
+        desc: 'Linha ou produto que registrou a maior receita bruta no dia.',
         dor: 'Dificuldade em identificar rapidamente qual departamento lidera a geração de receita.'
     },
     'pagamentosdigitais': {
         desc: 'Percentual do faturamento transacionado via meios eletrônicos (Pix, Cartão de Crédito e Débito).',
         dor: 'Risco operacional e custos elevados no manuseio de dinheiro em espécie no caixa físico.'
     },
+    'divisaogeogrfica': {
+        desc: 'Participação percentual e variação de cada praça ou filial no faturamento total do dia selecionado.',
+        dor: 'Risco de dependência excessiva do faturamento corporativo em uma única região.'
+    },
     'concentraogeogrfica': {
-        desc: 'Participação percentual de cada praça ou filial no faturamento total do dia selecionado.',
+        desc: 'Participação percentual e variação de cada praça ou filial no faturamento total do dia selecionado.',
         dor: 'Risco de dependência excessiva do faturamento corporativo em uma única região.'
     },
     'vendasapsh': { // 'Vendas após 18h'
@@ -1278,20 +1287,29 @@ const helperMappings = {
         desc: 'Valor da nota fiscal individual mais alta faturada na data selecionada.',
         dor: 'Dificuldade em mapear o teto de gastos do público-alvo para ofertas de produtos premium.'
     },
-    // Gráficos
-    'vendastotaisporcidade': { // 'Vendas Totais por Cidade'
+
+    // 2. Gráficos (1 a 18)
+    'vendastotaisporcidade': {
         desc: 'Comparativo de faturamento e volume entre filiais, com indicadores de variação diária.',
         dor: 'Desconhecimento sobre o desempenho individual e o ritmo de crescimento de cada praça.'
     },
-    'faturamentoporhora': { // 'Faturamento por Hora'
+    'faturamentoporhora': {
         desc: 'Distribuição temporal da receita e das vendas ao longo de cada hora do dia.',
         dor: 'Dificuldade em compreender a dinâmica do fluxo de caixa e os períodos de pico intra-dia.'
     },
-    'categoriasdeprodutos': { // 'Categorias de Produtos'
+    'faturamentoporhorrio': {
+        desc: 'Distribuição temporal da receita e das vendas ao longo de cada hora do dia.',
+        dor: 'Dificuldade em compreender a dinâmica do fluxo de caixa e os períodos de pico intra-dia.'
+    },
+    'categoriasdeprodutos': {
         desc: 'Volume de itens vendidos e receita gerada por cada categoria de produto.',
         dor: 'Falta de clareza sobre o giro de estoque e as categorias com maior aderência de mercado.'
     },
-    'mtodosdepagamento': { // 'Métodos de Pagamento'
+    'volumeporlinhadeproduto': {
+        desc: 'Volume de itens vendidos e receita gerada por cada categoria de produto.',
+        dor: 'Falta de clareza sobre o giro de estoque e as categorias com maior aderência de mercado.'
+    },
+    'mtodosdepagamento': {
         desc: 'Receita segmentada pelas diferentes modalidades e canais de pagamento utilizados.',
         dor: 'Ausência de dados concretos para renegociação de taxas operacionais com credenciadoras.'
     },
@@ -1299,30 +1317,53 @@ const helperMappings = {
         desc: 'Proporção de compradores segundo o gênero e a categoria de cliente (Normal versus Membro).',
         dor: 'Falta de clareza demográfica para direcionar campanhas e posicionamento de marca.'
     },
+    'perfildoconsumidor': {
+        desc: 'Proporção de compras realizadas de acordo com o gênero do comprador.',
+        dor: 'Falta de clareza demográfica para direcionar campanhas e posicionamento de marca.'
+    },
     'faturamentoporgnero': {
         desc: 'Volume financeiro (R$) e representatividade de receita por gênero de cliente.',
         dor: 'Risco de concentrar investimentos de marketing em perfis com alto volume, mas baixo retorno financeiro.'
+    },
+    'preomdioporlinha': {
+        desc: 'Preço médio praticado por unidade em cada linha de produtos (UPV = Faturamento / Quantidade).',
+        dor: 'Dificuldade em calibrar a precificação e identificar categorias com margens subvalorizadas.'
     },
     'preomdioporprodutoupv': {
         desc: 'Preço médio praticado por unidade em cada linha de produtos (UPV = Faturamento / Quantidade).',
         dor: 'Dificuldade em calibrar a precificação e identificar categorias com margens subvalorizadas.'
     },
+    'turnodiurnovsnoturno': {
+        desc: 'Comparativo da receita obtida antes das 18h (Diurno) versus a partir das 18h (Noturno).',
+        dor: 'Falta de subsídios analíticos para otimizar escalas de trabalho e turnos de atendimento.'
+    },
     'faturamentodiurnovsnoturno': {
         desc: 'Comparativo da receita obtida antes das 18h (Diurno) versus a partir das 18h (Noturno).',
         dor: 'Falta de subsídios analíticos para otimizar escalas de trabalho e turnos de atendimento.'
     },
-    // 10 Novos Gráficos de Produtos para Comerciantes
-    'curvaabcdeprodutostopfaturamento': {
-        desc: 'Classificação dos produtos que representam até 80% do faturamento diário (Classe A), identificando os carros-chefe.',
-        dor: 'Evita focar esforços de reposição e marketing em itens secundários, prevenindo falta de estoque nos itens mais rentáveis.'
+    'variaodevendasporlinha': {
+        desc: 'Comparativo percentual de vendas diárias de cada linha de produto em relação ao dia anterior.',
+        dor: 'Detecta quedas bruscas de vendas de forma imediata para correção de preços, reposição ou campanhas de marketing.'
     },
     'variaodedesempenhoporcategoria': {
         desc: 'Comparativo percentual de vendas diárias de cada linha de produto em relação ao dia anterior.',
         dor: 'Detecta quedas bruscas de vendas de forma imediata para correção de preços, reposição ou campanhas de marketing.'
     },
+    'curvaabcdeprodutos': {
+        desc: 'Classificação dos produtos que representam até 80% do faturamento diário (Classe A), identificando os carros-chefe.',
+        dor: 'Evita focar esforços de reposição e marketing em itens secundários, prevenindo falta de estoque nos itens mais rentáveis.'
+    },
+    'curvaabcdeprodutostopfaturamento': {
+        desc: 'Classificação dos produtos que representam até 80% do faturamento diário (Classe A), identificando os carros-chefe.',
+        dor: 'Evita focar esforços de reposição e marketing em itens secundários, prevenindo falta de estoque nos itens mais rentáveis.'
+    },
     'preomdiovsvolumevendido': {
         desc: 'Cruzamento do preço médio praticado por categoria com o volume total de unidades comercializadas.',
         dor: 'Avalia elasticidade e comprova se promoções e descontos realmente alavancam o faturamento líquido.'
+    },
+    'comportamentoportipodecliente': {
+        desc: 'Participação do faturamento de membros do programa de fidelidade comparado a clientes normais em cada linha.',
+        dor: 'Permite calibrar campanhas de retenção e benefícios exclusivos para o público mais fiel em cada setor.'
     },
     'adesodemembrosforcategoria': {
         desc: 'Participação do faturamento de membros do programa de fidelidade comparado a clientes casuais em cada linha.',
@@ -1332,13 +1373,13 @@ const helperMappings = {
         desc: 'Distribuição da receita gerada por cada categoria nos turnos da Manhã, Tarde e Noite.',
         dor: 'Otimiza escalas da equipe de vendas e viabiliza promoções relâmpago nos horários de menor movimento.'
     },
-    'avaliaomdiaratingporlinha': {
+    'avaliaomdiaporlinha': {
         desc: 'Média de satisfação dos clientes (escala de 1 a 10) segmentada por linha de produto comercializada.',
         dor: 'Identifica departamentos com problemas de qualidade, atendimento ou devoluções antes que afetem a reputação da loja.'
     },
-    'mixdecategoriasporcidade': {
-        desc: 'Volume de vendas e faturamento de cada categoria de produto em cada praça ou filial regional.',
-        dor: 'Evita alocação inadequada de estoque entre praças com perfis de consumo e preferências distintas.'
+    'avaliaomdiaratingporlinha': {
+        desc: 'Média de satisfação dos clientes (escala de 1 a 10) segmentada por linha de produto comercializada.',
+        dor: 'Identifica departamentos com problemas de qualidade, atendimento ou devoluções antes que afetem a reputação da loja.'
     },
     'meiosdepagamentoporcategoria': {
         desc: 'Métodos de pagamento (Pix, Cartão, Débito) preferidos pelos clientes em cada linha de produto.',
@@ -1348,11 +1389,20 @@ const helperMappings = {
         desc: 'Média e quantidade máxima de itens comprados em um único cupom para cada departamento da loja.',
         dor: 'Oferece base de dados sólida para criação de combos promocionais e técnicas de cross-selling no caixa.'
     },
+    'mixdecategoriasporcidade': {
+        desc: 'Volume de vendas e faturamento de cada categoria de produto em cada praça ou filial regional.',
+        dor: 'Evita alocação inadequada de estoque entre praças com perfis de consumo e preferências distintas.'
+    },
     'ritmodesadaburnratetopprodutos': {
         desc: 'Velocidade diária de unidades vendidas por produto e projeção de necessidade de reposição para 30 dias.',
         dor: 'Elimina o achismo na compra com fornecedores, evitando ruptura de gôndola e dinheiro parado em excesso de estoque.'
     },
-    // Alertas
+
+    // 3. Seções e Alertas
+    'alertasimportantesdodia': {
+        desc: 'Painel inteligente que destaca anomalias críticas, metas batidas e destaques diários.',
+        dor: 'Sobrecarga de tempo gasto procurando problemas manualmente nos relatórios diários.'
+    },
     'insightsealertasautomticos': {
         desc: 'Motor analítico de regras que monitora metas, anomalias e variações operacionais críticas.',
         dor: 'Sobrecarga cognitiva ao auditar manualmente múltiplos relatórios e indicadores dispersos.'
