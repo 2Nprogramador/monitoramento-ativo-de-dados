@@ -716,7 +716,8 @@ function renderizarGraficos(metrics) {
         if (prodAnalises.anomalias_linhas && prodAnalises.anomalias_linhas.length > 0) {
             const labelsAnomalias = prodAnalises.anomalias_linhas.map(a => a.linha);
             const varsAnomalias = prodAnalises.anomalias_linhas.map(a => a.variacao_pct);
-            const coresAnomalias = varsAnomalias.map(v => v < -30 ? '#D60700' : (v < 0 ? '#DFC900' : '#00CF42'));
+            // Vermelho (#D60700) exclusivo para variação negativa (< 0) e Verde (#00CF42) para crescimento positivo (>= 0)
+            const coresAnomalias = varsAnomalias.map(v => v < 0 ? '#D60700' : '#00CF42');
 
             criarGrafico('chart-anomalias', {
                 type: 'bar',
@@ -732,6 +733,22 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                generateLabels: function(chart) {
+                                    return [
+                                        { text: 'Crescimento Positivo (>= 0%)', fillStyle: '#00CF42', strokeStyle: '#00CF42', lineWidth: 0 },
+                                        { text: 'Variação Negativa / Queda (< 0%)', fillStyle: '#D60700', strokeStyle: '#D60700', lineWidth: 0 }
+                                    ];
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: { grid: { color: 'rgba(255,255,255,0.05)' } },
                         x: { grid: { display: false } }
@@ -762,6 +779,23 @@ function renderizarGraficos(metrics) {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                generateLabels: function(chart) {
+                                    return [
+                                        { text: 'Classe A (Até 80% da Receita)', fillStyle: '#00CF42', strokeStyle: '#00CF42', lineWidth: 0 },
+                                        { text: 'Classe B (Próximos 15%)', fillStyle: '#00B6E3', strokeStyle: '#00B6E3', lineWidth: 0 },
+                                        { text: 'Classe C (Últimos 5%)', fillStyle: '#9100EB', strokeStyle: '#9100EB', lineWidth: 0 }
+                                    ];
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.05)' } },
                         y: { grid: { display: false } }
@@ -800,6 +834,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         y: {
                             type: 'linear',
@@ -845,6 +886,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         x: { stacked: true, grid: { display: false } },
                         y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -865,14 +913,21 @@ function renderizarGraficos(metrics) {
                 data: {
                     labels: labelsHorarios,
                     datasets: [
-                        { label: 'Manhã', data: manha, backgroundColor: '#DFC900', borderRadius: 4 }, // Amarelo
-                        { label: 'Tarde', data: tarde, backgroundColor: '#00B6E3', borderRadius: 4 }, // Ciano
-                        { label: 'Noite', data: noite, backgroundColor: '#9100EB', borderRadius: 4 }  // Roxo
+                        { label: 'Manhã (até 12h)', data: manha, backgroundColor: '#DFC900', borderRadius: 4 }, // Amarelo
+                        { label: 'Tarde (13h-17h)', data: tarde, backgroundColor: '#00B6E3', borderRadius: 4 }, // Ciano
+                        { label: 'Noite (18h+)', data: noite, backgroundColor: '#9100EB', borderRadius: 4 }  // Roxo
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -885,23 +940,28 @@ function renderizarGraficos(metrics) {
         if (prodAnalises.satisfacao_categoria && prodAnalises.satisfacao_categoria.length > 0) {
             const labelsSatisfacao = prodAnalises.satisfacao_categoria.map(s => s.linha);
             const ratings = prodAnalises.satisfacao_categoria.map(s => s.rating_medio);
-            // Verde >= 8.5, Amarelo >= 7.0, Vermelho < 7.0
-            const coresRating = ratings.map(r => r >= 8.5 ? '#00CF42' : (r >= 7.0 ? '#DFC900' : '#D60700'));
 
             criarGrafico('chart-satisfacao-categoria', {
                 type: 'bar',
                 data: {
                     labels: labelsSatisfacao,
                     datasets: [{
-                        label: 'Rating Médio (1 a 10)',
+                        label: 'Avaliação Média do Cliente (Escala 1 a 10)',
                         data: ratings,
-                        backgroundColor: coresRating,
+                        backgroundColor: '#0040F0', // Azul Real (sem usar vermelho para notas absolutas)
                         borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         y: { min: 0, max: 10, grid: { color: 'rgba(255,255,255,0.05)' } },
                         x: { grid: { display: false } }
@@ -930,6 +990,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         x: { stacked: true, grid: { display: false } },
                         y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -956,6 +1023,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -988,6 +1062,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -1026,6 +1107,13 @@ function renderizarGraficos(metrics) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
                     scales: {
                         y: {
                             type: 'linear',
