@@ -491,6 +491,7 @@ function renderizarGraficos(metrics) {
     const cidades = metrics.cidade.map(item => item.City);
     const faturamentoCidades = metrics.cidade.map(item => item.Total);
     const variacaoCidades = metrics.cidade.map(item => item.Var_Total);
+    const coresVariacaoCidades = variacaoCidades.map(v => v < 0 ? '#D60700' : '#00CF42');
 
     criarGrafico('chart-city', {
         type: 'bar',
@@ -504,9 +505,9 @@ function renderizarGraficos(metrics) {
                     borderRadius: 6,
                 },
                 {
-                    label: 'Variação do Dia (R$)',
+                    label: 'Variação vs. Dia Anterior (R$)',
                     data: variacaoCidades,
-                    backgroundColor: '#DD00BC', // Magenta
+                    backgroundColor: coresVariacaoCidades, // Vermelho se negativo, Verde se positivo
                     borderRadius: 6,
                 }
             ]
@@ -514,6 +515,24 @@ function renderizarGraficos(metrics) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#94a3b8',
+                        font: { size: 12 },
+                        boxWidth: 12,
+                        padding: 15,
+                        generateLabels: function(chart) {
+                            return [
+                                { text: 'Faturamento Total (R$)', fillStyle: '#0040F0', fontColor: '#94a3b8', strokeStyle: '#0040F0', lineWidth: 0 },
+                                { text: 'Variação Positiva (R$)', fillStyle: '#00CF42', fontColor: '#94a3b8', strokeStyle: '#00CF42', lineWidth: 0 },
+                                { text: 'Variação Negativa / Queda (R$)', fillStyle: '#D60700', fontColor: '#94a3b8', strokeStyle: '#D60700', lineWidth: 0 }
+                            ];
+                        }
+                    }
+                }
+            },
             scales: {
                 y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
                 x: { grid: { display: false } }
@@ -738,12 +757,14 @@ function renderizarGraficos(metrics) {
                             display: true,
                             position: 'bottom',
                             labels: {
+                                color: '#94a3b8',
+                                font: { size: 12 },
                                 boxWidth: 12,
                                 padding: 15,
                                 generateLabels: function(chart) {
                                     return [
-                                        { text: 'Crescimento Positivo (>= 0%)', fillStyle: '#00CF42', strokeStyle: '#00CF42', lineWidth: 0 },
-                                        { text: 'Variação Negativa / Queda (< 0%)', fillStyle: '#D60700', strokeStyle: '#D60700', lineWidth: 0 }
+                                        { text: 'Crescimento Positivo (>= 0%)', fillStyle: '#00CF42', fontColor: '#94a3b8', strokeStyle: '#00CF42', lineWidth: 0 },
+                                        { text: 'Variação Negativa / Queda (< 0%)', fillStyle: '#D60700', fontColor: '#94a3b8', strokeStyle: '#D60700', lineWidth: 0 }
                                     ];
                                 }
                             }
@@ -784,13 +805,15 @@ function renderizarGraficos(metrics) {
                             display: true,
                             position: 'bottom',
                             labels: {
+                                color: '#94a3b8',
+                                font: { size: 12 },
                                 boxWidth: 12,
                                 padding: 15,
                                 generateLabels: function(chart) {
                                     return [
-                                        { text: 'Classe A (Até 80% da Receita)', fillStyle: '#00CF42', strokeStyle: '#00CF42', lineWidth: 0 },
-                                        { text: 'Classe B (Próximos 15%)', fillStyle: '#00B6E3', strokeStyle: '#00B6E3', lineWidth: 0 },
-                                        { text: 'Classe C (Últimos 5%)', fillStyle: '#9100EB', strokeStyle: '#9100EB', lineWidth: 0 }
+                                        { text: 'Classe A (Até 80% da Receita)', fillStyle: '#00CF42', fontColor: '#94a3b8', strokeStyle: '#00CF42', lineWidth: 0 },
+                                        { text: 'Classe B (Próximos 15%)', fillStyle: '#00B6E3', fontColor: '#94a3b8', strokeStyle: '#00B6E3', lineWidth: 0 },
+                                        { text: 'Classe C (Últimos 5%)', fillStyle: '#9100EB', fontColor: '#94a3b8', strokeStyle: '#9100EB', lineWidth: 0 }
                                     ];
                                 }
                             }
