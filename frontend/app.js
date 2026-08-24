@@ -310,54 +310,8 @@ function atualizarKPIs(metrics) {
 }
 
 function atualizarMetricasNovas(novas) {
-    // Mantida para compatibilidade - novas metricas    // Inicializar tooltips aps atualizar os KPIs
+    // Inicializar helpers após atualizar os KPIs
     setTimeout(inicializarHelpers, 100);
-}
-
-function inicializarHelpers() {
-    const titulos = document.querySelectorAll('h3, h2');
-    
-    titulos.forEach(titulo => {
-        // Remover span/ícones que possam existir dentro do h3/h2 antes de pegar o texto
-        let textoOriginal = '';
-        titulo.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                textoOriginal += node.textContent;
-            }
-        });
-        
-        textoOriginal = textoOriginal.trim();
-        const cleanKey = textoOriginal.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase();
-
-        let helperHtml = '';
-        let found = false;
-
-        // Buscar no mapeamento usando a chave normalizada
-        for (const [key, value] of Object.entries(helperMappings)) {
-            const mapCleanKey = key.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase();
-            if (cleanKey === mapCleanKey) {
-                helperHtml = `
-                    <div class="helper-wrapper tooltip-wrapper">
-                        <i class="fa-solid fa-circle-question helper-icon"></i>
-                        <div class="helper-tooltip">
-                            <div class="helper-tooltip-label">O que é</div>
-                            <div class="helper-tooltip-text">${value.desc}</div>
-                            <div class="helper-tooltip-pain">
-                                <div class="helper-tooltip-label">Dor Solucionada</div>
-                                <div class="helper-tooltip-text">${value.dor}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                found = true;
-                break;
-            }
-        }
-
-        if (found && !titulo.querySelector('.helper-wrapper')) {
-            titulo.innerHTML = titulo.innerHTML + helperHtml;
-        }
-    });
 }
 
 // --- GLOSSÁRIO DE ALERTAS ---
@@ -489,19 +443,7 @@ function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRa
 function gerarHelperHtmlParaAlerta(alertaTexto) {
     const alertaDef = alertasGlossario.find(a => alertaTexto.includes(a.key));
     if (!alertaDef) return '';
-    return `
-        <div class="helper-wrapper alert-helper tip-left">
-            <i class="helper-icon">?</i>
-            <div class="helper-tooltip">
-                <div class="helper-tooltip-label">Por que avisamos?</div>
-                <div class="helper-tooltip-text">${alertaDef.desc}</div>
-                <div class="helper-tooltip-pain">
-                    <div class="helper-tooltip-label">Dor Solucionada</div>
-                    <div class="helper-tooltip-text">${alertaDef.dor}</div>
-                </div>
-            </div>
-        </div>
-    `;
+    return `<button type="button" class="helper-btn alert-helper-btn" data-alert-key="${alertaDef.key}" aria-label="Explicação do alerta" title="Ver explicação">?</button>`;
 }
 
 function atualizarAlertas(alertas) {
@@ -922,35 +864,164 @@ function inicializarHelpers() {
     const targetElements = document.querySelectorAll('.kpi-info h3, .chart-header h3, .section-title h2');
     
     targetElements.forEach(el => {
+        // Evita reinjetar múltiplos botões
+        const existingBtn = el.querySelector('.helper-btn');
+        if (existingBtn) return;
+
         // Limpar o texto de acentos e caracteres especiais para casar perfeitamente
-        // Usa textContent para ignorar transformacoes CSS como UPPERCASE no innerText
         const rawText = el.textContent || "";
         const cleanKey = rawText.replace(/[^a-zA-Z]/g, '').toLowerCase();
         
         const mapping = helperMappings[cleanKey];
         
         if (mapping) {
-            const isLeftEdge = el.closest('.chart-card:nth-child(even)'); 
-            const tipClass = isLeftEdge ? ' tip-left' : '';
-            
-            const helperHtml = `
-                <div class="helper-wrapper${tipClass}">
-                    <i class="helper-icon">?</i>
-                    <div class="helper-tooltip">
-                        <div class="helper-tooltip-label">O que é</div>
-                        <div class="helper-tooltip-text">${mapping.desc}</div>
-                        <div class="helper-tooltip-pain">
-                            <div class="helper-tooltip-label">Dor Solucionada</div>
-                            <div class="helper-tooltip-text">${mapping.dor}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            // Append do HTML do helper
-            el.innerHTML = el.innerHTML + ' ' + helperHtml;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'helper-btn';
+            btn.dataset.helperKey = cleanKey;
+            btn.dataset.title = rawText.trim();
+            btn.title = 'Ver explicação';
+            btn.textContent = '?';
+            btn.setAttribute('aria-label', `Informações sobre ${rawText.trim()}`);
+            el.appendChild(btn);
         }
     });
 }
+
+/* --- SISTEMA GLOBAL DE POPOVER & MODAL TOUCH (DESKTOP, NOTEBOOK, ANDROID E IOS) --- */
+let helperHideTimeout = null;
+
+function exibirHelperGlobal(btnElement) {
+    clearTimeout(helperHideTimeout);
+    
+    const helperKey = btnElement.dataset.helperKey;
+    const alertKey = btnElement.dataset.alertKey;
+    
+    let desc = '';
+    let dor = '';
+    let title = btnElement.dataset.title || 'Informação';
+    let label = 'O QUE É';
+    
+    if (helperKey && helperMappings[helperKey]) {
+        desc = helperMappings[helperKey].desc;
+        dor = helperMappings[helperKey].dor;
+    } else if (alertKey) {
+        const alertaDef = alertasGlossario.find(a => a.key === alertKey);
+        if (alertaDef) {
+            desc = alertaDef.desc;
+            dor = alertaDef.dor;
+            title = alertaDef.title;
+            label = 'POR QUE AVISAMOS?';
+        }
+    }
+    
+    if (!desc) return;
+
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Smartphone (Android / iOS): abre bottom-sheet seguro e touch-friendly
+        const modal = document.getElementById('helper-mobile-modal');
+        const titleEl = document.getElementById('helper-mobile-title');
+        const descEl = document.getElementById('helper-mobile-desc');
+        const painEl = document.getElementById('helper-mobile-pain');
+        
+        if (modal && titleEl && descEl && painEl) {
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+            painEl.textContent = dor;
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Trava scroll de fundo
+        }
+    } else {
+        // Desktop / Notebook: posiciona popover flutuante no body sem cortes
+        const popover = document.getElementById('global-helper-popover');
+        const descEl = document.getElementById('global-helper-desc');
+        const painEl = document.getElementById('global-helper-pain');
+        const headerTitleEl = popover.querySelector('.helper-popover-title');
+        
+        if (headerTitleEl) headerTitleEl.textContent = label;
+        if (descEl) descEl.textContent = desc;
+        if (painEl) painEl.textContent = dor;
+        
+        // Calcular posição no viewport
+        const rect = btnElement.getBoundingClientRect();
+        const popoverWidth = 280;
+        
+        // Posição horizontal centralizada com clamp nas bordas da tela
+        let left = rect.left + (rect.width / 2) - (popoverWidth / 2);
+        if (left < 15) left = 15;
+        if (left + popoverWidth > window.innerWidth - 15) {
+            left = window.innerWidth - popoverWidth - 15;
+        }
+        
+        popover.style.left = `${left}px`;
+        popover.classList.add('show');
+        
+        const popoverHeight = popover.offsetHeight || 160;
+        
+        // Posição vertical: se estiver muito perto do topo do viewport, abre para baixo
+        if (rect.top < popoverHeight + 20) {
+            popover.style.top = `${rect.bottom + 8}px`;
+            popover.style.bottom = 'auto';
+        } else {
+            popover.style.top = `${rect.top - popoverHeight - 8}px`;
+            popover.style.bottom = 'auto';
+        }
+    }
+}
+
+function ocultarHelperGlobal() {
+    helperHideTimeout = setTimeout(() => {
+        const popover = document.getElementById('global-helper-popover');
+        if (popover) popover.classList.remove('show');
+    }, 150);
+}
+
+function fecharHelperMobile(event) {
+    if (event && event.target && event.target.closest('.helper-mobile-sheet') && !event.target.closest('.helper-mobile-close')) {
+        return; // Não fecha se clicou no conteúdo da folha
+    }
+    const modal = document.getElementById('helper-mobile-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// Event delegation global para todos os botões de ajuda
+document.addEventListener('mouseover', e => {
+    const btn = e.target.closest('.helper-btn');
+    if (btn && window.innerWidth > 768) {
+        exibirHelperGlobal(btn);
+    }
+});
+
+document.addEventListener('mouseout', e => {
+    const btn = e.target.closest('.helper-btn');
+    if (btn && window.innerWidth > 768) {
+        ocultarHelperGlobal();
+    }
+});
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.helper-btn');
+    if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        exibirHelperGlobal(btn);
+    } else if (!e.target.closest('.global-helper-popover')) {
+        const popover = document.getElementById('global-helper-popover');
+        if (popover) popover.classList.remove('show');
+    }
+});
+
+window.addEventListener('scroll', () => {
+    const popover = document.getElementById('global-helper-popover');
+    if (popover && popover.classList.contains('show') && window.innerWidth > 768) {
+        popover.classList.remove('show');
+    }
+}, { passive: true });
 
 /* --- CARROSSEL DE KPIS --- */
 let currentKpiSlide = 0;

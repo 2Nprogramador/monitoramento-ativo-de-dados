@@ -359,9 +359,47 @@
         </div>
     </div>
 
+    <!-- Popover Global de Ajuda (Desktop / Notebook) -->
+    <div id="global-helper-popover" class="global-helper-popover">
+        <div class="helper-popover-header">
+            <i class="fa-solid fa-circle-question"></i>
+            <span class="helper-popover-title">O QUE É</span>
+        </div>
+        <div id="global-helper-desc" class="helper-popover-text"></div>
+        <div class="helper-popover-pain">
+            <div class="helper-popover-pain-label">
+                <i class="fa-solid fa-lightbulb"></i> DOR SOLUCIONADA
+            </div>
+            <div id="global-helper-pain" class="helper-popover-pain-text"></div>
+        </div>
+    </div>
+
+    <!-- Modal / Bottom Sheet para Smartphones (Android e iOS) -->
+    <div id="helper-mobile-modal" class="helper-mobile-overlay" onclick="fecharHelperMobile(event)">
+        <div class="helper-mobile-sheet">
+            <div class="helper-mobile-header">
+                <div class="helper-mobile-title-wrapper">
+                    <div class="helper-mobile-icon-badge"><i class="fa-solid fa-circle-question"></i></div>
+                    <span id="helper-mobile-title" class="helper-mobile-title">Métrica</span>
+                </div>
+                <button class="helper-mobile-close" onclick="fecharHelperMobile()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="helper-mobile-body">
+                <div class="helper-mobile-section">
+                    <div class="helper-mobile-label">O QUE É</div>
+                    <div id="helper-mobile-desc" class="helper-mobile-text"></div>
+                </div>
+                <div class="helper-mobile-section helper-mobile-pain-section">
+                    <div class="helper-mobile-pain-label"><i class="fa-solid fa-lightbulb"></i> DOR SOLUCIONADA</div>
+                    <div id="helper-mobile-pain" class="helper-mobile-pain-text"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.29"></script>
+    <script src="app.js?v=1.0.30"></script>
 </body>
 </html>

@@ -577,116 +577,282 @@ body {
 }
 
 /* --- HELPER TOOLTIP --- */
-.helper-wrapper {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    margin-left: 0.15rem;
-    vertical-align: middle;
-}
-
-.helper-icon {
+/* --- HELPER BOTÕES & POPOVERS (RESPONSIVO PARA DESKTOP, NOTEBOOK, ANDROID E IOS) --- */
+.helper-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     color: #94a3b8;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    cursor: help;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-style: normal;
     line-height: 1;
     flex-shrink: 0;
     user-select: none;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+    padding: 0;
+    outline: none;
 }
 
-.helper-icon:hover {
-    background: rgba(99, 102, 241, 0.2);
+.helper-btn:hover, .helper-btn:focus, .helper-btn.active {
+    background: rgba(99, 102, 241, 0.25);
     border-color: #6366f1;
-    color: #6366f1;
+    color: #818cf8;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+    transform: scale(1.1);
 }
 
-.helper-tooltip {
-    visibility: hidden;
+.alert-helper-btn {
+    margin-left: auto;
+}
+
+/* POPOVER GLOBAL FLUTUANTE (Desktop e Notebook - sem corte de overflow) */
+.global-helper-popover {
+    position: fixed;
+    width: 280px;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    z-index: 100000;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
     opacity: 0;
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 240px;
-    background: rgba(10, 14, 26, 0.98);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    z-index: 9999;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
     pointer-events: none;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    text-transform: none;
 }
 
-.helper-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: rgba(99, 102, 241, 0.3);
-}
-
-.helper-wrapper:hover .helper-tooltip {
-    visibility: visible;
+.global-helper-popover.show {
     opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 
-.helper-tooltip-label {
-    font-size: 0.65rem;
+.helper-popover-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #6366f1;
-    margin-bottom: 0.2rem;
+    color: #818cf8;
+    margin-bottom: 0.35rem;
     font-family: 'Inter', sans-serif;
 }
 
-.helper-tooltip-text {
-    font-size: 0.75rem;
-    color: #94a3b8;
+.helper-popover-text {
+    font-size: 0.78rem;
+    color: #cbd5e1;
     line-height: 1.5;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
+    text-transform: none;
 }
 
-.helper-tooltip-pain {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+.helper-popover-pain {
+    margin-top: 0.55rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.helper-tooltip-pain .helper-tooltip-label {
+.helper-popover-pain-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: #f59e0b;
+    margin-bottom: 0.25rem;
+    font-family: 'Inter', sans-serif;
 }
 
-.helper-wrapper.tip-left .helper-tooltip {
-    left: auto;
-    right: 0;
-    transform: none;
+.helper-popover-pain-text {
+    font-size: 0.75rem;
+    color: #fde68a;
+    line-height: 1.45;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    text-transform: none;
 }
 
-.helper-wrapper.tip-left .helper-tooltip::after {
-    left: auto;
-    right: 10px;
-    transform: none;
+/* MODAL BOTTOM SHEET PARA SMARTPHONES (Android e iOS) */
+.helper-mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 14, 26, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100001;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
 }
 
-.kpi-info h3, .chart-header h3, .section-title h2 {
-    display: block;
-    line-height: 1.4;
+.helper-mobile-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.helper-mobile-sheet {
+    background: #0f172a;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 500px;
+    padding: 1.5rem 1.25rem;
+    padding-bottom: max(1.75rem, env(safe-area-inset-bottom));
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.helper-mobile-overlay.show .helper-mobile-sheet {
+    transform: translateY(0);
+}
+
+.helper-mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.helper-mobile-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.helper-mobile-icon-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.helper-mobile-title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.helper-mobile-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.helper-mobile-close:hover, .helper-mobile-close:active {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.helper-mobile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.helper-mobile-section {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.helper-mobile-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #818cf8;
+    margin-bottom: 0.35rem;
+}
+
+.helper-mobile-text {
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.helper-mobile-pain-section {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+.helper-mobile-pain-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #f59e0b;
+    margin-bottom: 0.35rem;
+}
+
+.helper-mobile-pain-text {
+    font-size: 0.85rem;
+    color: #fde68a;
+    line-height: 1.5;
+}
+
+/* Alinhamento dos títulos para garantir que o ? fique alinhado */
+.kpi-info h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    line-height: 1.3;
+}
+
+.chart-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
 }
 
 /* --- Modal Glossario --- */
