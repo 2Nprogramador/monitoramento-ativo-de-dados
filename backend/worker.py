@@ -33,34 +33,160 @@ def obter_ultima_data_db():
             return result[0]
     return datetime.date.today() - datetime.timedelta(days=1)
 
+# ==============================================================================
+# CATÁLOGO DE 100 PRODUTOS (20 PRODUTOS POR SETOR COM DIVERSAS MODALIDADES)
+# ==============================================================================
+CATALOGO_PRODUTOS = [
+    # 1. Saúde e Beleza (20 produtos)
+    {"line": "Saude e Beleza", "name": "Sérum Facial Vitamina C 30ml", "price": 89.90},
+    {"line": "Saude e Beleza", "name": "Creme Anti-Idade Ácido Hialurônico", "price": 115.00},
+    {"line": "Saude e Beleza", "name": "Perfume Eau de Parfum Floral 100ml", "price": 129.00},
+    {"line": "Saude e Beleza", "name": "Escova Secadora e Modeladora 1200W", "price": 125.00},
+    {"line": "Saude e Beleza", "name": "Kit Pincéis de Maquiagem Profissional", "price": 79.90},
+    {"line": "Saude e Beleza", "name": "Protetor Solar Facial FPS 50", "price": 54.90},
+    {"line": "Saude e Beleza", "name": "Hidratante Corporal Ceramidas 400ml", "price": 42.50},
+    {"line": "Saude e Beleza", "name": "Shampoo Reparador Óleo de Argan 300ml", "price": 36.90},
+    {"line": "Saude e Beleza", "name": "Condicionador Nutritivo Queratina", "price": 38.90},
+    {"line": "Saude e Beleza", "name": "Máscara de Tratamento Capilar 500g", "price": 49.90},
+    {"line": "Saude e Beleza", "name": "Base Líquida Alta Cobertura", "price": 58.00},
+    {"line": "Saude e Beleza", "name": "Batom Matte Longa Duração", "price": 29.90},
+    {"line": "Saude e Beleza", "name": "Paleta de Sombras 12 Cores", "price": 64.90},
+    {"line": "Saude e Beleza", "name": "Sabonete Facial Pele Oleosa 150ml", "price": 32.00},
+    {"line": "Saude e Beleza", "name": "Tônico Micelar Purificante 200ml", "price": 35.00},
+    {"line": "Saude e Beleza", "name": "Óleo Essencial Puro Lavanda 15ml", "price": 45.00},
+    {"line": "Saude e Beleza", "name": "Esfoliante Corporal Café e Açúcar", "price": 39.90},
+    {"line": "Saude e Beleza", "name": "Desodorante Antitranspirante Roll-On", "price": 14.90},
+    {"line": "Saude e Beleza", "name": "Gel Dental Branqueador Avançado", "price": 18.50},
+    {"line": "Saude e Beleza", "name": "Protetor Labial Manteiga de Cacau", "price": 12.00},
+
+    # 2. Acessórios Eletrônicos (20 produtos)
+    {"line": "Acessorios Eletronicos", "name": "Fone de Ouvido Bluetooth Noise Cancelling Pro", "price": 129.90},
+    {"line": "Acessorios Eletronicos", "name": "Smartwatch Monitor Cardíaco AMOLED", "price": 125.00},
+    {"line": "Acessorios Eletronicos", "name": "Teclado Mecânico Gamer RGB Switch Blue", "price": 119.00},
+    {"line": "Acessorios Eletronicos", "name": "Headset Gamer Surround 7.1", "price": 98.00},
+    {"line": "Acessorios Eletronicos", "name": "Hub USB-C 7 em 1 HDMI 4K", "price": 89.90},
+    {"line": "Acessorios Eletronicos", "name": "Mousepad Gamer Speed Extra Grande", "price": 49.90},
+    {"line": "Acessorios Eletronicos", "name": "Mouse Sem Fio Ergonômico 4000 DPI", "price": 65.00},
+    {"line": "Acessorios Eletronicos", "name": "Carregador Turbo USB-C GaN 65W", "price": 79.90},
+    {"line": "Acessorios Eletronicos", "name": "Power Bank 20.000mAh Rápido", "price": 89.00},
+    {"line": "Acessorios Eletronicos", "name": "Caixa de Som Bluetooth Portátil IPX7", "price": 75.00},
+    {"line": "Acessorios Eletronicos", "name": "Webcam Full HD 1080p com Microfone", "price": 85.00},
+    {"line": "Acessorios Eletronicos", "name": "Carregador por Indução Sem Fio 15W", "price": 59.90},
+    {"line": "Acessorios Eletronicos", "name": "Suporte Articulado para Notebook Alumínio", "price": 55.00},
+    {"line": "Acessorios Eletronicos", "name": "Tripé Flexível com Ring Light LED", "price": 45.00},
+    {"line": "Acessorios Eletronicos", "name": "Cabo USB-C Reforçado Nylon 2m", "price": 25.00},
+    {"line": "Acessorios Eletronicos", "name": "Cartão de Memória MicroSD 128GB Classe 10", "price": 49.90},
+    {"line": "Acessorios Eletronicos", "name": "Película Protetora Vidro 9H", "price": 15.00},
+    {"line": "Acessorios Eletronicos", "name": "Capa Protetora Anti-Impacto", "price": 29.90},
+    {"line": "Acessorios Eletronicos", "name": "Adaptador Bluetooth 5.0 USB", "price": 22.00},
+    {"line": "Acessorios Eletronicos", "name": "Suporte Veicular Magnético Smartphone", "price": 19.90},
+
+    # 3. Casa e Estilo de Vida (20 produtos)
+    {"line": "Casa e Estilo de Vida", "name": "Fritadeira Air Fryer Digital 4.5L", "price": 129.00},
+    {"line": "Casa e Estilo de Vida", "name": "Aspirador de Pó Robô Inteligente Wi-Fi", "price": 130.00},
+    {"line": "Casa e Estilo de Vida", "name": "Cafeteira Expresso Elétrica 15 Bar", "price": 125.00},
+    {"line": "Casa e Estilo de Vida", "name": "Liquidificador Potente 1200W Copo Vidro", "price": 89.90},
+    {"line": "Casa e Estilo de Vida", "name": "Jogo de Panelas Cerâmica Antiaderente 5 Peças", "price": 128.00},
+    {"line": "Casa e Estilo de Vida", "name": "Jogo de Lençol 100% Algodão 300 Fios", "price": 95.00},
+    {"line": "Casa e Estilo de Vida", "name": "Toalha de Banho Fio Penteado Extra Macia", "price": 45.00},
+    {"line": "Casa e Estilo de Vida", "name": "Manta Soft Aveludada Microfibra", "price": 55.00},
+    {"line": "Casa e Estilo de Vida", "name": "Faqueiro Inox 24 Peças com Estojo", "price": 78.00},
+    {"line": "Casa e Estilo de Vida", "name": "Conjunto Pratos Porcelana 16 Peças", "price": 110.00},
+    {"line": "Casa e Estilo de Vida", "name": "Difusor Aromatizador Ultrassônico RGB", "price": 59.90},
+    {"line": "Casa e Estilo de Vida", "name": "Luminária de Mesa LED Articulada Touch", "price": 48.00},
+    {"line": "Casa e Estilo de Vida", "name": "Garrafa Térmica Aço Inox 1L", "price": 42.00},
+    {"line": "Casa e Estilo de Vida", "name": "Pote Hermético Vidro com Tampa Bambu", "price": 28.00},
+    {"line": "Casa e Estilo de Vida", "name": "Balança Digital Cozinha Alta Precisão", "price": 32.00},
+    {"line": "Casa e Estilo de Vida", "name": "Organizador Multiuso Gavetas Acrílico", "price": 24.90},
+    {"line": "Casa e Estilo de Vida", "name": "Tapete Antiderrapante Sala Geométrico", "price": 68.00},
+    {"line": "Casa e Estilo de Vida", "name": "Quadro Decorativo Minimalista Moldura", "price": 49.00},
+    {"line": "Casa e Estilo de Vida", "name": "Cesto Roupas Dobrável Impermeável", "price": 34.90},
+    {"line": "Casa e Estilo de Vida", "name": "Cortador e Fatiador Legumes Multiuso", "price": 22.00},
+
+    # 4. Esportes e Viagens (20 produtos)
+    {"line": "Esportes e Viagens", "name": "Mala de Viagem Rígida Bordo 360 Graus TSA", "price": 129.00},
+    {"line": "Esportes e Viagens", "name": "Mochila Impermeável Notebook e Viagem 40L", "price": 98.00},
+    {"line": "Esportes e Viagens", "name": "Kit Organizador de Malas Viagem 6 Peças", "price": 39.90},
+    {"line": "Esportes e Viagens", "name": "Almofada de Pescoço Espuma Viscoelástica", "price": 34.00},
+    {"line": "Esportes e Viagens", "name": "Cadeado TSA com Segredo para Bagagem", "price": 25.00},
+    {"line": "Esportes e Viagens", "name": "Tênis de Corrida Amortecimento Avançado", "price": 125.00},
+    {"line": "Esportes e Viagens", "name": "Garrafa Térmica Esportiva Inox 750ml", "price": 45.00},
+    {"line": "Esportes e Viagens", "name": "Tapete Yoga Mat Antiderrapante TPE 6mm", "price": 62.00},
+    {"line": "Esportes e Viagens", "name": "Kit Faixas Elásticas Extensoras Mini Bands", "price": 32.00},
+    {"line": "Esportes e Viagens", "name": "Corda de Pular Crossfit Rolamento Duplo", "price": 28.00},
+    {"line": "Esportes e Viagens", "name": "Luva de Musculação com Munhequeira", "price": 36.00},
+    {"line": "Esportes e Viagens", "name": "Óculos de Natação Anti-Embaçante UV", "price": 42.00},
+    {"line": "Esportes e Viagens", "name": "Colchonete Ginástica Alta Densidade", "price": 48.00},
+    {"line": "Esportes e Viagens", "name": "Pochete de Corrida Slim Impermeável", "price": 24.00},
+    {"line": "Esportes e Viagens", "name": "Bolsa Esportiva Térmica Treino", "price": 55.00},
+    {"line": "Esportes e Viagens", "name": "Barraca de Camping 4 Pessoas Impermeável", "price": 128.00},
+    {"line": "Esportes e Viagens", "name": "Saco de Dormir Térmico Compacto", "price": 85.00},
+    {"line": "Esportes e Viagens", "name": "Lanterna Tática Recarregável LED Forte", "price": 45.00},
+    {"line": "Esportes e Viagens", "name": "Canivete Suíço Multiuso Inox", "price": 49.90},
+    {"line": "Esportes e Viagens", "name": "Bastão de Caminhada Retrátil Trilha", "price": 39.00},
+
+    # 5. Moda (20 produtos)
+    {"line": "Moda", "name": "Blazer Slim Fit Alfaiataria", "price": 128.00},
+    {"line": "Moda", "name": "Camisa Social Manga Longa Algodão Nobre", "price": 89.90},
+    {"line": "Moda", "name": "Macacão Longo Alfaiataria com Cinto", "price": 115.00},
+    {"line": "Moda", "name": "Calça Pantalona Tecido Fluido", "price": 85.00},
+    {"line": "Moda", "name": "Cinto Couro Legítimo Fivela Metálica", "price": 45.00},
+    {"line": "Moda", "name": "Jaqueta Jeans Oversized Estonada", "price": 119.00},
+    {"line": "Moda", "name": "Calça Jeans Skinny Alta Elasticidade", "price": 88.00},
+    {"line": "Moda", "name": "Vestido Midi Canelado Elegante", "price": 72.00},
+    {"line": "Moda", "name": "Cardigan Tricot Macio Botões", "price": 68.00},
+    {"line": "Moda", "name": "Bermuda Sarja Casual com Bolsos", "price": 59.90},
+    {"line": "Moda", "name": "Shorts Jeans Cintura Alta Desfiado", "price": 54.00},
+    {"line": "Moda", "name": "Saia Plissada Cintura Alta", "price": 62.00},
+    {"line": "Moda", "name": "Jaqueta Corta-Vento Estilo Esportivo", "price": 85.00},
+    {"line": "Moda", "name": "Polo Masculina Algodão Piquet", "price": 58.00},
+    {"line": "Moda", "name": "Vestido Floral Verão Tecido Leve", "price": 69.00},
+    {"line": "Moda", "name": "Camiseta Básica Premium 100% Algodão Pima", "price": 39.90},
+    {"line": "Moda", "name": "Calça Moletom Confort com Punho", "price": 64.00},
+    {"line": "Moda", "name": "Top Cropped Faixa Canelado", "price": 26.00},
+    {"line": "Moda", "name": "Pijama Cetim Manga Curta Confort", "price": 52.00},
+    {"line": "Moda", "name": "Meia Cano Médio Algodão Kit 3 Pares", "price": 19.90}
+]
+
 def gerar_dados_proximo_dia():
     """
-    Gera novas vendas aleatórias para o próximo dia subsequente à última data do DB.
-    Mesma lógica do gerador original proposta-sheets.
+    Gera novas vendas aleatórias para o próximo dia subsequente à última data do DB
+    utilizando o catálogo de 100 produtos cadastrados.
     """
     ultima_data = obter_ultima_data_db()
     proximo_dia = ultima_data + datetime.timedelta(days=1)
-    
-    qtd_transacoes = random.randint(100, 300)
+    return gerar_dados_para_data(proximo_dia)
+
+def gerar_dados_para_data(data_alvo):
+    """
+    Gera transações de vendas realistas para uma data específica utilizando o catálogo de 100 produtos.
+    """
+    qtd_transacoes = random.randint(120, 280)
     novas_linhas = []
     
     cidades = ['Rio de Janeiro', 'São Paulo', 'Manaus']
     tipos_cliente = ['Normal', 'Membro']
     generos = ['Homem', 'Mulher']
-    linhas_produto = ['Saude e Beleza', 'Acessorios Eletronicos', 'Casa e Estilo de Vida', 'Esportes e Viagens', 'Moda']
     pagamentos = ['Pix', 'Cartao de Credito', 'Debito']
     
-    print(f"[Worker] Gerando {qtd_transacoes} transações para a data {proximo_dia}...")
+    print(f"[Worker] Gerando {qtd_transacoes} transações para a data {data_alvo}...")
 
     for _ in range(qtd_transacoes):
         invoice_id = f"{random.randint(100, 999)}-{random.randint(10, 99)}-{random.randint(1000, 9999)}"
         city = random.choice(cidades)
         customer_type = random.choice(tipos_cliente)
         gender = random.choice(generos)
-        product_line = random.choice(linhas_produto)
         
-        unit_price = round(random.uniform(10.00, 130.00), 2)
-        quantity = random.randint(1, 15)
+        # Sortear produto do catálogo de 100 itens
+        prod = random.choice(CATALOGO_PRODUTOS)
+        product_line = prod["line"]
+        product_name = prod["name"]
+        
+        # Pequena variação de preço (+/- 5%) para simular descontos ou promoções
+        fator_preco = random.uniform(0.95, 1.05)
+        unit_price = round(prod["price"] * fator_preco, 2)
+        
+        quantity = random.randint(1, 12)
         total = round(unit_price * quantity, 2)
         
         hora = random.randint(7, 23)
@@ -68,22 +194,22 @@ def gerar_dados_proximo_dia():
         time_str = f"{hora:02d}:{minuto:02d}"
         
         payment = random.choice(pagamentos)
-        rating = round(random.uniform(3.0, 10.0), 1)
+        rating = round(random.uniform(3.5, 10.0), 1)
         
-        # Mapeando os nomes das colunas diretamente para snake_case do banco de dados
         linha = {
             "invoice_id": invoice_id,
             "city": city,
             "customer_type": customer_type,
             "gender": gender,
             "product_line": product_line,
+            "product_name": product_name,
             "unit_price": unit_price,
             "quantity": int(quantity),
             "total": total,
             "time": time_str,
             "payment": payment,
             "rating": rating,
-            "data": proximo_dia
+            "data": data_alvo
         }
         novas_linhas.append(linha)
         

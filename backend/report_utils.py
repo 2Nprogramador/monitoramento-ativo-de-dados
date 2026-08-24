@@ -34,6 +34,7 @@ def fetch_data_from_db(target_date=None):
         "customer_type": "Customer type",
         "gender": "Gender",
         "product_line": "Product line",
+        "product_name": "Product name",
         "unit_price": "Unit price",
         "quantity": "Quantity",
         "total": "Total",
@@ -69,7 +70,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         return {}
 
     # Limpeza de campos totalizadores na planilha legada, caso existam
-    for col in ["City", "Customer type", "Gender", "Product line", "Payment"]:
+    for col in ["City", "Customer type", "Gender", "Product line", "Product name", "Payment"]:
         if col in df_dia.columns:
             df_dia = df_dia[~df_dia[col].astype(str).str.lower().isin(["total", "quantity"])]
         if col in df_dia_anterior.columns:
@@ -165,10 +166,11 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
     tx_tipo = df_dia.groupby("Customer type")["Total"].sum()
     tx_tipo_pct = (tx_tipo / total_geral_dia * 100).round(1) if total_geral_dia > 0 else tx_tipo * 0
 
-    # M2. Produto mais lucrativo do dia
+    # M2. Produto mais lucrativo do dia (Usa Product name se disponível, senão Product line)
+    col_prod_top = "Product name" if "Product name" in df_dia.columns else "Product line"
     if not df_dia.empty:
-        produto_top = df_dia.groupby("Product line")["Total"].sum().idxmax()
-        produto_top_valor = df_dia.groupby("Product line")["Total"].sum().max()
+        produto_top = df_dia.groupby(col_prod_top)["Total"].sum().idxmax()
+        produto_top_valor = df_dia.groupby(col_prod_top)["Total"].sum().max()
     else:
         produto_top = "N/A"
         produto_top_valor = 0.0
