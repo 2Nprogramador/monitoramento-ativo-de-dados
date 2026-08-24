@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+from sqlalchemy import text as sa_text
 import pandas as pd
 from fastapi import FastAPI, Query, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,15 +58,13 @@ except ImportError:
 def get_available_dates(username: str = Depends(authenticate)):
     """
     Retorna a lista de datas com vendas registradas no banco, ordenadas do mais recente ao mais antigo.
+    Utiliza query SQL direta e leve em vez de carregar toda a tabela.
     """
     try:
-        df = fetch_data_from_db()
-        if df.empty:
-            return []
-        
-        dias_unicos = df["Data"].dt.date.unique()
-        dias_unicos_ordenados = sorted(dias_unicos, reverse=True)
-        return [dia.strftime("%Y-%m-%d") for dia in dias_unicos_ordenados]
+        query = sa_text("SELECT DISTINCT data FROM vendas ORDER BY data DESC")
+        with engine.connect() as conn:
+            result = conn.execute(query).fetchall()
+        return [row[0].strftime("%Y-%m-%d") for row in result]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao buscar datas: {str(e)}")
 
@@ -75,11 +74,11 @@ def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-
     Retorna o relatório analítico completo de um dia selecionado (dados + variações + alertas).
     """
     try:
-        df = fetch_data_from_db()
+        target_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        df = fetch_data_from_db(target_date=target_date)
         if df.empty:
             raise HTTPException(status_code=404, detail="Banco de dados vazio.")
 
-        target_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         relatorio = relatorio_por_dia_com_variacoes(target_date, df)
 
         if not relatorio:
@@ -184,11 +183,10 @@ def n8n_compatibility_endpoint(
     Endpoint de compatibilidade exata com as requisições HTTP enviadas pela ferramenta n8n do proposta-sheets original.
     """
     try:
-        df = fetch_data_from_db()
+        target_date_parsed = datetime.datetime.strptime(target_date, "%Y-%m-%d").date()
+        df = fetch_data_from_db(target_date=target_date_parsed)
         if df.empty:
             return {"erro": "Banco de dados vazio."}
-
-        target_date_parsed = datetime.datetime.strptime(target_date, "%Y-%m-%d").date()
         relatorio = relatorio_por_dia_com_variacoes(target_date_parsed, df)
 
         if not relatorio:

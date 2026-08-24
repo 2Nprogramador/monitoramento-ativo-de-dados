@@ -7,13 +7,22 @@ try:
 except ImportError:
     from database import engine
 
-def fetch_data_from_db():
+def fetch_data_from_db(target_date=None):
     """
-    Carrega todos os dados da tabela de vendas do PostgreSQL em um DataFrame do Pandas.
-    Renomeia as colunas para coincidir com a estrutura esperada pelo dashboard original.
+    Carrega dados da tabela de vendas do PostgreSQL em um DataFrame do Pandas.
+    
+    Se target_date for fornecido, carrega apenas os dados do dia selecionado e
+    do dia anterior (para cálculo de variações), aproveitando o índice idx_vendas_data.
+    Se não for fornecido, carrega todos os dados (usado pelo /api/dates legado).
     """
-    query = "SELECT * FROM vendas"
-    df = pd.read_sql_query(query, engine)
+    from sqlalchemy import text as sa_text
+
+    if target_date:
+        dia_anterior = target_date - datetime.timedelta(days=1)
+        query = sa_text("SELECT * FROM vendas WHERE data >= :d_inicio AND data <= :d_fim")
+        df = pd.read_sql_query(query, engine, params={"d_inicio": dia_anterior, "d_fim": target_date})
+    else:
+        df = pd.read_sql_query("SELECT * FROM vendas", engine)
     
     if df.empty:
         return df
@@ -350,17 +359,17 @@ def calcular_alertas_dia(relatorio):
     # M1. Taxa de cliente Normal muito baixa
     tx_tipo = novas.get("taxa_tipo_cliente", {})
     perc_normal = tx_tipo.get("Normal", tx_tipo.get("normal", 0))
-    if perc_normal > 0 and perc_normal < 30:
-        alertas_negativos.append(f"Clientes **Não-Membros** representam apenas **{perc_normal:.1f}%** das vendas — concentração excessiva em membros.")
+    if perc_normal > 0 and perc_normal < 20:
+        alertas_negativos.append(f"Clientes **Não-Membros** representam apenas **{perc_normal:.1f}%** das vendas — a loja parou de atrair público novo.")
 
     # M4. Taxa de satisfação crítica > 15%
     taxa_critica = novas.get("taxa_satisfacao_critica", 0)
-    if taxa_critica > 15:
+    if taxa_critica > 5:
         alertas_negativos.append(f"**{taxa_critica:.1f}%** das vendas tiveram rating abaixo de 5.0 — nível de insatisfação crítico.")
 
     # M5. Concentração geográfica > 70%
     conc = novas.get("concentracao_geografica", {})
-    if conc.get("percentual", 0) > 70:
+    if conc.get("percentual", 0) > 60:
         alertas_negativos.append(f"A cidade **{conc.get('cidade')}** concentra **{conc.get('percentual')}%** do faturamento — risco de dependência geográfica.")
 
     # M6. Queda de UPV > 20%
@@ -376,8 +385,8 @@ def calcular_alertas_dia(relatorio):
 
     # M7. Mix digital abaixo de 60%
     mix_digital = novas.get("mix_digital_pct", 100)
-    if mix_digital < 60:
-        alertas_negativos.append(f"Pagamentos digitais representam apenas **{mix_digital:.1f}%** do faturamento — queda na adesão digital.")
+    if mix_digital < 70:
+        alertas_negativos.append(f"Pagamentos digitais representam apenas **{mix_digital:.1f}%** do faturamento — maior risco de segurança e custo com transporte de valores.")
 
     # M9. Linhas de produto sem vendas
     linhas_sem = novas.get("linhas_sem_venda", [])

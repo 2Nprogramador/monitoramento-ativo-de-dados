@@ -340,10 +340,10 @@ function inicializarHelpers() {
                     <div class="helper-wrapper tooltip-wrapper">
                         <i class="fa-solid fa-circle-question helper-icon"></i>
                         <div class="helper-tooltip">
-                            <div class="helper-tooltip-label">Por que medimos?</div>
+                            <div class="helper-tooltip-label">O que é</div>
                             <div class="helper-tooltip-text">${value.desc}</div>
                             <div class="helper-tooltip-pain">
-                                <div class="helper-tooltip-label">Dor Resolvida</div>
+                                <div class="helper-tooltip-label">Dor Solucionada</div>
                                 <div class="helper-tooltip-text">${value.dor}</div>
                             </div>
                         </div>
@@ -360,73 +360,73 @@ function inicializarHelpers() {
     });
 }
 
-// --- GLOSSARIO DE ALERTAS ---
+// --- GLOSSÁRIO DE ALERTAS ---
 const alertasGlossario = [
     {
         key: 'ultrapassaram R$30.000',
         title: 'Meta de Vendas por Cidade',
-        desc: 'Sinaliza quando uma cidade ultrapassa a marca de R$ 30.000,00 em um unico dia.',
-        dor: 'Permite bonificar equipes locais ou aumentar investimento em marketing na regiao.'
+        desc: 'Sinaliza quando uma cidade ultrapassa a marca de R$ 30.000,00 em um único dia.',
+        dor: 'Permite bonificar equipes locais ou aumentar o investimento em marketing na região.'
     },
     {
         key: 'queda superior a 30% nas vendas',
         title: 'Queda Brusca de Vendas (Cidade)',
-        desc: 'Alerta disparado se o faturamento de uma cidade cai mais de 30% em relacao ao dia anterior.',
-        dor: 'Possibilita acao rapida para investigar problemas na loja fisica ou instabilidades regionais.'
+        desc: 'Alerta disparado se o faturamento de uma cidade cair mais de 30% em relação ao dia anterior.',
+        dor: 'Possibilita ação rápida para investigar problemas operacionais na filial ou instabilidades regionais.'
     },
     {
         key: 'apresentou um aumento superior a 30%',
         title: 'Aumento de Pagamentos via Pix',
         desc: 'Notifica se o uso do Pix subiu mais de 30% frente ao dia anterior.',
-        dor: 'Indica sucesso em campanhas de reducao de taxas de maquininha, melhorando a margem de lucro.'
+        dor: 'Indica sucesso em campanhas de incentivo a meios de menor custo, melhorando a margem líquida.'
     },
     {
         key: 'mais de 400 vendas',
         title: 'Alta Demanda de Produto',
-        desc: 'Alerta para categorias que ultrapassaram a marca critica de 400 unidades vendidas no dia.',
-        dor: 'Previne ruptura de estoque (falta do produto), permitindo reposicao agil.'
+        desc: 'Alerta para categorias que ultrapassaram a marca crítica de 400 unidades vendidas no dia.',
+        dor: 'Previne ruptura de estoque (desabastecimento), permitindo reposição ágil de mercadorias.'
     },
     {
-        key: 'excessiva em membros',
-        title: 'Baixa Aquisicao de Novos Clientes',
-        desc: 'Avisa quando clientes normais representam menos de 20% das vendas totais.',
-        dor: 'Sinaliza que a loja parou de atrair publico novo, dependendo apenas da base fiel.'
+        key: 'Não-Membros',
+        title: 'Baixa Aquisição de Novos Clientes',
+        desc: 'Avisa quando clientes normais (não membros) representam menos de 20% das vendas totais.',
+        dor: 'Sinaliza que o negócio parou de atrair público novo, dependendo exclusivamente da base recorrente.'
     },
     {
         key: 'rating abaixo de 5.0',
-        title: 'Alerta Critico de Satisfacao',
-        desc: 'Dispara quando mais de 5% das vendas recebem uma avaliacao abaixo de 5 (Numa escala de 1 a 10).',
-        dor: 'Permite identificar dias de mal atendimento ou produtos defeituosos rapidamente.'
+        title: 'Alerta Crítico de Satisfação',
+        desc: 'Dispara quando mais de 5% das vendas recebem avaliação abaixo de 5 (escala de 1 a 10).',
+        dor: 'Permite identificar dias de mau atendimento, falhas operacionais ou produtos com defeito.'
     },
     {
         key: 'risco de depend',
-        title: 'Risco de Concentracao Geografica',
-        desc: 'Alerta quando uma unica cidade representa mais de 60% de todo o faturamento da empresa.',
-        dor: 'Sinaliza vulnerabilidade: um feriado ou problema nessa cidade compromete o caixa total.'
+        title: 'Risco de Concentração Geográfica',
+        desc: 'Alerta quando uma única cidade representa mais de 60% de todo o faturamento da empresa.',
+        dor: 'Sinaliza vulnerabilidade: imprevistos ou feriados nessa praça comprometem a receita global.'
     },
     {
         key: '(UPV) caiu',
-        title: 'Queda de Preco Medio (UPV)',
-        desc: 'Avisa quando o cliente passa a levar produtos mais baratos que a media historica.',
-        dor: 'Mostra perda de poder aquisitivo ou ineficacia nas campanhas de up-sell dos vendedores.'
+        title: 'Queda de Preço Médio (UPV)',
+        desc: 'Avisa quando o cliente passa a comprar produtos de menor valor unitário em relação à média.',
+        dor: 'Evidencia retração no poder de compra ou ineficácia nas campanhas de up-selling dos vendedores.'
     },
     {
         key: 'Pagamentos digitais representam',
         title: 'Queda de Pagamentos Digitais',
-        desc: 'Alerta quando menos de 70% dos pagamentos sao feitos via meios digitais.',
-        dor: 'Mais dinheiro vivo circulando significa maior risco de seguranca e custo com transporte de valores.'
+        desc: 'Alerta quando menos de 70% das transações são efetuadas por canais digitais (Pix/Cartões).',
+        dor: 'Maior circulação de dinheiro em espécie eleva o risco de segurança e os custos de transporte de valores.'
     },
     {
-        key: 'registraram nenhuma venda no dia',
+        key: 'nenhuma venda no dia',
         title: 'Linha de Produto Zerada',
-        desc: 'Sinaliza categorias que nao venderam absolutamente nada durante todo o expediente.',
-        dor: 'Giro de estoque zero significa dinheiro parado. Exige promocao ou reposicionamento na vitrine.'
+        desc: 'Sinaliza categorias que não registraram nenhuma transação durante todo o expediente.',
+        dor: 'Giro de estoque zero representa capital parado, demandando promoções ou reposicionamento de vitrine.'
     },
     {
         key: 'Produto destaque do dia',
-        title: 'Campeao de Vendas',
-        desc: 'Aponta o item que mais gerou dinheiro no dia atual.',
-        dor: 'Informa o gestor sobre qual produto esta "pagando as contas" no momento.'
+        title: 'Campeão de Vendas',
+        desc: 'Destaca o produto ou linha que gerou a maior receita bruta no dia selecionado.',
+        dor: 'Informa a liderança com precisão sobre qual produto é o principal motor de faturamento no momento.'
     }
 ];
 
@@ -496,7 +496,7 @@ function gerarHelperHtmlParaAlerta(alertaTexto) {
                 <div class="helper-tooltip-label">Por que avisamos?</div>
                 <div class="helper-tooltip-text">${alertaDef.desc}</div>
                 <div class="helper-tooltip-pain">
-                    <div class="helper-tooltip-label">Dor Resolvida</div>
+                    <div class="helper-tooltip-label">Dor Solucionada</div>
                     <div class="helper-tooltip-text">${alertaDef.dor}</div>
                 </div>
             </div>
@@ -828,93 +828,93 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
-// --- HELPERS DE NEGOCIO ---
+// --- HELPERS DE NEGÓCIO ---
 const helperMappings = {
     'faturamentototal': {
-        desc: 'Soma total de todas as vendas realizadas na data selecionada.',
-        dor: 'Falta de visibilidade imediata sobre a receita diaria do negocio.'
+        desc: 'Soma total de todas as vendas brutas realizadas na data selecionada.',
+        dor: 'Falta de visibilidade imediata sobre a receita financeira diária do negócio.'
     },
     'quantidadevendida': {
-        desc: 'Numero total de itens vendidos no dia.',
-        dor: 'Desconhecimento do volume de saida de estoque diario.'
+        desc: 'Número total de unidades de produtos vendidas no dia selecionado.',
+        dor: 'Desconhecimento do volume real de saída de estoque diário.'
     },
     'ticketmdio': {
-        desc: 'Faturamento Total dividido pelo numero de vendas (clientes) no dia.',
-        dor: 'Dificuldade em entender quanto cada cliente gasta em media.'
+        desc: 'Faturamento total dividido pelo número de transações efetuadas no dia.',
+        dor: 'Dificuldade em compreender quanto cada cliente gasta, em média, por compra.'
     },
     'satisfaogeralrating': {
-        desc: 'Media das notas (1 a 10) dadas pelos clientes as compras do dia.',
-        dor: 'Falta de termometro sobre a qualidade do servico ou produto.'
+        desc: 'Média das notas de avaliação (escala de 1,0 a 10,0) atribuídas pelos clientes às compras do dia.',
+        dor: 'Ausência de termômetro sobre a percepção de qualidade do atendimento e dos produtos.'
     },
     'clientesfidelizados': {
-        desc: 'Percentual de vendas realizadas por clientes cadastrados no programa de fidelidade.',
-        dor: 'Permite medir o sucesso na retencao de clientes recorrentes.'
+        desc: 'Percentual do faturamento originado por clientes cadastrados no programa de fidelidade (Membros).',
+        dor: 'Dificuldade em mensurar a eficácia de retenção e a adesão da base de clientes recorrentes.'
     },
     'horadepico': {
-        desc: 'A hora do dia (0-23h) com o maior volume financeiro de vendas.',
-        dor: 'Incapacidade de alocar equipe de forma eficiente nos picos.'
+        desc: 'Faixa horária do dia (0h às 23h) com o maior volume financeiro faturado.',
+        dor: 'Incapacidade de dimensionar e alocar a equipe de vendas de forma eficiente nos momentos de maior movimento.'
     },
     'produtodestaque': {
-        desc: 'A linha de produtos que gerou a maior receita no dia.',
-        dor: 'Dificuldade em identificar rapidamente qual categoria traciona vendas.'
+        desc: 'Linha ou categoria de produtos que registrou a maior receita bruta no dia.',
+        dor: 'Dificuldade em identificar rapidamente qual departamento lidera a geração de receita.'
     },
     'pagamentosdigitais': {
-        desc: 'Percentual de vendas pagas via Pix, Cartao de Credito ou Debito.',
-        dor: 'Risco e custo de gerenciar muito dinheiro em especie no caixa fisico.'
+        desc: 'Percentual do faturamento transacionado via meios eletrônicos (Pix, Cartão de Crédito e Débito).',
+        dor: 'Risco operacional e custos elevados no manuseio de dinheiro em espécie no caixa físico.'
     },
     'concentraogeogrfica': {
-        desc: 'O percentual que a cidade com mais vendas representa no faturamento.',
-        dor: 'Risco de dependencia excessiva do negocio em apenas uma regiao.'
+        desc: 'Participação percentual de cada praça ou filial no faturamento total do dia selecionado.',
+        dor: 'Risco de dependência excessiva do faturamento corporativo em uma única região.'
     },
-    'vendasapsh': { // 'Vendas apos 18h'
-        desc: 'O percentual do faturamento diario que ocorre apos o horario comercial.',
-        dor: 'Duvida sobre a viabilidade de manter a loja aberta a noite.'
+    'vendasapsh': { // 'Vendas após 18h'
+        desc: 'Percentual do faturamento diário obtido a partir das 18h00 (período noturno).',
+        dor: 'Dúvidas sobre a viabilidade econômica e o dimensionamento da operação no turno da noite.'
     },
     'itensporcompra': { // 'Itens por Compra'
-        desc: 'A quantidade media de produtos (itens) que os clientes compram em um unico pedido.',
-        dor: 'Falta de metricas para campanhas de upsell ou ofertas combinadas.'
+        desc: 'Quantidade média de itens adquiridos por cliente em um único cupom fiscal (cesta média).',
+        dor: 'Ausência de métricas para estruturar campanhas de cross-selling e ofertas combinadas.'
     },
     'maiorvendaticket': { // 'Maior Venda (Ticket)'
-        desc: 'O valor da transacao mais alta registrada no dia (limite de gasto do melhor cliente).',
-        dor: 'Dificuldade em identificar o teto de gastos do publico-alvo para promover itens premium.'
+        desc: 'Valor da nota fiscal individual mais alta faturada na data selecionada.',
+        dor: 'Dificuldade em mapear o teto de gastos do público-alvo para ofertas de produtos premium.'
     },
-    // Charts
+    // Gráficos
     'vendastotaisporcidade': { // 'Vendas Totais por Cidade'
-        desc: 'Comparativo de faturamento entre cidades. Variacoes mostram o crescimento.',
-        dor: 'Desconhecimento sobre quais filiais ou regioes puxam o faturamento.'
+        desc: 'Comparativo de faturamento e volume entre filiais, com indicadores de variação diária.',
+        dor: 'Desconhecimento sobre o desempenho individual e o ritmo de crescimento de cada praça.'
     },
     'faturamentoporhora': { // 'Faturamento por Hora'
-        desc: 'Distribuicao do faturamento ao longo do dia.',
-        dor: 'Nao entender a dinamica de fluxo de caixa intra-dia.'
+        desc: 'Distribuição temporal da receita e das vendas ao longo de cada hora do dia.',
+        dor: 'Dificuldade em compreender a dinâmica do fluxo de caixa e os períodos de pico intra-dia.'
     },
     'categoriasdeprodutos': { // 'Categorias de Produtos'
-        desc: 'Volume de itens vendidos divididos por cada categoria de produto.',
-        dor: 'Desconhecimento sobre giro de estoque e mix de produtos popular.'
+        desc: 'Volume de itens vendidos e receita gerada por cada categoria de produto.',
+        dor: 'Falta de clareza sobre o giro de estoque e as categorias com maior aderência de mercado.'
     },
-    'mtodosdepagamento': { // 'Mtodos de Pagamento'
-        desc: 'Faturamento fatiado pelas diferentes formas de pagamento.',
-        dor: 'Falta de dados para renegociar taxas com adquirentes.'
+    'mtodosdepagamento': { // 'Métodos de Pagamento'
+        desc: 'Receita segmentada pelas diferentes modalidades e canais de pagamento utilizados.',
+        dor: 'Ausência de dados concretos para renegociação de taxas operacionais com credenciadoras.'
     },
     'perfildocliente': {
-        desc: 'Proporcao de compradores identificados como Homem ou Mulher.',
-        dor: 'Falta de clareza do perfil demografico para direcionar marketing.'
+        desc: 'Proporção de compradores segundo o gênero e a categoria de cliente (Normal versus Membro).',
+        dor: 'Falta de clareza demográfica para direcionar campanhas e posicionamento de marca.'
     },
     'faturamentoporgnero': {
-        desc: 'Volume financeiro (R$) total trazido por cada genero.',
-        dor: 'Marketing focando em um publico que traz volume mas nao receita.'
+        desc: 'Volume financeiro (R$) e representatividade de receita por gênero de cliente.',
+        dor: 'Risco de concentrar investimentos de marketing em perfis com alto volume, mas baixo retorno financeiro.'
     },
     'preomdioporprodutoupv': {
-        desc: 'Valor medio que os clientes estao pagando por cada unidade nas categorias.',
-        dor: 'Dificuldade em precificar produtos ou identificar categorias subvalorizadas.'
+        desc: 'Preço médio praticado por unidade em cada linha de produtos (UPV = Faturamento / Quantidade).',
+        dor: 'Dificuldade em calibrar a precificação e identificar categorias com margens subvalorizadas.'
     },
     'faturamentodiurnovsnoturno': {
-        desc: 'Comparativo da receita antes das 18h (Diurno) e a partir das 18h (Noturno).',
-        dor: 'Falta de dados para otimizar os turnos da equipe de vendas.'
+        desc: 'Comparativo da receita obtida antes das 18h (Diurno) versus a partir das 18h (Noturno).',
+        dor: 'Falta de subsídios analíticos para otimizar escalas de trabalho e turnos de atendimento.'
     },
     // Alertas
     'insightsealertasautomticos': {
-        desc: 'Motor de regras que alerta para anomalias, variacoes bruscas ou metas.',
-        dor: 'Ter que analisar dezenas de numeros manualmente (Carga cognitiva).'
+        desc: 'Motor analítico de regras que monitora metas, anomalias e variações operacionais críticas.',
+        dor: 'Sobrecarga cognitiva ao auditar manualmente múltiplos relatórios e indicadores dispersos.'
     }
 };
 
@@ -937,10 +937,10 @@ function inicializarHelpers() {
                 <div class="helper-wrapper${tipClass}">
                     <i class="helper-icon">?</i>
                     <div class="helper-tooltip">
-                        <div class="helper-tooltip-label">O que eh</div>
+                        <div class="helper-tooltip-label">O que é</div>
                         <div class="helper-tooltip-text">${mapping.desc}</div>
                         <div class="helper-tooltip-pain">
-                            <div class="helper-tooltip-label">Dor Resolvida</div>
+                            <div class="helper-tooltip-label">Dor Solucionada</div>
                             <div class="helper-tooltip-text">${mapping.dor}</div>
                         </div>
                     </div>
