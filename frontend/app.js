@@ -500,13 +500,13 @@ function renderizarGraficos(metrics) {
                 {
                     label: 'Faturamento Total (R$)',
                     data: faturamentoCidades,
-                    backgroundColor: '#6366f1',
+                    backgroundColor: '#0040F0', // Azul Real
                     borderRadius: 6,
                 },
                 {
                     label: 'Variação do Dia (R$)',
                     data: variacaoCidades,
-                    backgroundColor: '#ec4899',
+                    backgroundColor: '#DD00BC', // Magenta
                     borderRadius: 6,
                 }
             ]
@@ -534,12 +534,12 @@ function renderizarGraficos(metrics) {
             datasets: [{
                 label: 'Vendas por Hora (R$)',
                 data: faturamentoHora,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                borderColor: '#00CF42', // Verde Esmeralda
+                backgroundColor: 'rgba(0, 207, 66, 0.08)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
-                pointBackgroundColor: '#10b981'
+                pointBackgroundColor: '#00CF42'
             }]
         },
         options: {
@@ -565,7 +565,7 @@ function renderizarGraficos(metrics) {
                 {
                     label: 'Quantidade Vendida',
                     data: quantCategorias,
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: '#00B6E3', // Ciano Elétrico
                     borderRadius: 4
                 }
             ]
@@ -591,7 +591,7 @@ function renderizarGraficos(metrics) {
             labels: pagamentos,
             datasets: [{
                 data: faturamentoPagamento,
-                backgroundColor: ['#10b981', '#f59e0b', '#6366f1', '#ec4899', '#3b82f6'],
+                backgroundColor: ['#00CF42', '#DFC900', '#9100EB', '#DD00BC', '#00B6E3', '#0040F0'],
                 borderWidth: 0
             }]
         },
@@ -617,7 +617,7 @@ function renderizarGraficos(metrics) {
             labels: ['Mulher', 'Homem'],
             datasets: [{
                 data: [totalMulheres, totalHomens],
-                backgroundColor: ['#ec4899', '#3b82f6'],
+                backgroundColor: ['#DD00BC', '#0040F0'], // Magenta & Azul Real
                 borderWidth: 0
             }]
         },
@@ -644,7 +644,7 @@ function renderizarGraficos(metrics) {
                 datasets: [{
                     label: 'Faturamento (R$)',
                     data: generoVals,
-                    backgroundColor: ['#ec4899', '#3b82f6', '#10b981'],
+                    backgroundColor: ['#DD00BC', '#0040F0', '#76D700'],
                     borderRadius: 6
                 }]
             },
@@ -673,7 +673,7 @@ function renderizarGraficos(metrics) {
                 datasets: [{
                     label: 'Preço Médio / Unidade (R$)',
                     data: upvVals,
-                    backgroundColor: '#f59e0b',
+                    backgroundColor: '#DFC900', // Amarelo Dourado
                     borderRadius: 6
                 }]
             },
@@ -697,7 +697,7 @@ function renderizarGraficos(metrics) {
                 labels: ['Diurno (até 17h)', 'Noturno (18h+)'],
                 datasets: [{
                     data: [pctDiurno, pctNoturno],
-                    backgroundColor: ['#f59e0b', '#6366f1'],
+                    backgroundColor: ['#DFC900', '#9100EB'], // Amarelo Dia / Roxo Noite
                     borderWidth: 0
                 }]
             },
@@ -712,11 +712,40 @@ function renderizarGraficos(metrics) {
 
         const prodAnalises = metrics.novas.produtos_analises || {};
 
-        // 9. Curva ABC de Produtos (Barra Horizontal com Cores por Classe)
+        // 9. Detecção de Anomalias / Queda de Vendas (Barra de Variação %)
+        if (prodAnalises.anomalias_linhas && prodAnalises.anomalias_linhas.length > 0) {
+            const labelsAnomalias = prodAnalises.anomalias_linhas.map(a => a.linha);
+            const varsAnomalias = prodAnalises.anomalias_linhas.map(a => a.variacao_pct);
+            const coresAnomalias = varsAnomalias.map(v => v < -30 ? '#D60700' : (v < 0 ? '#DFC900' : '#00CF42'));
+
+            criarGrafico('chart-anomalias', {
+                type: 'bar',
+                data: {
+                    labels: labelsAnomalias,
+                    datasets: [{
+                        label: 'Variação vs. Dia Anterior (%)',
+                        data: varsAnomalias,
+                        backgroundColor: coresAnomalias,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 10. Curva ABC de Produtos (Barra Horizontal com Cores por Classe)
         if (prodAnalises.curva_abc && prodAnalises.curva_abc.length > 0) {
             const labelsAbc = prodAnalises.curva_abc.map(p => (p['Product name'] || p['Product line'] || p.produto || '').substring(0, 26));
             const totaisAbc = prodAnalises.curva_abc.map(p => p.Total);
-            const coresAbc = prodAnalises.curva_abc.map(p => p.Classe === 'A' ? '#10b981' : (p.Classe === 'B' ? '#3b82f6' : '#94a3b8'));
+            // Classe A: Verde #00CF42, Classe B: Ciano #00B6E3, Classe C: Roxo #9100EB
+            const coresAbc = prodAnalises.curva_abc.map(p => p.Classe === 'A' ? '#00CF42' : (p.Classe === 'B' ? '#00B6E3' : '#9100EB'));
             
             criarGrafico('chart-curva-abc', {
                 type: 'bar',
@@ -741,34 +770,6 @@ function renderizarGraficos(metrics) {
             });
         }
 
-        // 10. Detecção de Anomalias / Queda de Vendas (Barra de Variação %)
-        if (prodAnalises.anomalias_linhas && prodAnalises.anomalias_linhas.length > 0) {
-            const labelsAnomalias = prodAnalises.anomalias_linhas.map(a => a.linha);
-            const varsAnomalias = prodAnalises.anomalias_linhas.map(a => a.variacao_pct);
-            const coresAnomalias = varsAnomalias.map(v => v < -30 ? '#ef4444' : (v < 0 ? '#f59e0b' : '#10b981'));
-
-            criarGrafico('chart-anomalias', {
-                type: 'bar',
-                data: {
-                    labels: labelsAnomalias,
-                    datasets: [{
-                        label: 'Variação vs. Dia Anterior (%)',
-                        data: varsAnomalias,
-                        backgroundColor: coresAnomalias,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
         // 11. Matriz Preço Médio vs Volume (Barra Mista)
         if (prodAnalises.matriz_elasticidade && prodAnalises.matriz_elasticidade.length > 0) {
             const labelsElasticidade = prodAnalises.matriz_elasticidade.map(e => e.linha);
@@ -783,14 +784,14 @@ function renderizarGraficos(metrics) {
                         {
                             label: 'Preço Médio Unitário (R$)',
                             data: precosMedios,
-                            backgroundColor: '#8b5cf6',
+                            backgroundColor: '#9100EB', // Roxo
                             borderRadius: 4,
                             yAxisID: 'y'
                         },
                         {
                             label: 'Volume Vendido (Qtd)',
                             data: qtds,
-                            backgroundColor: '#06b6d4',
+                            backgroundColor: '#00B6E3', // Ciano
                             borderRadius: 4,
                             yAxisID: 'y1'
                         }
@@ -830,13 +831,13 @@ function renderizarGraficos(metrics) {
                         {
                             label: 'Membros do Clube (R$)',
                             data: faturamentoMembros,
-                            backgroundColor: '#ec4899',
+                            backgroundColor: '#DD00BC', // Magenta
                             borderRadius: 4
                         },
                         {
                             label: 'Clientes Normais (R$)',
                             data: faturamentoNormais,
-                            backgroundColor: '#64748b',
+                            backgroundColor: '#0040F0', // Azul Real
                             borderRadius: 4
                         }
                     ]
@@ -864,9 +865,9 @@ function renderizarGraficos(metrics) {
                 data: {
                     labels: labelsHorarios,
                     datasets: [
-                        { label: 'Manhã', data: manha, backgroundColor: '#f59e0b', borderRadius: 4 },
-                        { label: 'Tarde', data: tarde, backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'Noite', data: noite, backgroundColor: '#6366f1', borderRadius: 4 }
+                        { label: 'Manhã', data: manha, backgroundColor: '#DFC900', borderRadius: 4 }, // Amarelo
+                        { label: 'Tarde', data: tarde, backgroundColor: '#00B6E3', borderRadius: 4 }, // Ciano
+                        { label: 'Noite', data: noite, backgroundColor: '#9100EB', borderRadius: 4 }  // Roxo
                     ]
                 },
                 options: {
@@ -884,7 +885,8 @@ function renderizarGraficos(metrics) {
         if (prodAnalises.satisfacao_categoria && prodAnalises.satisfacao_categoria.length > 0) {
             const labelsSatisfacao = prodAnalises.satisfacao_categoria.map(s => s.linha);
             const ratings = prodAnalises.satisfacao_categoria.map(s => s.rating_medio);
-            const coresRating = ratings.map(r => r >= 8.5 ? '#10b981' : (r >= 7.0 ? '#f59e0b' : '#ef4444'));
+            // Verde >= 8.5, Amarelo >= 7.0, Vermelho < 7.0
+            const coresRating = ratings.map(r => r >= 8.5 ? '#00CF42' : (r >= 7.0 ? '#DFC900' : '#D60700'));
 
             criarGrafico('chart-satisfacao-categoria', {
                 type: 'bar',
@@ -908,39 +910,7 @@ function renderizarGraficos(metrics) {
             });
         }
 
-        // 15. Performance Regional por Cidade
-        if (prodAnalises.regional_categoria && prodAnalises.regional_categoria.length > 0) {
-            const labelsRegional = prodAnalises.regional_categoria.map(r => r['Product line']);
-            const cidadesDisponiveis = ['São Paulo', 'Rio de Janeiro', 'Manaus', 'Brasília', 'Curitiba'].filter(c => {
-                return prodAnalises.regional_categoria.some(r => r[c] !== undefined);
-            });
-            const coresCidades = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#06b6d4'];
-
-            const datasetsRegional = cidadesDisponiveis.map((cidade, idx) => ({
-                label: cidade,
-                data: prodAnalises.regional_categoria.map(r => r[cidade] || 0),
-                backgroundColor: coresCidades[idx % coresCidades.length],
-                borderRadius: 4
-            }));
-
-            criarGrafico('chart-regional-categoria', {
-                type: 'bar',
-                data: {
-                    labels: labelsRegional,
-                    datasets: datasetsRegional
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
-                    }
-                }
-            });
-        }
-
-        // 16. Preferência de Pagamento por Categoria (Polar / Doughnut / Radar ou Barra)
+        // 15. Preferência de Pagamento por Categoria (Barras Empilhadas)
         if (prodAnalises.pagamento_categoria && prodAnalises.pagamento_categoria.length > 0) {
             const labelsPagtoCat = prodAnalises.pagamento_categoria.map(p => p['Product line']);
             const pixData = prodAnalises.pagamento_categoria.map(p => p['Pix'] || 0);
@@ -952,9 +922,9 @@ function renderizarGraficos(metrics) {
                 data: {
                     labels: labelsPagtoCat,
                     datasets: [
-                        { label: 'Pix', data: pixData, backgroundColor: '#10b981', borderRadius: 4 },
-                        { label: 'Cartão de Crédito', data: cartaoData, backgroundColor: '#6366f1', borderRadius: 4 },
-                        { label: 'Débito', data: debitoData, backgroundColor: '#3b82f6', borderRadius: 4 }
+                        { label: 'Pix', data: pixData, backgroundColor: '#00CF42', borderRadius: 4 }, // Verde Pix
+                        { label: 'Cartão de Crédito', data: cartaoData, backgroundColor: '#9100EB', borderRadius: 4 }, // Roxo Cartão
+                        { label: 'Débito', data: debitoData, backgroundColor: '#00B6E3', borderRadius: 4 } // Ciano Débito
                     ]
                 },
                 options: {
@@ -968,7 +938,7 @@ function renderizarGraficos(metrics) {
             });
         }
 
-        // 17. Cesta de Compras e Itens por Cupom
+        // 16. Cesta de Compras e Itens por Cupom
         if (prodAnalises.cesta_produtos && prodAnalises.cesta_produtos.length > 0) {
             const labelsCesta = prodAnalises.cesta_produtos.map(c => c.linha);
             const mediasCesta = prodAnalises.cesta_produtos.map(c => c.media_itens_cupom);
@@ -979,9 +949,41 @@ function renderizarGraficos(metrics) {
                 data: {
                     labels: labelsCesta,
                     datasets: [
-                        { label: 'Média de Itens por Compra', data: mediasCesta, backgroundColor: '#f59e0b', borderRadius: 4 },
-                        { label: 'Pico de Itens em 1 Compra', data: maxCesta, backgroundColor: '#14b8a6', borderRadius: 4 }
+                        { label: 'Média de Itens por Compra', data: mediasCesta, backgroundColor: '#76D700', borderRadius: 4 }, // Verde Lima
+                        { label: 'Pico de Itens em 1 Compra', data: maxCesta, backgroundColor: '#00B6E3', borderRadius: 4 } // Ciano
                     ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        // 17. Performance Regional por Cidade
+        if (prodAnalises.regional_categoria && prodAnalises.regional_categoria.length > 0) {
+            const labelsRegional = prodAnalises.regional_categoria.map(r => r['Product line']);
+            const cidadesDisponiveis = ['São Paulo', 'Rio de Janeiro', 'Manaus', 'Brasília', 'Curitiba'].filter(c => {
+                return prodAnalises.regional_categoria.some(r => r[c] !== undefined);
+            });
+            const coresCidades = ['#0040F0', '#DD00BC', '#00CF42', '#DFC900', '#00B6E3'];
+
+            const datasetsRegional = cidadesDisponiveis.map((cidade, idx) => ({
+                label: cidade,
+                data: prodAnalises.regional_categoria.map(r => r[cidade] || 0),
+                backgroundColor: coresCidades[idx % coresCidades.length],
+                borderRadius: 4
+            }));
+
+            criarGrafico('chart-regional-categoria', {
+                type: 'bar',
+                data: {
+                    labels: labelsRegional,
+                    datasets: datasetsRegional
                 },
                 options: {
                     responsive: true,
@@ -1008,14 +1010,14 @@ function renderizarGraficos(metrics) {
                         {
                             label: 'Saída Diária (Unidades/Dia)',
                             data: saidaDiaria,
-                            backgroundColor: '#ec4899',
+                            backgroundColor: '#DD00BC', // Magenta
                             borderRadius: 4,
                             yAxisID: 'y'
                         },
                         {
                             label: 'Projeção Reposição 30 Dias (Unidades)',
                             data: projecao30d,
-                            backgroundColor: '#3b82f6',
+                            backgroundColor: '#0040F0', // Azul Real
                             borderRadius: 4,
                             yAxisID: 'y1'
                         }
