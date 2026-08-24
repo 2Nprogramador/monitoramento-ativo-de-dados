@@ -304,6 +304,19 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
         "novas_metricas": novas_metricas
     }
 
+def formatar_numero_br(valor, casas=1):
+    """Formata número no padrão brasileiro: 1.234,5"""
+    try:
+        val = float(valor)
+        texto = f"{val:,.{casas}f}"
+        return texto.replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return str(valor)
+
+def formatar_moeda_br(valor):
+    """Formata moeda no padrão brasileiro: R$ 1.234,56"""
+    return f"R$ {formatar_numero_br(valor, casas=2)}"
+
 def calcular_alertas_dia(relatorio):
     alertas_positivos = []
     alertas_negativos = []
@@ -316,7 +329,7 @@ def calcular_alertas_dia(relatorio):
         cidades_acima_30k = relatorio["total_por_cidade"][relatorio["total_por_cidade"]["Total"] > 30000]
         if not cidades_acima_30k.empty:
             cidades_str = ", ".join(cidades_acima_30k.index)
-            alertas_positivos.append(f"As cidades **{cidades_str}** ultrapassaram R$30.000 em vendas totais.")
+            alertas_positivos.append(f"As cidades **{cidades_str}** ultrapassaram R$ 30.000,00 em vendas totais.")
 
     # 2. Queda de 30% nas cidades
     if "total_por_cidade" in relatorio and "variacao_cidade" in relatorio:
@@ -346,7 +359,7 @@ def calcular_alertas_dia(relatorio):
                 if total_anterior_pix > 0:
                     variacao_perc = (variacao_pix / total_anterior_pix) * 100
                     if variacao_perc > 30:
-                        alertas_positivos.append(f"O método de pagamento **Pix** apresentou um aumento superior a 30% ({variacao_perc:.1f}%) nas vendas.")
+                        alertas_positivos.append(f"O método de pagamento **Pix** apresentou um aumento superior a 30% ({formatar_numero_br(variacao_perc, 1)}%) nas vendas.")
 
     # 4. Produtos > 400 vendas
     if "total_por_linha_produto" in relatorio:
@@ -362,17 +375,17 @@ def calcular_alertas_dia(relatorio):
     tx_tipo = novas.get("taxa_tipo_cliente", {})
     perc_normal = tx_tipo.get("Normal", tx_tipo.get("normal", 0))
     if perc_normal > 0 and perc_normal < 20:
-        alertas_negativos.append(f"Clientes **Não-Membros** representam apenas **{perc_normal:.1f}%** das vendas — a loja parou de atrair público novo.")
+        alertas_negativos.append(f"Clientes **Não-Membros** representam apenas **{formatar_numero_br(perc_normal, 1)}%** das vendas — a loja parou de atrair público novo.")
 
-    # M4. Taxa de satisfação crítica > 15%
+    # M4. Taxa de satisfação crítica > 5%
     taxa_critica = novas.get("taxa_satisfacao_critica", 0)
     if taxa_critica > 5:
-        alertas_negativos.append(f"**{taxa_critica:.1f}%** das vendas tiveram rating abaixo de 5.0 — nível de insatisfação crítico.")
+        alertas_negativos.append(f"**{formatar_numero_br(taxa_critica, 1)}%** das vendas tiveram rating abaixo de 5.0 — nível de insatisfação crítico.")
 
-    # M5. Concentração geográfica > 70%
+    # M5. Concentração geográfica > 60%
     conc = novas.get("concentracao_geografica", {})
     if conc.get("percentual", 0) > 60:
-        alertas_negativos.append(f"A cidade **{conc.get('cidade')}** concentra **{conc.get('percentual')}%** do faturamento — risco de dependência geográfica.")
+        alertas_negativos.append(f"A cidade **{conc.get('cidade')}** concentra **{formatar_numero_br(conc.get('percentual', 0), 1)}%** do faturamento — risco de dependência geográfica.")
 
     # M6. Queda de UPV > 20%
     upv = novas.get("upv", {})
@@ -383,12 +396,12 @@ def calcular_alertas_dia(relatorio):
         if upv_ant > 0:
             queda_upv = (upv_var / upv_ant) * 100
             if queda_upv < -20:
-                alertas_negativos.append(f"O Preço Médio por Unidade (UPV) caiu **{abs(queda_upv):.1f}%** em relação ao dia anterior.")
+                alertas_negativos.append(f"O Preço Médio por Unidade (UPV) caiu **{formatar_numero_br(abs(queda_upv), 1)}%** em relação ao dia anterior.")
 
-    # M7. Mix digital abaixo de 60%
+    # M7. Mix digital abaixo de 70%
     mix_digital = novas.get("mix_digital_pct", 100)
     if mix_digital < 70:
-        alertas_negativos.append(f"Pagamentos digitais representam apenas **{mix_digital:.1f}%** do faturamento — maior risco de segurança e custo com transporte de valores.")
+        alertas_negativos.append(f"Pagamentos digitais representam apenas **{formatar_numero_br(mix_digital, 1)}%** do faturamento — maior risco de segurança e custo com transporte de valores.")
 
     # M9. Linhas de produto sem vendas
     linhas_sem = novas.get("linhas_sem_venda", [])
@@ -399,7 +412,7 @@ def calcular_alertas_dia(relatorio):
     # M2. Destaque positivo: produto top do dia
     prod_top = novas.get("produto_top", {})
     if prod_top.get("nome") and prod_top.get("nome") != "N/A":
-        alertas_positivos.append(f"🏆 Produto destaque do dia: **{prod_top.get('nome')}** com R$ {prod_top.get('total', 0):,.2f} em faturamento.")
+        alertas_positivos.append(f"🏆 Produto destaque do dia: **{prod_top.get('nome')}** com {formatar_moeda_br(prod_top.get('total', 0))} em faturamento.")
 
     return {
         "alertas_positivos": alertas_positivos,

@@ -140,7 +140,7 @@ function atualizarKPIs(metrics) {
     const avgRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Média_Rating, 0) / ratings.length : 0;
     const varRating = ratings.length > 0 ? ratings.reduce((sum, item) => sum + item.Var_Média_Rating, 0) / ratings.length : 0;
     
-    document.getElementById('kpi-avg-rating').textContent = avgRating.toFixed(1) + ' / 10';
+    document.getElementById('kpi-avg-rating').textContent = formatarNumero(avgRating, 1) + ' / 10';
     atualizarVariacaoElement('kpi-var-rating', varRating, avgRating, false, true);
 
     // Variação dos Métodos de Pagamento Digitais
@@ -253,7 +253,7 @@ function atualizarKPIs(metrics) {
                     const pctSpan = document.createElement('span');
                     pctSpan.style.fontSize = '0.75rem';
                     pctSpan.style.color = 'var(--text-muted)';
-                    pctSpan.textContent = `(${pctHoje.toFixed(1)}%)`;
+                    pctSpan.textContent = `(${formatarNumero(pctHoje, 1)}%)`;
                     
                     cityInfoDiv.appendChild(nameSpan);
                     cityInfoDiv.appendChild(pctSpan);
@@ -263,13 +263,13 @@ function atualizarKPIs(metrics) {
                     
                     if (variacaoPct > 0) {
                         varSpan.classList.add('variation-up');
-                        varSpan.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${variacaoPct.toFixed(1)}%`;
+                        varSpan.innerHTML = `<i class="fa-solid fa-caret-up"></i> +${formatarNumero(variacaoPct, 1)}%`;
                     } else if (variacaoPct < 0) {
                         varSpan.classList.add('variation-down');
-                        varSpan.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${variacaoPct.toFixed(1)}%`;
+                        varSpan.innerHTML = `<i class="fa-solid fa-caret-down"></i> ${formatarNumero(variacaoPct, 1)}%`;
                     } else {
                         varSpan.classList.add('variation-neutral');
-                        varSpan.innerHTML = `<i class="fa-solid fa-minus"></i> 0.0%`;
+                        varSpan.innerHTML = `<i class="fa-solid fa-minus"></i> 0,0%`;
                     }
                     
                     row.appendChild(cityInfoDiv);
@@ -285,15 +285,15 @@ function atualizarKPIs(metrics) {
                 const atual = (typeof novas.eficiencia_noturna_pct === 'object' && novas.eficiencia_noturna_pct !== null) 
                     ? novas.eficiencia_noturna_pct.atual 
                     : (novas.eficiencia_noturna_pct || 0);
-                noturnoEl.textContent = atual.toFixed(1) + '%';
+                noturnoEl.textContent = formatarNumero(atual, 1) + '%';
             }
             const noturnoSubEl = document.getElementById('kpi-noturno-sub');
-            if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diario';
+            if (noturnoSubEl) noturnoSubEl.textContent = 'Do faturamento diário';
 
             // Itens por Compra (KPI 11)
             const itensCompraEl = document.getElementById('kpi-itens-compra');
             if (itensCompraEl && novas.itens_por_compra) {
-                itensCompraEl.textContent = novas.itens_por_compra.atual.toFixed(1);
+                itensCompraEl.textContent = formatarNumero(novas.itens_por_compra.atual, 1);
                 atualizarVariacaoElement('kpi-var-itens', novas.itens_por_compra.variacao, novas.itens_por_compra.atual, false);
             }
 
@@ -428,13 +428,13 @@ function atualizarVariacaoElement(elementId, valorVar, valorAtual, isMoeda, isRa
     if (valorVar > 0) {
         el.className = 'kpi-variation variation-up';
         sign = '+';
-        text = `<i class="fa-solid fa-caret-up"></i> ${sign}${percentual.toFixed(1)}%`;
+        text = `<i class="fa-solid fa-caret-up"></i> ${sign}${formatarNumero(percentual, 1)}%`;
     } else if (valorVar < 0) {
         el.className = 'kpi-variation variation-down';
-        text = `<i class="fa-solid fa-caret-down"></i> ${percentual.toFixed(1)}%`; // Sinal de menos já vem no float
+        text = `<i class="fa-solid fa-caret-down"></i> ${formatarNumero(percentual, 1)}%`;
     } else {
         el.className = 'kpi-variation variation-neutral';
-        text = '<i class="fa-solid fa-minus"></i> 0.0%';
+        text = '<i class="fa-solid fa-minus"></i> 0,0%';
     }
     
     el.innerHTML = text;
@@ -729,7 +729,16 @@ function formatarDataBR(dataStr) {
 }
 
 function formatarMoeda(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (valor === null || valor === undefined || isNaN(valor)) return 'R$ 0,00';
+    return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatarNumero(valor, casas = 1) {
+    if (valor === null || valor === undefined || isNaN(valor)) return '0,0';
+    return Number(valor).toLocaleString('pt-BR', {
+        minimumFractionDigits: casas,
+        maximumFractionDigits: casas
+    });
 }
 
 function formatarMarkdownNegrito(texto) {
