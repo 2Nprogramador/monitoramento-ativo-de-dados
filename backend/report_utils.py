@@ -766,3 +766,62 @@ def calcular_alertas_mensais(relatorio):
         "alertas_negativos": alertas_negativos,
         "total_alertas": len(alertas_positivos) + len(alertas_negativos)
     }
+
+def calcular_pacote_alertas_com_blocos(ref_date, min_date):
+    """
+    Calcula os alertas Diários (do dia ref_date),
+    Alertas Semanais (baseados estritamente em blocos de 7 dias a partir de min_date) e
+    Alertas Mensais (baseados estritamente em blocos de 30 dias a partir de min_date).
+    """
+    if isinstance(ref_date, str):
+        ref_date = datetime.datetime.strptime(ref_date, "%Y-%m-%d").date()
+    if isinstance(min_date, str):
+        min_date = datetime.datetime.strptime(min_date, "%Y-%m-%d").date()
+
+    dias_decorridos = (ref_date - min_date).days + 1
+    
+    # 1. Alertas Diários
+    df_dia = fetch_data_from_db(target_date=ref_date)
+    rel_dia = relatorio_por_dia_com_variacoes(ref_date, df_dia) if not df_dia.empty else {}
+    alertas_d = calcular_alertas_dia(rel_dia)
+    alertas_d["bloco_info"] = f"Dia {ref_date.strftime('%d/%m/%Y')}"
+
+    # 2. Alertas Semanais (Blocos de 7 dias a partir do início da base)
+    num_blocos_sem = dias_decorridos // 7
+    if num_blocos_sem == 0:
+        alertas_s = {
+            "alertas_positivos": [],
+            "alertas_negativos": [f"ℹ️ Os alertas semanais são consolidados a cada 7 dias completos a partir do início da base ({min_date.strftime('%d/%m/%Y')}). Mínimo de 7 dias necessário."],
+            "total_alertas": 0,
+            "bloco_completo": False,
+            "bloco_info": f"Em formação (Dia {dias_decorridos}/7 do Bloco #1)"
+        }
+    else:
+        fim_sem = min_date + datetime.timedelta(days=(num_blocos_sem * 7) - 1)
+        ini_sem = fim_sem - datetime.timedelta(days=6)
+        df_sem = fetch_data_from_db(start_date=ini_sem, end_date=fim_sem)
+        rel_sem = relatorio_por_periodo(ini_sem, fim_sem, df_sem) if not df_sem.empty else {}
+        alertas_s = calcular_alertas_semanais(rel_sem)
+        alertas_s["bloco_completo"] = True
+        alertas_s["bloco_info"] = f"Bloco #{num_blocos_sem} ({ini_sem.strftime('%d/%m/%Y')} a {fim_sem.strftime('%d/%m/%Y')})"
+
+    # 3. Alertas Mensais (Blocos de 30 dias a partir do início da base)
+    num_blocos_mes = dias_decorridos // 30
+    if num_blocos_mes == 0:
+        alertas_m = {
+            "alertas_positivos": [],
+            "alertas_negativos": [f"ℹ️ Os alertas mensais são consolidados a cada 30 dias completos a partir do início da base ({min_date.strftime('%d/%m/%Y')}). Mínimo de 30 dias necessário."],
+            "total_alertas": 0,
+            "bloco_completo": False,
+            "bloco_info": f"Em formação (Dia {dias_decorridos}/30 do Mês #1)"
+        }
+    else:
+        fim_mes = min_date + datetime.timedelta(days=(num_blocos_mes * 30) - 1)
+        ini_mes = fim_mes - datetime.timedelta(days=29)
+        df_mes = fetch_data_from_db(start_date=ini_mes, end_date=fim_mes)
+        rel_mes = relatorio_por_periodo(ini_mes, fim_mes, df_mes) if not df_mes.empty else {}
+        alertas_m = calcular_alertas_mensais(rel_mes)
+        alertas_m["bloco_completo"] = True
+        alertas_m["bloco_info"] = f"Mês #{num_blocos_mes} ({ini_mes.strftime('%d/%m/%Y')} a {fim_mes.strftime('%d/%m/%Y')})"
+
+    return alertas_d, alertas_s, alertas_m

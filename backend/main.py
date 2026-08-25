@@ -66,7 +66,8 @@ try:
         relatorio_por_periodo,
         calcular_alertas_dia,
         calcular_alertas_semanais,
-        calcular_alertas_mensais
+        calcular_alertas_mensais,
+        calcular_pacote_alertas_com_blocos
     )
 except ImportError:
     from report_utils import (
@@ -75,7 +76,8 @@ except ImportError:
         relatorio_por_periodo,
         calcular_alertas_dia,
         calcular_alertas_semanais,
-        calcular_alertas_mensais
+        calcular_alertas_mensais,
+        calcular_pacote_alertas_com_blocos
     )
 
 # --- ROTAS DA API ---
@@ -106,6 +108,13 @@ def get_full_report(
     Retorna o relatório analítico completo para uma data ou período selecionado (KPIs + variações + alertas).
     """
     try:
+        with engine.connect() as conn:
+            min_date = conn.execute(sa_text("SELECT MIN(data) FROM vendas")).scalar()
+            max_date = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
+
+        if not min_date or not max_date:
+            raise HTTPException(status_code=404, detail="Banco de dados vazio.")
+
         if start_date and end_date:
             s_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
             e_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -115,14 +124,9 @@ def get_full_report(
             e_date = s_date
             date_label = date
         else:
-            # Pega a data máxima disponível
-            with engine.connect() as conn:
-                max_d = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
-            if not max_d:
-                raise HTTPException(status_code=404, detail="Banco de dados vazio.")
-            s_date = max_d
-            e_date = max_d
-            date_label = str(max_d)
+            s_date = max_date
+            e_date = max_date
+            date_label = str(max_date)
 
         df = fetch_data_from_db(start_date=s_date, end_date=e_date)
         if df.empty:
@@ -132,10 +136,8 @@ def get_full_report(
         if not relatorio:
             raise HTTPException(status_code=404, detail="Nenhum registro para este período.")
 
-        # Calcular todos os conjuntos de alertas
-        alertas_diarios = calcular_alertas_dia(relatorio)
-        alertas_semanais = calcular_alertas_semanais(relatorio)
-        alertas_mensais = calcular_alertas_mensais(relatorio)
+        # Calcular pacotes de alertas baseados em blocos discretos (7 dias e 30 dias a partir da data de início da base)
+        alertas_diarios, alertas_semanais, alertas_mensais = calcular_pacote_alertas_com_blocos(e_date, min_date)
 
         # Escolher alerta padrão baseado no período
         if period_type == "weekly":
@@ -182,36 +184,23 @@ def get_alerts(
     username: str = Depends(authenticate)
 ):
     """
-    Retorna o pacote completo de alertas (Diários, Semanais e Mensais) para a data de referência.
+    Retorna o pacote completo de alertas (Diários, Semanais e Mensais) baseados em blocos de 7 e 30 dias.
     """
     try:
-        if date:
-            ref_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        else:
-            with engine.connect() as conn:
-                ref_date = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
-            if not ref_date:
-                return {"alertas_diarios": {}, "alertas_semanais": {}, "alertas_mensais": {}}
+        with engine.connect() as conn:
+            min_date = conn.execute(sa_text("SELECT MIN(data) FROM vendas")).scalar()
+            max_date = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
 
-        # 1. Alertas Diários (1 dia: ref_date)
-        df_dia = fetch_data_from_db(target_date=ref_date)
-        rel_dia = relatorio_por_dia_com_variacoes(ref_date, df_dia) if not df_dia.empty else {}
-        alertas_d = calcular_alertas_dia(rel_dia)
+        if not min_date or not max_date:
+            return {"alertas_diarios": {}, "alertas_semanais": {}, "alertas_mensais": {}}
 
-        # 2. Alertas Semanais (Últimos 7 dias: ref_date - 6 até ref_date)
-        s_sem = ref_date - datetime.timedelta(days=6)
-        df_sem = fetch_data_from_db(start_date=s_sem, end_date=ref_date)
-        rel_sem = relatorio_por_periodo(s_sem, ref_date, df_sem) if not df_sem.empty else {}
-        alertas_s = calcular_alertas_semanais(rel_sem)
+        ref_date = datetime.datetime.strptime(date, "%Y-%m-%d").date() if date else max_date
 
-        # 3. Alertas Mensais (Últimos 30 dias: ref_date - 29 até ref_date)
-        s_mes = ref_date - datetime.timedelta(days=29)
-        df_mes = fetch_data_from_db(start_date=s_mes, end_date=ref_date)
-        rel_mes = relatorio_por_periodo(s_mes, ref_date, df_mes) if not df_mes.empty else {}
-        alertas_m = calcular_alertas_mensais(rel_mes)
+        alertas_d, alertas_s, alertas_m = calcular_pacote_alertas_com_blocos(ref_date, min_date)
 
         return {
             "date": str(ref_date),
+            "min_date": str(min_date),
             "alertas_diarios": alertas_d,
             "alertas_semanais": alertas_s,
             "alertas_mensais": alertas_m

@@ -47,6 +47,17 @@ def obter_ultima_data_db():
             return result[0]
     return datetime.date.today() - datetime.timedelta(days=1)
 
+def obter_primeira_data_db():
+    """
+    Consulta o banco de dados para encontrar a primeira data (início histórico) de vendas.
+    """
+    query = "SELECT MIN(data) FROM vendas"
+    with engine.connect() as conn:
+        result = conn.execute(text(query)).fetchone()
+        if result and result[0]:
+            return result[0]
+    return datetime.date.today()
+
 # ==============================================================================
 # CATÁLOGO DE 100 PRODUTOS (20 PRODUTOS POR SETOR COM DIVERSAS MODALIDADES)
 # ==============================================================================
@@ -323,8 +334,11 @@ def disparar_alertas_webhook(dia_date):
             print(f"[Worker] Erro ao enviar {tipo_relatorio} ao n8n: {err}")
 
     try:
-        # 1. Alertas Diários
-        print(f"[Worker] Calculando alertas diários para {dia_date}...")
+        min_date = obter_primeira_data_db()
+        dias_decorridos = (dia_date - min_date).days + 1
+        print(f"[Worker] Processando alertas para {dia_date} (Dia {dias_decorridos} desde início em {min_date})...")
+
+        # 1. Alertas Diários (sempre disparados para o dia atual)
         df_dia = fetch_data_from_db(target_date=dia_date)
         if not df_dia.empty:
             rel_dia = relatorio_por_dia_com_variacoes(dia_date, df_dia)
@@ -333,31 +347,33 @@ def disparar_alertas_webhook(dia_date):
                 dia_fmt = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
                 enviar_para_n8n("daily", "RELATÓRIO DE ALERTAS DIÁRIOS", dia_fmt, alertas_dia)
 
-        # 2. Alertas Semanais (Todo Domingo - weekday 6)
-        if dia_date.weekday() == 6:
+        # 2. Alertas Semanais (Disparados estritamente ao fechar blocos de 7 dias: dia 7, 14, 21, 28...)
+        if dias_decorridos >= 7 and (dias_decorridos % 7 == 0):
+            num_bloco_s = dias_decorridos // 7
             s_sem = dia_date - datetime.timedelta(days=6)
-            print(f"[Worker] É Domingo! Calculando alertas semanais ({s_sem} até {dia_date})...")
+            print(f"[Worker] Fechamento de Bloco Semanal #{num_bloco_s}! Calculando alertas ({s_sem} até {dia_date})...")
             df_sem = fetch_data_from_db(start_date=s_sem, end_date=dia_date)
             if not df_sem.empty:
                 rel_sem = relatorio_por_periodo(s_sem, dia_date, df_sem)
                 if rel_sem:
                     alertas_sem = calcular_alertas_semanais(rel_sem)
                     sem_fmt = f"{s_sem.strftime('%d/%m/%Y')} a {dia_date.strftime('%d/%m/%Y')}"
-                    enviar_para_n8n("weekly", "CONSOLIDADO DE ALERTAS SEMANAIS (ÚLTIMOS 7 DIAS)", sem_fmt, alertas_sem)
+                    enviar_para_n8n("weekly", f"CONSOLIDADO DE ALERTAS SEMANAIS (BLOCO #{num_bloco_s})", sem_fmt, alertas_sem)
 
-        # 3. Alertas Mensais (Último dia do mês: dia 30/31 ou dia seguinte é dia 1)
+        # 3. Alertas Mensais (Disparados estritamente ao fechar blocos de 30 dias: dia 30, 60...)
         dia_seguinte = dia_date + datetime.timedelta(days=1)
-        is_fim_de_mes = (dia_seguinte.day == 1) or (dia_date.day in [30, 31])
-        if is_fim_de_mes:
+        is_fim_de_mes = (dia_seguinte.day == 1) or (dias_decorridos >= 30 and dias_decorridos % 30 == 0)
+        if is_fim_de_mes and dias_decorridos >= 30:
+            num_bloco_m = dias_decorridos // 30
             s_mes = dia_date - datetime.timedelta(days=29)
-            print(f"[Worker] Fechamento de Mês! Calculando alertas mensais ({s_mes} até {dia_date})...")
+            print(f"[Worker] Fechamento de Mês #{num_bloco_m}! Calculando alertas ({s_mes} até {dia_date})...")
             df_mes = fetch_data_from_db(start_date=s_mes, end_date=dia_date)
             if not df_mes.empty:
                 rel_mes = relatorio_por_periodo(s_mes, dia_date, df_mes)
                 if rel_mes:
                     alertas_mes = calcular_alertas_mensais(rel_mes)
                     mes_fmt = f"{s_mes.strftime('%d/%m/%Y')} a {dia_date.strftime('%d/%m/%Y')}"
-                    enviar_para_n8n("monthly", "FECHAMENTO DE ALERTAS MENSAIS (ÚLTIMOS 30 DIAS)", mes_fmt, alertas_mes)
+                    enviar_para_n8n("monthly", f"FECHAMENTO DE ALERTAS MENSAIS (MÊS #{num_bloco_m})", mes_fmt, alertas_mes)
 
     except Exception as e:
         print(f"[Worker] Erro ao processar fluxo de alertas: {e}")

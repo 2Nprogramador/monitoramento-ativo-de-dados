@@ -596,13 +596,16 @@ function renderizarAlertasPorAba() {
 
     if (abaAlertaAtiva === 'semanal') {
         alertas = pacoteAlertasGlobal.alertas_semanais;
-        tituloAba = 'Alertas Semanais (Últimos 7 Dias)';
+        const info = (alertas && alertas.bloco_info) ? ` (${alertas.bloco_info})` : '';
+        tituloAba = `Alertas Semanais${info}`;
     } else if (abaAlertaAtiva === 'mensal') {
         alertas = pacoteAlertasGlobal.alertas_mensais;
-        tituloAba = 'Alertas Mensais (Últimos 30 Dias)';
+        const info = (alertas && alertas.bloco_info) ? ` (${alertas.bloco_info})` : '';
+        tituloAba = `Alertas Mensais${info}`;
     } else {
         alertas = pacoteAlertasGlobal.alertas_diarios;
-        tituloAba = 'Alertas do Dia';
+        const info = (alertas && alertas.bloco_info) ? ` (${alertas.bloco_info})` : '';
+        tituloAba = `Alertas do Dia${info}`;
     }
 
     const titleEl = document.getElementById('alerts-section-title');
