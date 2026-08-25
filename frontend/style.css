@@ -244,33 +244,46 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
+    width: 100%;
 }
 
 .section-title {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    min-width: 0;
+    flex: 1;
 }
 
 .section-title i {
     font-size: 1.2rem;
     color: var(--color-warning);
+    flex-shrink: 0;
 }
 
 .section-title h2 {
     font-family: var(--font-heading);
     font-size: 1.15rem;
     font-weight: 600;
+    line-height: 1.3;
 }
 
-.badge {
+.badge,
+#alerts-count-badge {
     background: rgba(245, 158, 11, 0.15);
     color: var(--color-warning);
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
     border-radius: 20px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.2px;
 }
 
 .alerts-grid {
@@ -1165,6 +1178,28 @@ body {
     .alerts-header-bar {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .section-title-wrapper {
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+    .section-title {
+        min-width: 0;
+        flex: 1;
+        gap: 0.5rem;
+    }
+    .section-title h2 {
+        font-size: 0.95rem;
+        word-break: break-word;
+    }
+    .badge,
+    #alerts-count-badge {
+        font-size: 0.72rem;
+        padding: 0.25rem 0.55rem;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
     }
     .alert-tabs-container {
         width: 100%;
@@ -1173,6 +1208,8 @@ body {
     .alert-tab-btn {
         flex: 1;
         justify-content: center;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.4rem;
     }
 }
 
