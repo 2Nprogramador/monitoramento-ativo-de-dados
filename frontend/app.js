@@ -988,12 +988,97 @@ function atualizarAlertas(alertas) {
 
 // --- RENDERIZAÇÃO DOS GRÁFICOS (CHART.JS) ---
 
+function atualizarTextosGraficosPorPeriodo() {
+    const modo = periodoAtual.type;
+    
+    // 1. Gráfico de Vendas Totais por Cidade
+    const citySub = document.getElementById('chart-city-subtitle');
+    if (citySub) {
+        if (modo === 'weekly') {
+            citySub.textContent = 'Comparativo de faturamento real vs. variação com os 7 dias anteriores';
+        } else if (modo === 'monthly') {
+            citySub.textContent = 'Comparativo de faturamento real vs. variação com os 30 dias anteriores';
+        } else if (modo === 'custom') {
+            citySub.textContent = 'Comparativo de faturamento real vs. variação com o período anterior';
+        } else {
+            citySub.textContent = 'Comparativo de faturamento real vs. variação com o dia anterior';
+        }
+    }
+
+    // 2. Gráfico Temporal por Hora
+    const hourlySub = document.getElementById('chart-hourly-subtitle');
+    if (hourlySub) {
+        if (modo === 'weekly') {
+            hourlySub.textContent = 'Distribuição temporal consolidada nos últimos 7 dias';
+        } else if (modo === 'monthly') {
+            hourlySub.textContent = 'Distribuição temporal consolidada nos últimos 30 dias';
+        } else if (modo === 'custom') {
+            hourlySub.textContent = 'Distribuição temporal acumulada no período selecionado';
+        } else {
+            hourlySub.textContent = 'Distribuição temporal das transações no dia';
+        }
+    }
+
+    // 9. Detecção de Anomalias / Queda de Vendas
+    const anomaliasSub = document.getElementById('chart-anomalias-subtitle');
+    if (anomaliasSub) {
+        if (modo === 'weekly') {
+            anomaliasSub.textContent = 'Comparativo percentual de vendas semanais (7 dias) por linha de produto';
+        } else if (modo === 'monthly') {
+            anomaliasSub.textContent = 'Comparativo percentual de vendas mensais (30 dias) por linha de produto';
+        } else if (modo === 'custom') {
+            anomaliasSub.textContent = 'Comparativo percentual de vendas por linha de produto no período';
+        } else {
+            anomaliasSub.textContent = 'Comparativo percentual de vendas diárias por linha de produto';
+        }
+    }
+
+    // 10. Curva ABC de Produtos
+    const curvaAbcSub = document.getElementById('chart-curva-abc-subtitle');
+    if (curvaAbcSub) {
+        if (modo === 'weekly') {
+            curvaAbcSub.textContent = 'Classificação de relevância e participação acumulada na receita dos últimos 7 dias';
+        } else if (modo === 'monthly') {
+            curvaAbcSub.textContent = 'Classificação de relevância e participação acumulada na receita dos últimos 30 dias';
+        } else if (modo === 'custom') {
+            curvaAbcSub.textContent = 'Classificação de relevância e participação acumulada na receita do período';
+        } else {
+            curvaAbcSub.textContent = 'Classificação de relevância e participação acumulada na receita diária';
+        }
+    }
+
+    // 18. Ritmo de Saída e Previsão de Estoque
+    const burnRateSub = document.getElementById('chart-burn-rate-subtitle');
+    if (burnRateSub) {
+        if (modo === 'weekly') {
+            burnRateSub.textContent = 'Velocidade média diária nos últimos 7 dias e previsão de reposição';
+        } else if (modo === 'monthly') {
+            burnRateSub.textContent = 'Velocidade média diária nos últimos 30 dias e previsão de reposição';
+        } else if (modo === 'custom') {
+            burnRateSub.textContent = 'Velocidade média de saída no período e previsão de reposição';
+        } else {
+            burnRateSub.textContent = 'Velocidade diária de unidades vendidas e previsão mensal de reposição';
+        }
+    }
+}
+
 function renderizarGraficos(metrics) {
+    atualizarTextosGraficosPorPeriodo();
+
     // 1. Gráfico de Vendas por Cidade (Barra Dupla)
     const cidades = metrics.cidade.map(item => item.City);
     const faturamentoCidades = metrics.cidade.map(item => item.Total);
     const variacaoCidades = metrics.cidade.map(item => item.Var_Total);
     const coresVariacaoCidades = variacaoCidades.map(v => v < 0 ? '#D60700' : '#00CF42');
+
+    let labelVariacaoCidade = 'Variação vs. Dia Anterior (R$)';
+    if (periodoAtual.type === 'weekly') {
+        labelVariacaoCidade = 'Variação vs. 7 Dias Anteriores (R$)';
+    } else if (periodoAtual.type === 'monthly') {
+        labelVariacaoCidade = 'Variação vs. 30 Dias Anteriores (R$)';
+    } else if (periodoAtual.type === 'custom') {
+        labelVariacaoCidade = 'Variação vs. Período Anterior (R$)';
+    }
 
     criarGrafico('chart-city', {
         type: 'bar',
@@ -1007,7 +1092,7 @@ function renderizarGraficos(metrics) {
                     borderRadius: 6,
                 },
                 {
-                    label: 'Variação vs. Dia Anterior (R$)',
+                    label: labelVariacaoCidade,
                     data: variacaoCidades,
                     backgroundColor: coresVariacaoCidades, // Vermelho se negativo, Verde se positivo
                     borderRadius: 6,

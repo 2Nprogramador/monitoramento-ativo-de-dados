@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Folha de estilo personalizada -->
-    <link rel="stylesheet" href="style.css?v=1.0.51">
+    <link rel="stylesheet" href="style.css?v=1.0.52">
 </head>
 <body>
     <!-- Fundo dinâmico com gradientes -->
@@ -291,7 +291,7 @@
             <div class="chart-card card-double-width">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-city"></i> Vendas Totais por Cidade</h3>
-                    <p>Comparativo de faturamento real vs. variação com o dia anterior</p>
+                    <p id="chart-city-subtitle">Comparativo de faturamento real vs. variação com o dia anterior</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-city"></canvas>
@@ -302,7 +302,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-regular fa-clock"></i> Faturamento por Hora</h3>
-                    <p>Distribuição temporal das transações no dia</p>
+                    <p id="chart-hourly-subtitle">Distribuição temporal das transações no dia</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-hourly"></canvas>
@@ -313,7 +313,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-boxes-stacked"></i> Categorias de Produtos</h3>
-                    <p>Faturamento e quantidade por linha de produto</p>
+                    <p id="chart-product-line-subtitle">Faturamento e quantidade por linha de produto</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-product-line"></canvas>
@@ -324,7 +324,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-credit-card"></i> Métodos de Pagamento</h3>
-                    <p>Participação de cada tipo de transação</p>
+                    <p id="chart-payment-subtitle">Participação de cada tipo de transação</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-payment"></canvas>
@@ -335,7 +335,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-users"></i> Perfil do Cliente</h3>
-                    <p>Distribuição por tipo de associação e gênero</p>
+                    <p id="chart-customer-subtitle">Distribuição por tipo de associação e gênero</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-customer"></canvas>
@@ -346,7 +346,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-venus-mars"></i> Faturamento por Gênero</h3>
-                    <p>Comparativo de receita entre perfis de compradores</p>
+                    <p id="chart-gender-revenue-subtitle">Comparativo de receita entre perfis de compradores</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-gender-revenue"></canvas>
@@ -357,7 +357,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-tag"></i> Preço Médio por Produto (UPV)</h3>
-                    <p>Valor médio pago por unidade em cada categoria</p>
+                    <p id="chart-upv-subtitle">Valor médio pago por unidade em cada categoria</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-upv"></canvas>
@@ -368,7 +368,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-sun"></i> Faturamento Diurno vs. Noturno</h3>
-                    <p>Distribuição de receita antes e após as 18h</p>
+                    <p id="chart-nocturnal-subtitle">Distribuição de receita antes e após as 18h</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-nocturnal"></canvas>
@@ -379,7 +379,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-triangle-exclamation"></i> Variação de Desempenho por Categoria</h3>
-                    <p>Comparativo percentual de vendas diárias por linha de produto</p>
+                    <p id="chart-anomalias-subtitle">Comparativo percentual de vendas diárias por linha de produto</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-anomalias"></canvas>
@@ -390,7 +390,7 @@
             <div class="chart-card card-double-width">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-arrow-up-right-dots"></i> Curva ABC de Produtos (Top Faturamento)</h3>
-                    <p>Classificação de relevância e participação acumulada na receita diária</p>
+                    <p id="chart-curva-abc-subtitle">Classificação de relevância e participação acumulada na receita diária</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-curva-abc"></canvas>
@@ -401,7 +401,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-chart-simple"></i> Preço Médio vs. Volume Vendido</h3>
-                    <p>Relação entre ticket unitário e quantidade comercializada</p>
+                    <p id="chart-elasticidade-subtitle">Relação entre ticket unitário e quantidade comercializada</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-elasticidade"></canvas>
@@ -412,7 +412,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-id-card-clip"></i> Adesão de Membros por Categoria</h3>
-                    <p>Faturamento gerado por clientes fidelizados vs. normais</p>
+                    <p id="chart-perfil-membro-subtitle">Faturamento gerado por clientes fidelizados vs. normais</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-perfil-membro"></canvas>
@@ -423,7 +423,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-timeline"></i> Turnos de Venda por Categoria</h3>
-                    <p>Distribuição do faturamento por período (Manhã, Tarde e Noite)</p>
+                    <p id="chart-horarios-categoria-subtitle">Distribuição do faturamento por período (Manhã, Tarde e Noite)</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-horarios-categoria"></canvas>
@@ -434,7 +434,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-star-half-stroke"></i> Avaliação Média por Linha</h3>
-                    <p>Média de notas e índice de aprovação dos clientes</p>
+                    <p id="chart-satisfacao-categoria-subtitle">Média de notas e índice de aprovação dos clientes</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-satisfacao-categoria"></canvas>
@@ -445,7 +445,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-money-bill-transfer"></i> Meios de Pagamento por Categoria</h3>
-                    <p>Distribuição de métodos transacionais por linha de produto</p>
+                    <p id="chart-pagamento-categoria-subtitle">Distribuição de métodos transacionais por linha de produto</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-pagamento-categoria"></canvas>
@@ -456,7 +456,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-basket-shopping"></i> Densidade da Cesta de Compras</h3>
-                    <p>Média e pico de itens por compra em cada categoria</p>
+                    <p id="chart-cesta-produtos-subtitle">Média e pico de itens por compra em cada categoria</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-cesta-produtos"></canvas>
@@ -467,7 +467,7 @@
             <div class="chart-card card-double-width">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-map-location-dot"></i> Mix de Categorias por Cidade</h3>
-                    <p>Penetração e receita de cada categoria de produto por praça</p>
+                    <p id="chart-regional-categoria-subtitle">Penetração e receita de cada categoria de produto por praça</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-regional-categoria"></canvas>
@@ -478,7 +478,7 @@
             <div class="chart-card card-double-width">
                 <div class="chart-header">
                     <h3><i class="fa-solid fa-boxes-packing"></i> Ritmo de Saída / Burn Rate (Top Produtos)</h3>
-                    <p>Velocidade diária de unidades vendidas e previsão mensal de reposição</p>
+                    <p id="chart-burn-rate-subtitle">Velocidade diária de unidades vendidas e previsão mensal de reposição</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="chart-burn-rate"></canvas>
@@ -635,6 +635,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.51"></script>
+    <script src="app.js?v=1.0.52"></script>
 </body>
 </html>
