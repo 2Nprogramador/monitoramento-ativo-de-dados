@@ -340,16 +340,17 @@ body {
 }
 
 /* --- LAYOUT SUPERIOR (Alertas + KPIs) --- */
+/* --- LAYOUT SUPERIOR (Alertas + KPIs) --- */
 .top-dashboard-section {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
     margin-bottom: 2rem;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
     .top-dashboard-section {
-        grid-template-columns: 3fr 7fr; /* 30% para alertas, 70% para KPIs */
+        grid-template-columns: 360px 1fr; /* Largura fixa ideal para alertas, restante fluido para os 6 KPIs */
     }
 }
 
@@ -357,7 +358,7 @@ body {
 .kpi-carousel-container {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     position: relative;
     width: 100%;
     min-width: 0; /* Impede que o flexbox force a coluna do grid a vazar */
@@ -368,6 +369,7 @@ body {
     flex: 1;
     position: relative;
     width: 100%;
+    min-width: 0;
 }
 
 .kpi-carousel-track {
@@ -379,20 +381,21 @@ body {
 .kpi-slide {
     flex: 0 0 100%;
     display: grid;
-    grid-template-columns: minmax(0, 1fr); /* Mobile-first: 1 cartao por linha */
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Mobile / Tablets: 2 por linha */
+    gap: 0.85rem;
     min-width: 0;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 480px) {
     .kpi-slide {
-        grid-template-columns: repeat(2, minmax(0, 1fr)); /* Tablets: 2 por linha */
+        grid-template-columns: 1fr; /* Telas muito pequenas: 1 por linha */
     }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
     .kpi-slide {
         grid-template-columns: repeat(3, minmax(0, 1fr)); /* Desktop/Notebook: 3 por linha */
+        gap: 0.85rem;
     }
 }
 
@@ -400,15 +403,15 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-card);
     color: var(--text-primary);
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: var(--transition-smooth);
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
     z-index: 2;
 }
 
@@ -423,13 +426,14 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-card);
-    border-radius: 16px;
-    padding: 1.5rem;
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem;
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 0.85rem;
     transition: var(--transition-smooth);
     min-width: 0;
+    overflow: hidden;
 }
 
 .kpi-card:hover {
@@ -438,13 +442,16 @@ body {
 }
 
 .kpi-icon-wrapper {
-    width: 52px;
-    height: 52px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
+    flex-shrink: 0 !important;
 }
 
 .kpi-revenue {
@@ -467,28 +474,50 @@ body {
     color: var(--color-warning);
 }
 
+.kpi-info {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
 .kpi-info h3 {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .kpi-info p {
     font-family: var(--font-heading);
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 1.2vw, 1.38rem);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.15;
     margin-bottom: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.3px;
 }
 
 .kpi-variation {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .variation-up {
