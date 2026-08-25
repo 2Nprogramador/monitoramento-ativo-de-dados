@@ -1,3 +1,12 @@
+// Cache global para instâncias dos gráficos (evita erro de Canvas já utilizado)
+const chartInstances = {};
+
+// Configuração padrão de fontes e estilo do Chart.js para combinar com o tema escuro
+if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+}
+
 // Estado global de dados e período
 let todasAsDatas = [];
 let pacoteAlertasGlobal = {
