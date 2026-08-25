@@ -1375,3 +1375,187 @@ body {
 .glossary-item-pain strong {
     color: #38bdf8;
 }
+
+/* GRID DE 3 CARDS DO GLOSSÁRIO */
+.glossary-menu-grid {
+    padding: 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    overflow-y: auto;
+}
+
+@media (max-width: 860px) {
+    .glossary-menu-grid {
+        grid-template-columns: 1fr;
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+}
+
+.glossary-category-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.glossary-category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+    transition: all 0.25s ease;
+}
+
+.glossary-category-card.diario::before {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.glossary-category-card.semanal::before {
+    background: linear-gradient(90deg, #8b5cf6, #c084fc);
+}
+
+.glossary-category-card.mensal::before {
+    background: linear-gradient(90deg, #ec4899, #f472b6);
+}
+
+.glossary-category-card:hover {
+    transform: translateY(-4px);
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.glossary-category-card.diario:hover {
+    box-shadow: 0 12px 25px -5px rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.glossary-category-card.semanal:hover {
+    box-shadow: 0 12px 25px -5px rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.glossary-category-card.mensal:hover {
+    box-shadow: 0 12px 25px -5px rgba(236, 72, 153, 0.25);
+    border-color: rgba(236, 72, 153, 0.5);
+}
+
+.category-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.category-card-icon.diario {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.category-card-icon.semanal {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.category-card-icon.mensal {
+    background: rgba(236, 72, 153, 0.15);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.category-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.category-card-header h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.category-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.category-badge.diario {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.category-badge.semanal {
+    background: rgba(139, 92, 246, 0.2);
+    color: #d8b4fe;
+}
+
+.category-badge.mensal {
+    background: rgba(236, 72, 153, 0.2);
+    color: #fbcfe8;
+}
+
+.category-card-info p {
+    font-size: 0.84rem;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin: 0 0 1rem 0;
+}
+
+.category-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent, #6366f1);
+    transition: all 0.2s ease;
+}
+
+.glossary-category-card:hover .category-card-footer {
+    gap: 0.75rem;
+    color: #ffffff;
+}
+
+.btn-back-glossary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn-back-glossary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    transform: translateX(-2px);
+}

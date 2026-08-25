@@ -549,36 +549,93 @@
                 <div class="modal-header-title">
                     <i class="fa-solid fa-book-open-reader"></i>
                     <div>
-                        <h3>Glossário de Alertas Inteligentes</h3>
-                        <p>Catálogo de regras analíticas, critérios de disparo e dores estratégicas solucionadas</p>
+                        <h3 id="glossary-modal-title">Glossário de Alertas Inteligentes</h3>
+                        <p id="glossary-modal-subtitle">Selecione uma categoria para explorar os critérios de disparo e dores solucionadas</p>
                     </div>
                 </div>
                 <button type="button" class="modal-close-btn" onclick="toggleGlossary()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
-            <div class="glossary-controls">
-                <div class="glossary-tabs">
-                    <button type="button" class="glossary-tab-btn active" data-filter="todos" onclick="filtrarGlossario('todos')">
-                        <i class="fa-solid fa-layer-group"></i> Todos (30)
-                    </button>
-                    <button type="button" class="glossary-tab-btn" data-filter="diario" onclick="filtrarGlossario('diario')">
-                        <i class="fa-solid fa-calendar-day"></i> Diários (10)
-                    </button>
-                    <button type="button" class="glossary-tab-btn" data-filter="semanal" onclick="filtrarGlossario('semanal')">
-                        <i class="fa-solid fa-calendar-week"></i> Semanais (10)
-                    </button>
-                    <button type="button" class="glossary-tab-btn" data-filter="mensal" onclick="filtrarGlossario('mensal')">
-                        <i class="fa-solid fa-calendar-days"></i> Mensais (10)
-                    </button>
+
+            <!-- Visão 1: Menu Inicial com 3 Cards Interativos -->
+            <div id="glossary-menu-view" class="glossary-menu-grid">
+                <div class="glossary-category-card diario" onclick="selecionarCategoriaGlossario('diario')">
+                    <div class="category-card-icon diario">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                    <div class="category-card-info">
+                        <div class="category-card-header">
+                            <h4>Alertas Diários</h4>
+                            <span class="category-badge diario">10 Regras</span>
+                        </div>
+                        <p>Monitoramento diário de metas por filial, quedas bruscas de faturamento, aceleração Pix, índice crítico de satisfação e produto destaque.</p>
+                        <div class="category-card-footer">
+                            <span>Explorar alertas diários</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="glossary-search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass glossary-search-icon"></i>
-                    <input type="text" id="glossary-search-input" placeholder="Buscar alerta por nome ou regra..." oninput="pesquisarGlossario(this.value)">
+
+                <div class="glossary-category-card semanal" onclick="selecionarCategoriaGlossario('semanal')">
+                    <div class="category-card-icon semanal">
+                        <i class="fa-solid fa-calendar-week"></i>
+                    </div>
+                    <div class="category-card-info">
+                        <div class="category-card-header">
+                            <h4>Alertas Semanais</h4>
+                            <span class="category-badge semanal">10 Regras</span>
+                        </div>
+                        <p>Consolidados a cada 7 dias para avaliar consistência de metas semanais (R$ 180k+), rotação de estoque, erosão de UPV e caixa físico.</p>
+                        <div class="category-card-footer">
+                            <span>Explorar alertas semanais</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glossary-category-card mensal" onclick="selecionarCategoriaGlossario('mensal')">
+                    <div class="category-card-icon mensal">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div class="category-card-info">
+                        <div class="category-card-header">
+                            <h4>Alertas Mensais</h4>
+                            <span class="category-badge mensal">10 Regras</span>
+                        </div>
+                        <p>Fechamento de 30 dias para planejamento de compras e fornecedores (S&OP), metas globais (R$ 750k+), estagnação e expansão regional.</p>
+                        <div class="category-card-footer">
+                            <span>Explorar alertas mensais</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <!-- Visão 2: Lista com Filtros, Botão Voltar e Barra de Busca -->
+            <div id="glossary-list-view" style="display: none; flex-direction: column; overflow: hidden;">
+                <div class="glossary-controls">
+                    <button type="button" class="btn-back-glossary" onclick="voltarAoMenuGlossario()">
+                        <i class="fa-solid fa-arrow-left"></i> Voltar às Categorias
+                    </button>
+                    <div class="glossary-tabs">
+                        <button type="button" class="glossary-tab-btn" data-filter="diario" onclick="filtrarGlossario('diario')">
+                            <i class="fa-solid fa-calendar-day"></i> Diários (10)
+                        </button>
+                        <button type="button" class="glossary-tab-btn" data-filter="semanal" onclick="filtrarGlossario('semanal')">
+                            <i class="fa-solid fa-calendar-week"></i> Semanais (10)
+                        </button>
+                        <button type="button" class="glossary-tab-btn" data-filter="mensal" onclick="filtrarGlossario('mensal')">
+                            <i class="fa-solid fa-calendar-days"></i> Mensais (10)
+                        </button>
+                    </div>
+                    <div class="glossary-search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass glossary-search-icon"></i>
+                        <input type="text" id="glossary-search-input" placeholder="Buscar alerta nesta categoria..." oninput="pesquisarGlossario(this.value)">
+                    </div>
+                </div>
 
-            <div id="glossary-body" class="glossary-body">
-                <!-- Itens injetados dinamicamente via JavaScript -->
+                <div id="glossary-body" class="glossary-body">
+                    <!-- Itens injetados dinamicamente via JavaScript -->
+                </div>
             </div>
         </div>
     </div>
@@ -586,6 +643,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.44"></script>
+    <script src="app.js?v=1.0.45"></script>
 </body>
 </html>

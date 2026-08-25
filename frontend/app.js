@@ -717,8 +717,9 @@ const alertasGlossario = [
     }
 ];
 
-let filtroGlossarioAtivo = 'todos';
+let filtroGlossarioAtivo = 'diario';
 let termoBuscaGlossario = '';
+let modoGlossario = 'menu'; // 'menu' ou 'list'
 
 function toggleGlossary() {
     const modal = document.getElementById('glossary-modal');
@@ -727,21 +728,7 @@ function toggleGlossary() {
         modal.classList.remove('show');
         document.body.style.overflow = '';
     } else {
-        filtroGlossarioAtivo = 'todos';
-        termoBuscaGlossario = '';
-        const searchInput = document.getElementById('glossary-search-input');
-        if (searchInput) searchInput.value = '';
-        
-        // Atualiza botões de abas
-        document.querySelectorAll('.glossary-tab-btn').forEach(btn => {
-            if (btn.dataset.filter === 'todos') {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-        
-        renderGlossary();
+        voltarAoMenuGlossario();
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -749,13 +736,54 @@ function toggleGlossary() {
 
 function fecharGlossarioModal(event) {
     if (event && event.target && event.target.closest('.glossary-modal-card') && !event.target.closest('.modal-close-btn')) {
-        return; // Não fecha se clicou no conteúdo do card
+        return; // Não fecha se clicou no conteúdo interno do modal
     }
     const modal = document.getElementById('glossary-modal');
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = '';
     }
+}
+
+function voltarAoMenuGlossario() {
+    modoGlossario = 'menu';
+    const menuView = document.getElementById('glossary-menu-view');
+    const listView = document.getElementById('glossary-list-view');
+    const titleEl = document.getElementById('glossary-modal-title');
+    const subTitleEl = document.getElementById('glossary-modal-subtitle');
+    const searchInput = document.getElementById('glossary-search-input');
+
+    if (menuView) menuView.style.display = 'grid';
+    if (listView) listView.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    termoBuscaGlossario = '';
+
+    if (titleEl) titleEl.textContent = 'Glossário de Alertas Inteligentes';
+    if (subTitleEl) subTitleEl.textContent = 'Selecione uma categoria para explorar os critérios de disparo e dores solucionadas';
+}
+
+function selecionarCategoriaGlossario(categoria) {
+    modoGlossario = 'list';
+    const menuView = document.getElementById('glossary-menu-view');
+    const listView = document.getElementById('glossary-list-view');
+    const titleEl = document.getElementById('glossary-modal-title');
+    const subTitleEl = document.getElementById('glossary-modal-subtitle');
+
+    if (menuView) menuView.style.display = 'none';
+    if (listView) listView.style.display = 'flex';
+
+    if (categoria === 'diario') {
+        if (titleEl) titleEl.textContent = 'Alertas Diários (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios de monitoramento diário de metas, faturamento, anomalias e satisfação';
+    } else if (categoria === 'semanal') {
+        if (titleEl) titleEl.textContent = 'Alertas Semanais (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios consolidados a cada 7 dias para avaliação de consistência e estoque';
+    } else if (categoria === 'mensal') {
+        if (titleEl) titleEl.textContent = 'Alertas Mensais (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios de fechamento mensal para planejamento S&OP e metas globais';
+    }
+
+    filtrarGlossario(categoria);
 }
 
 function filtrarGlossario(categoria) {
@@ -768,6 +796,19 @@ function filtrarGlossario(categoria) {
             btn.classList.remove('active');
         }
     });
+
+    const titleEl = document.getElementById('glossary-modal-title');
+    const subTitleEl = document.getElementById('glossary-modal-subtitle');
+    if (categoria === 'diario') {
+        if (titleEl) titleEl.textContent = 'Alertas Diários (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios de monitoramento diário de metas, faturamento, anomalias e satisfação';
+    } else if (categoria === 'semanal') {
+        if (titleEl) titleEl.textContent = 'Alertas Semanais (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios consolidados a cada 7 dias para avaliação de consistência e estoque';
+    } else if (categoria === 'mensal') {
+        if (titleEl) titleEl.textContent = 'Alertas Mensais (10 Regras)';
+        if (subTitleEl) subTitleEl.textContent = 'Critérios de fechamento mensal para planejamento S&OP e metas globais';
+    }
 
     renderGlossary();
 }
