@@ -16,9 +16,23 @@ from database import engine
 from config import RABBITMQ_URL, N8N_WEBHOOK_URL
 
 try:
-    from report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+    from report_utils import (
+        fetch_data_from_db,
+        relatorio_por_dia_com_variacoes,
+        relatorio_por_periodo,
+        calcular_alertas_dia,
+        calcular_alertas_semanais,
+        calcular_alertas_mensais
+    )
 except ImportError:
-    from .report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+    from .report_utils import (
+        fetch_data_from_db,
+        relatorio_por_dia_com_variacoes,
+        relatorio_por_periodo,
+        calcular_alertas_dia,
+        calcular_alertas_semanais,
+        calcular_alertas_mensais
+    )
 
 
 def obter_ultima_data_db():
@@ -228,103 +242,125 @@ def salvar_dados_postgres(df_novos_dados):
 
 def disparar_alertas_webhook(dia_date):
     """
-    Carrega dados do banco, gera alertas para dia_date e dispara para o Webhook do n8n.
+    Carrega dados do banco, gera alertas para dia_date (diários) e, quando aplicável,
+    dispara também os relatórios consolidados semanais (aos domingos) e mensais (fechamento de mês) para o n8n.
     """
     if not N8N_WEBHOOK_URL:
         print("[Worker] N8N_WEBHOOK_URL não configurado. Pulando disparo de alertas.")
         return
 
-    try:
-        print(f"[Worker] Calculando alertas para o dia {dia_date}...")
-        df = fetch_data_from_db()
-        if df.empty:
-            print("[Worker] Nenhum dado retornado do banco para cálculo de alertas.")
-            return
+    import re
 
-        relatorio = relatorio_por_dia_com_variacoes(dia_date, df)
-        if not relatorio:
-            print(f"[Worker] Relatório vazio para o dia {dia_date}.")
-            return
-
-        alertas = calcular_alertas_dia(relatorio)
-        total_alertas = alertas.get("total_alertas", 0)
-
-        # Formatação amigável para o WhatsApp (substituindo ** por * simples e removendo emotes)
-        def formatar_para_whatsapp(texto):
-            import re
-            try:
-                emoji_pattern = re.compile(
-                    "["
-                    "\U0001f600-\U0001f64f|"  # emoticons
-                    "\U0001f300-\U0001f5ff|"  # symbols & pictographs
-                    "\U0001f680-\U0001f6ff|"  # transport & map symbols
-                    "\U0001f1e0-\U0001f1ff|"  # flags (iOS)
-                    "\U00002700-\U000027bf|"  # dingbats
-                    "\U00002600-\U000026ff|"  # miscellaneous symbols
-                    "\U0001f900-\U0001f9ff|"  # supplemental symbols and pictographs
-                    "\U0001fa00-\U0001faff"   # symbols and pictographs extended
-                    "]+", flags=re.UNICODE
-                )
-                texto = emoji_pattern.sub(r"", texto).strip()
-            except Exception:
-                for em in ["🏆", "⭐", "📊", "📅", "🟢", "🔴", "✅", "⚠️", "💡", "🚨"]:
-                    texto = texto.replace(em, "")
-            
-            return texto.replace("**", "*").strip()
-
-        dia_formatado = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
+    def formatar_para_whatsapp(texto):
+        try:
+            emoji_pattern = re.compile(
+                "["
+                "\U0001f600-\U0001f64f|"
+                "\U0001f300-\U0001f5ff|"
+                "\U0001f680-\U0001f6ff|"
+                "\U0001f1e0-\U0001f1ff|"
+                "\U00002700-\U000027bf|"
+                "\U00002600-\U000026ff|"
+                "\U0001f900-\U0001f9ff|"
+                "\U0001fa00-\U0001faff"
+                "]+", flags=re.UNICODE
+            )
+            texto = emoji_pattern.sub(r"", texto).strip()
+        except Exception:
+            for em in ["🏆", "⭐", "📊", "📅", "🟢", "🔴", "✅", "⚠️", "💡", "🚨", "🎯", "📉", "⚡", "📦", "👥", "🌐", "🏷️", "💳", "🚀", "🌙"]:
+                texto = texto.replace(em, "")
         
-        mensagem = f"*RELATÓRIO DE ALERTAS DIÁRIOS*\n"
-        mensagem += f"*Data:* {dia_formatado}\n\n"
-        mensagem += "────────────────────────\n\n"
+        return texto.replace("**", "*").strip()
 
-        positivos = alertas.get("alertas_positivos", [])
-        negativos = alertas.get("alertas_negativos", [])
+    def enviar_para_n8n(tipo_relatorio, titulo, periodo_str, alertas_dict):
+        positivos = alertas_dict.get("alertas_positivos", [])
+        negativos = alertas_dict.get("alertas_negativos", [])
+        total = alertas_dict.get("total_alertas", len(positivos) + len(negativos))
+
+        msg = f"*{titulo}*\n"
+        msg += f"*Período:* {periodo_str}\n\n"
+        msg += "────────────────────────\n\n"
 
         if positivos:
-            mensagem += "*HIGHLIGHTS POSITIVOS*\n\n"
+            msg += "*HIGHLIGHTS POSITIVOS*\n\n"
             for p in positivos:
-                p_fmt = formatar_para_whatsapp(p)
-                mensagem += f"- {p_fmt}\n\n"
-            mensagem += "────────────────────────\n\n"
+                msg += f"- {formatar_para_whatsapp(p)}\n\n"
+            msg += "────────────────────────\n\n"
 
         if negativos:
-            mensagem += "*PONTOS DE ATENÇÃO*\n\n"
+            msg += "*PONTOS DE ATENÇÃO*\n\n"
             for n in negativos:
-                n_fmt = formatar_para_whatsapp(n)
-                mensagem += f"- {n_fmt}\n\n"
-            mensagem += "────────────────────────\n\n"
+                msg += f"- {formatar_para_whatsapp(n)}\n\n"
+            msg += "────────────────────────\n\n"
 
         if not positivos and not negativos:
-            mensagem += "Nenhum alerta relevante foi gerado para esta data.\n\n"
-            mensagem += "────────────────────────\n\n"
+            msg += "Nenhum alerta crítico gerado para este período.\n\n"
+            msg += "────────────────────────\n\n"
 
-        mensagem += "_Acesse o painel para ver o relatório completo e gráficos._"
+        msg += "_Acesse o painel web para ver o dashboard interativo completo._"
 
-        # Montar o payload
         payload = {
             "date": str(dia_date),
-            "total_alertas": total_alertas,
-            "alertas": alertas,
-            "message": mensagem
+            "period_type": tipo_relatorio,
+            "period_label": periodo_str,
+            "total_alertas": total,
+            "alertas": alertas_dict,
+            "message": msg
         }
 
-        data_bytes = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            N8N_WEBHOOK_URL,
-            data=data_bytes,
-            headers={"Content-Type": "application/json"}
-        )
+        try:
+            data_bytes = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(
+                N8N_WEBHOOK_URL,
+                data=data_bytes,
+                headers={"Content-Type": "application/json"}
+            )
+            print(f"[Worker] Enviando {tipo_relatorio} ({total} alertas) para o n8n...")
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_body = response.read().decode("utf-8")
+                print(f"[Worker] Webhook n8n ({tipo_relatorio}) respondido com status {response.status}: {res_body}")
+        except Exception as err:
+            print(f"[Worker] Erro ao enviar {tipo_relatorio} ao n8n: {err}")
 
-        print(f"[Worker] Enviando {total_alertas} alerta(s) para o n8n: {N8N_WEBHOOK_URL}")
-        with urllib.request.urlopen(req, timeout=10) as response:
-            res_body = response.read().decode("utf-8")
-            print(f"[Worker] Webhook n8n respondido com sucesso (Status {response.status}): {res_body}")
+    try:
+        # 1. Alertas Diários
+        print(f"[Worker] Calculando alertas diários para {dia_date}...")
+        df_dia = fetch_data_from_db(target_date=dia_date)
+        if not df_dia.empty:
+            rel_dia = relatorio_por_dia_com_variacoes(dia_date, df_dia)
+            if rel_dia:
+                alertas_dia = calcular_alertas_dia(rel_dia)
+                dia_fmt = dia_date.strftime("%d/%m/%Y") if hasattr(dia_date, "strftime") else str(dia_date)
+                enviar_para_n8n("daily", "RELATÓRIO DE ALERTAS DIÁRIOS", dia_fmt, alertas_dia)
 
-    except urllib.error.URLError as ue:
-        print(f"[Worker] Falha ao conectar ao Webhook do n8n: {ue}")
+        # 2. Alertas Semanais (Todo Domingo - weekday 6)
+        if dia_date.weekday() == 6:
+            s_sem = dia_date - datetime.timedelta(days=6)
+            print(f"[Worker] É Domingo! Calculando alertas semanais ({s_sem} até {dia_date})...")
+            df_sem = fetch_data_from_db(start_date=s_sem, end_date=dia_date)
+            if not df_sem.empty:
+                rel_sem = relatorio_por_periodo(s_sem, dia_date, df_sem)
+                if rel_sem:
+                    alertas_sem = calcular_alertas_semanais(rel_sem)
+                    sem_fmt = f"{s_sem.strftime('%d/%m/%Y')} a {dia_date.strftime('%d/%m/%Y')}"
+                    enviar_para_n8n("weekly", "CONSOLIDADO DE ALERTAS SEMANAIS (ÚLTIMOS 7 DIAS)", sem_fmt, alertas_sem)
+
+        # 3. Alertas Mensais (Último dia do mês: dia 30/31 ou dia seguinte é dia 1)
+        dia_seguinte = dia_date + datetime.timedelta(days=1)
+        is_fim_de_mes = (dia_seguinte.day == 1) or (dia_date.day in [30, 31])
+        if is_fim_de_mes:
+            s_mes = dia_date - datetime.timedelta(days=29)
+            print(f"[Worker] Fechamento de Mês! Calculando alertas mensais ({s_mes} até {dia_date})...")
+            df_mes = fetch_data_from_db(start_date=s_mes, end_date=dia_date)
+            if not df_mes.empty:
+                rel_mes = relatorio_por_periodo(s_mes, dia_date, df_mes)
+                if rel_mes:
+                    alertas_mes = calcular_alertas_mensais(rel_mes)
+                    mes_fmt = f"{s_mes.strftime('%d/%m/%Y')} a {dia_date.strftime('%d/%m/%Y')}"
+                    enviar_para_n8n("monthly", "FECHAMENTO DE ALERTAS MENSAIS (ÚLTIMOS 30 DIAS)", mes_fmt, alertas_mes)
+
     except Exception as e:
-        print(f"[Worker] Erro ao processar ou disparar alertas: {e}")
+        print(f"[Worker] Erro ao processar fluxo de alertas: {e}")
 
 def callback(ch, method, properties, body):
     """

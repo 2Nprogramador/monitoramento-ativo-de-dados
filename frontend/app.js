@@ -1,9 +1,17 @@
-// Cache global para instâncias dos gráficos (evita erro de Canvas já utilizado)
-const chartInstances = {};
-
-// Configuração padrão de fontes e estilo do Chart.js para combinar com o tema escuro
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.font.family = "'Inter', sans-serif";
+// Estado global de dados e período
+let todasAsDatas = [];
+let pacoteAlertasGlobal = {
+    alertas_diarios: { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 },
+    alertas_semanais: { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 },
+    alertas_mensais: { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 }
+};
+let abaAlertaAtiva = 'diario';
+let periodoAtual = {
+    type: 'daily',
+    startDate: null,
+    endDate: null,
+    date: null
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     inicializarApp();
@@ -12,17 +20,108 @@ document.addEventListener('DOMContentLoaded', () => {
 function inicializarApp() {
     carregarDatas();
 
-    // Event Listeners
+    // Event Listener do Seletor de Período (Diário, 7 Dias, 30 Dias, Personalizado)
+    const periodSelect = document.getElementById('period-mode-select');
+    if (periodSelect) {
+        periodSelect.addEventListener('change', (e) => {
+            configurarModoPeriodo(e.target.value);
+        });
+    }
+
+    // Event Listener da Data Específica (Modo Diário)
     document.getElementById('date-select').addEventListener('change', (e) => {
         if (e.target.value) {
-            carregarRelatorio(e.target.value);
+            periodoAtual.date = e.target.value;
+            periodoAtual.startDate = e.target.value;
+            periodoAtual.endDate = e.target.value;
+            carregarRelatorioPorPeriodo();
         }
     });
 
     document.getElementById('simulate-btn').addEventListener('click', executarSimulacao);
     
-    // Injetar tooltips de explicacao de negocio
+    // Injetar tooltips de explicação de negócio
     inicializarHelpers();
+}
+
+function configurarModoPeriodo(modo) {
+    const singleDateWrapper = document.getElementById('single-date-wrapper');
+    const customDatesWrapper = document.getElementById('custom-dates-wrapper');
+    
+    periodoAtual.type = modo;
+
+    if (modo === 'daily') {
+        if (singleDateWrapper) singleDateWrapper.style.display = 'flex';
+        if (customDatesWrapper) customDatesWrapper.style.display = 'none';
+        const dateSelect = document.getElementById('date-select');
+        periodoAtual.date = dateSelect.value || todasAsDatas[0];
+        periodoAtual.startDate = periodoAtual.date;
+        periodoAtual.endDate = periodoAtual.date;
+        carregarRelatorioPorPeriodo();
+    } 
+    else if (modo === 'weekly') {
+        if (singleDateWrapper) singleDateWrapper.style.display = 'none';
+        if (customDatesWrapper) customDatesWrapper.style.display = 'none';
+        
+        if (todasAsDatas.length > 0) {
+            const dataFim = new Date(todasAsDatas[0] + 'T00:00:00');
+            const dataInicio = new Date(dataFim);
+            dataInicio.setDate(dataFim.getDate() - 6);
+            
+            periodoAtual.startDate = dataInicio.toISOString().split('T')[0];
+            periodoAtual.endDate = todasAsDatas[0];
+            carregarRelatorioPorPeriodo();
+        }
+    } 
+    else if (modo === 'monthly') {
+        if (singleDateWrapper) singleDateWrapper.style.display = 'none';
+        if (customDatesWrapper) customDatesWrapper.style.display = 'none';
+        
+        if (todasAsDatas.length > 0) {
+            const dataFim = new Date(todasAsDatas[0] + 'T00:00:00');
+            const dataInicio = new Date(dataFim);
+            dataInicio.setDate(dataFim.getDate() - 29);
+            
+            periodoAtual.startDate = dataInicio.toISOString().split('T')[0];
+            periodoAtual.endDate = todasAsDatas[0];
+            carregarRelatorioPorPeriodo();
+        }
+    } 
+    else if (modo === 'custom') {
+        if (singleDateWrapper) singleDateWrapper.style.display = 'none';
+        if (customDatesWrapper) customDatesWrapper.style.display = 'flex';
+        
+        if (todasAsDatas.length > 0) {
+            const dtFimInput = document.getElementById('custom-end-date');
+            const dtInicioInput = document.getElementById('custom-start-date');
+            if (dtFimInput && !dtFimInput.value) dtFimInput.value = todasAsDatas[0];
+            if (dtInicioInput && !dtInicioInput.value) {
+                const dMin = new Date(todasAsDatas[0] + 'T00:00:00');
+                dMin.setDate(dMin.getDate() - 6);
+                dtInicioInput.value = dMin.toISOString().split('T')[0];
+            }
+        }
+    }
+}
+
+function aplicarPeriodoCustomizado() {
+    const dtInicio = document.getElementById('custom-start-date').value;
+    const dtFim = document.getElementById('custom-end-date').value;
+
+    if (!dtInicio || !dtFim) {
+        showToast('Selecione as datas inicial e final.', 'warning');
+        return;
+    }
+
+    if (dtInicio > dtFim) {
+        showToast('A data inicial não pode ser posterior à data final.', 'danger');
+        return;
+    }
+
+    periodoAtual.type = 'custom';
+    periodoAtual.startDate = dtInicio;
+    periodoAtual.endDate = dtFim;
+    carregarRelatorioPorPeriodo();
 }
 
 // --- FUNÇÕES DE API ---
@@ -32,17 +131,17 @@ async function carregarDatas(dataParaSelecionar = null) {
         const response = await fetch('/api/dates');
         if (!response.ok) throw new Error('Falha ao carregar datas.');
         
-        const datas = await response.json();
+        todasAsDatas = await response.json();
         const select = document.getElementById('date-select');
         select.innerHTML = '';
 
-        if (datas.length === 0) {
+        if (todasAsDatas.length === 0) {
             select.innerHTML = '<option value="">Sem dados registrados</option>';
             showToast('Nenhum dado encontrado. Clique em Simular para gerar.', 'warning');
             return;
         }
 
-        datas.forEach(data => {
+        todasAsDatas.forEach(data => {
             const option = document.createElement('option');
             option.value = data;
             option.textContent = formatarDataBR(data);
@@ -50,9 +149,13 @@ async function carregarDatas(dataParaSelecionar = null) {
         });
 
         // Selecionar a data especificada ou a mais recente por padrão
-        const dataAtiva = dataParaSelecionar || datas[0];
+        const dataAtiva = dataParaSelecionar || todasAsDatas[0];
         select.value = dataAtiva;
-        carregarRelatorio(dataAtiva);
+        periodoAtual.date = dataAtiva;
+        periodoAtual.startDate = dataAtiva;
+        periodoAtual.endDate = dataAtiva;
+
+        carregarRelatorioPorPeriodo();
 
     } catch (error) {
         console.error(error);
@@ -60,21 +163,33 @@ async function carregarDatas(dataParaSelecionar = null) {
     }
 }
 
-async function carregarRelatorio(data) {
+async function carregarRelatorioPorPeriodo() {
     try {
-        const response = await fetch(`/api/report?date=${data}`);
-        if (!response.ok) throw new Error('Erro ao carregar dados do dia.');
+        let url = '/api/report';
+        if (periodoAtual.type === 'daily') {
+            url += `?date=${periodoAtual.date}&period_type=daily`;
+        } else {
+            url += `?start_date=${periodoAtual.startDate}&end_date=${periodoAtual.endDate}&period_type=${periodoAtual.type}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Erro ao carregar dados do período.');
 
         const dataPayload = await response.json();
         
+        // Guardar os alertas dos 3 períodos
+        pacoteAlertasGlobal.alertas_diarios = dataPayload.alertas_diarios || { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 };
+        pacoteAlertasGlobal.alertas_semanais = dataPayload.alertas_semanais || { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 };
+        pacoteAlertasGlobal.alertas_mensais = dataPayload.alertas_mensais || { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 };
+
         // Atualizar interface
         atualizarKPIs(dataPayload.metrics);
-        atualizarAlertas(dataPayload.alertas);
         renderizarGraficos(dataPayload.metrics);
+        renderizarAlertasPorAba();
 
     } catch (error) {
         console.error(error);
-        showToast(`Erro ao carregar dados para o dia ${formatarDataBR(data)}`, 'danger');
+        showToast('Erro ao carregar dados do período selecionado.', 'danger');
     }
 }
 
@@ -451,19 +566,56 @@ function gerarHelperHtmlParaAlerta(alertaTexto) {
     return `<button type="button" class="helper-btn alert-helper-btn" data-alert-key="${keyAttr}" data-title="${customTitle}" data-custom-desc="${customDesc}" data-custom-dor="${customDor}" aria-label="Explicação do alerta" title="Ver explicação">?</button>`;
 }
 
+function trocarAbaAlertas(aba) {
+    abaAlertaAtiva = aba;
+    
+    // Atualizar classe active nos botões
+    document.querySelectorAll('.alert-tab-btn').forEach(btn => {
+        if (btn.dataset.tab === aba) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    renderizarAlertasPorAba();
+}
+
+function renderizarAlertasPorAba() {
+    let alertas;
+    let tituloAba = 'Alertas Inteligentes';
+
+    if (abaAlertaAtiva === 'semanal') {
+        alertas = pacoteAlertasGlobal.alertas_semanais;
+        tituloAba = 'Alertas Semanais (Últimos 7 Dias)';
+    } else if (abaAlertaAtiva === 'mensal') {
+        alertas = pacoteAlertasGlobal.alertas_mensais;
+        tituloAba = 'Alertas Mensais (Últimos 30 Dias)';
+    } else {
+        alertas = pacoteAlertasGlobal.alertas_diarios;
+        tituloAba = 'Alertas do Dia';
+    }
+
+    const titleEl = document.getElementById('alerts-section-title');
+    if (titleEl) titleEl.textContent = tituloAba;
+
+    atualizarAlertas(alertas || { alertas_positivos: [], alertas_negativos: [], total_alertas: 0 });
+}
+
 function atualizarAlertas(alertas) {
     const container = document.getElementById('alerts-container');
     const badge = document.getElementById('alerts-count-badge');
     container.innerHTML = '';
     
-    const { alertas_positivos, alertas_negativos, total_alertas } = alertas;
-    badge.textContent = `${total_alertas} alertas`;
+    const { alertas_positivos = [], alertas_negativos = [], total_alertas = 0 } = alertas;
+    const total = total_alertas || (alertas_positivos.length + alertas_negativos.length);
+    badge.textContent = `${total} alertas`;
     
-    if (total_alertas === 0) {
+    if (total === 0) {
         container.innerHTML = `
             <div class="no-alerts">
                 <i class="fa-regular fa-circle-check"></i>
-                Nenhum alerta crítico para a data selecionada.
+                Nenhum alerta crítico para este período.
             </div>
         `;
         badge.className = 'badge';

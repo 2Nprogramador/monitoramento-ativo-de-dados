@@ -33,11 +33,30 @@
             </div>
             
             <div class="controls-area">
-                <div class="select-wrapper">
+                <div class="select-wrapper period-mode-wrapper">
+                    <i class="fa-solid fa-chart-pie select-icon"></i>
+                    <select id="period-mode-select" aria-label="Selecione o período de análise">
+                        <option value="daily">📅 Diário</option>
+                        <option value="weekly">📊 Últimos 7 dias</option>
+                        <option value="monthly">📈 Últimos 30 dias</option>
+                        <option value="custom">⚙️ Personalizado</option>
+                    </select>
+                </div>
+
+                <div class="select-wrapper date-select-wrapper" id="single-date-wrapper">
                     <i class="fa-regular fa-calendar-days select-icon"></i>
                     <select id="date-select" aria-label="Selecione a data para visualização">
                         <option value="">Carregando datas...</option>
                     </select>
+                </div>
+
+                <div class="custom-dates-wrapper" id="custom-dates-wrapper" style="display: none;">
+                    <input type="date" id="custom-start-date" class="custom-date-input" aria-label="Data Inicial">
+                    <span class="custom-date-separator">até</span>
+                    <input type="date" id="custom-end-date" class="custom-date-input" aria-label="Data Final">
+                    <button id="apply-custom-dates-btn" class="btn btn-sm btn-primary" onclick="aplicarPeriodoCustomizado()">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
                 </div>
                 
                 <button id="simulate-btn" class="btn btn-primary">
@@ -55,17 +74,33 @@
         <div class="top-dashboard-section">
         <!-- Central de Alertas -->
         <section class="alerts-section">
-            <div class="section-title-wrapper" id="alerts-toggle">
-                <div class="section-title">
-                    <i class="fa-solid fa-bell 🚨-bell"></i>
-                    <h2>Alertas Importantes do Dia</h2>
+            <div class="alerts-header-bar">
+                <div class="section-title-wrapper" id="alerts-toggle">
+                    <div class="section-title">
+                        <i class="fa-solid fa-bell bell-icon"></i>
+                        <h2 id="alerts-section-title">Alertas Inteligentes</h2>
+                    </div>
+                    <span id="alerts-count-badge" class="badge">0 alertas</span>
                 </div>
-                <span id="alerts-count-badge" class="badge">0 alertas</span>
+
+                <!-- Abas de Frequência de Alertas -->
+                <div class="alert-tabs-container">
+                    <button type="button" class="alert-tab-btn active" data-tab="diario" onclick="trocarAbaAlertas('diario')">
+                        <i class="fa-solid fa-calendar-day"></i> Diários
+                    </button>
+                    <button type="button" class="alert-tab-btn" data-tab="semanal" onclick="trocarAbaAlertas('semanal')">
+                        <i class="fa-solid fa-calendar-week"></i> Semanais
+                    </button>
+                    <button type="button" class="alert-tab-btn" data-tab="mensal" onclick="trocarAbaAlertas('mensal')">
+                        <i class="fa-solid fa-calendar-days"></i> Mensais
+                    </button>
+                </div>
             </div>
+
             <div id="alerts-container" class="alerts-grid">
                 <div class="no-alerts">
                     <i class="fa-regular fa-circle-check"></i>
-                    Nenhum alerta crítico para a data selecionada.
+                    Nenhum alerta crítico para a seleção atual.
                 </div>
             </div>
         </section>
@@ -510,6 +545,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.39"></script>
+    <script src="app.js?v=1.0.40"></script>
 </body>
 </html>

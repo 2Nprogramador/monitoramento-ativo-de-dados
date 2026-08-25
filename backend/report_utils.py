@@ -7,17 +7,28 @@ try:
 except ImportError:
     from database import engine
 
-def fetch_data_from_db(target_date=None):
+def fetch_data_from_db(target_date=None, start_date=None, end_date=None):
     """
     Carrega dados da tabela de vendas do PostgreSQL em um DataFrame do Pandas.
     
-    Se target_date for fornecido, carrega apenas os dados do dia selecionado e
-    do dia anterior (para cálculo de variações), aproveitando o índice idx_vendas_data.
-    Se não for fornecido, carrega todos os dados (usado pelo /api/dates legado).
+    Suporta busca por target_date (1 dia + D-1) ou por intervalo start_date..end_date
+    (período atual + período anterior equivalente de mesma duração para comparação).
     """
     from sqlalchemy import text as sa_text
 
-    if target_date:
+    if start_date and end_date:
+        if isinstance(start_date, str):
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+        if isinstance(end_date, str):
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        
+        duration_days = (end_date - start_date).days + 1
+        prev_start = start_date - datetime.timedelta(days=duration_days)
+        query = sa_text("SELECT * FROM vendas WHERE data >= :d_inicio AND data <= :d_fim")
+        df = pd.read_sql_query(query, engine, params={"d_inicio": prev_start, "d_fim": end_date})
+    elif target_date:
+        if isinstance(target_date, str):
+            target_date = datetime.datetime.strptime(target_date, "%Y-%m-%d").date()
         dia_anterior = target_date - datetime.timedelta(days=1)
         query = sa_text("SELECT * FROM vendas WHERE data >= :d_inicio AND data <= :d_fim")
         df = pd.read_sql_query(query, engine, params={"d_inicio": dia_anterior, "d_fim": target_date})
@@ -57,14 +68,28 @@ def fetch_data_from_db(target_date=None):
 
 def relatorio_por_dia_com_variacoes(dia_date, df):
     """
-    Calcula relatórios agregados e variações percentuais em relação ao dia anterior.
-    Idêntico à lógica do proposta-sheets, garantindo compatibilidade.
+    Função de compatibilidade: calcula relatório de 1 dia delegando para relatorio_por_periodo.
     """
-    dia_timestamp = pd.to_datetime(dia_date)
-    dia_anterior_timestamp = dia_timestamp - pd.Timedelta(days=1)
+    if isinstance(dia_date, str):
+        dia_date = datetime.datetime.strptime(dia_date, "%Y-%m-%d").date()
+    return relatorio_por_periodo(dia_date, dia_date, df)
 
-    df_dia = df[df["Data"].dt.date == dia_date].copy()
-    df_dia_anterior = df[df["Data"].dt.date == dia_anterior_timestamp.date()].copy()
+def relatorio_por_periodo(start_date, end_date, df):
+    """
+    Calcula relatórios agregados e variações percentuais para qualquer período de análise
+    (diário, semanal, mensal ou personalizado), comparando com o período anterior de igual duração.
+    """
+    if isinstance(start_date, str):
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+    if isinstance(end_date, str):
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+
+    duration_days = (end_date - start_date).days + 1
+    prev_end = start_date - datetime.timedelta(days=1)
+    prev_start = prev_end - datetime.timedelta(days=duration_days - 1)
+
+    df_dia = df[(df["Data"].dt.date >= start_date) & (df["Data"].dt.date <= end_date)].copy()
+    df_dia_anterior = df[(df["Data"].dt.date >= prev_start) & (df["Data"].dt.date <= prev_end)].copy()
 
     if df_dia.empty:
         return {}
@@ -81,7 +106,7 @@ def relatorio_por_dia_com_variacoes(dia_date, df):
 
     # Obter a menor data disponível no DB para ver se é o primeiro dia de dados
     min_date = df["Data"].min().date()
-    is_first_day = (dia_date == min_date)
+    is_first_day = (start_date <= min_date)
 
     def calcular_totais_e_variacao(df_atual, df_anterior, col_agrupadora):
         total_atual = df_atual.groupby(col_agrupadora)[["Total", "Quantity"]].sum()
@@ -550,6 +575,191 @@ def calcular_alertas_dia(relatorio):
     prod_top = novas.get("produto_top", {})
     if prod_top.get("nome") and prod_top.get("nome") != "N/A":
         alertas_positivos.append(f"🏆 Produto destaque do dia: **{prod_top.get('nome')}** com {formatar_moeda_br(prod_top.get('total', 0))} em faturamento.")
+
+    return {
+        "alertas_positivos": alertas_positivos,
+        "alertas_negativos": alertas_negativos,
+        "total_alertas": len(alertas_positivos) + len(alertas_negativos)
+    }
+
+def calcular_alertas_semanais(relatorio):
+    """
+    Calcula os 10 alertas semanais (consolidados nos domingos ou ciclo de 7 dias).
+    """
+    alertas_positivos = []
+    alertas_negativos = []
+
+    if not relatorio:
+        return {"alertas_positivos": [], "alertas_negativos": [], "total_alertas": 0}
+
+    # 1. Meta Semanal por Filial (> R$ 180.000,00)
+    if "total_por_cidade" in relatorio:
+        cidades_meta = relatorio["total_por_cidade"][relatorio["total_por_cidade"]["Total"] > 180000]
+        if not cidades_meta.empty:
+            cidades_str = ", ".join(cidades_meta.index)
+            alertas_positivos.append(f"🎯 **Meta Semanal Batida:** As filiais **{cidades_str}** ultrapassaram R$ 180.000,00 em faturamento na semana.")
+
+    # 2. Queda Semanal de Filial (> 20%)
+    if "total_por_cidade" in relatorio and "variacao_cidade" in relatorio:
+        tot_atual = relatorio["total_por_cidade"]["Total"]
+        var_abs = relatorio["variacao_cidade"]["Total"]
+        tot_ant = tot_atual - var_abs
+        valid = tot_ant[tot_ant > 0].index
+        if not valid.empty:
+            var_pct = (var_abs.loc[valid] / tot_ant.loc[valid]) * 100
+            quedas = var_pct[var_pct < -20]
+            if not quedas.empty:
+                cidades_str = ", ".join(quedas.index)
+                alertas_negativos.append(f"📉 **Recuo Semanal:** As filiais **{cidades_str}** tiveram queda superior a 20% frente à semana anterior.")
+
+    # 3. Campeão de Vendas da Semana
+    novas = relatorio.get("novas_metricas", {})
+    prod_top = novas.get("produto_top", {})
+    if prod_top.get("nome") and prod_top.get("nome") != "N/A":
+        alertas_positivos.append(f"🏆 **Campeão da Semana:** O produto **{prod_top.get('nome')}** liderou as vendas acumulando {formatar_moeda_br(prod_top.get('total', 0))}.")
+
+    # 4. Aceleração de Pix Semanal (+20%)
+    if "total_por_payment" in relatorio and "variacao_payment" in relatorio:
+        if "Pix" in relatorio["total_por_payment"].index:
+            tot_pix = relatorio["total_por_payment"].loc["Pix", "Total"]
+            var_pix = relatorio["variacao_payment"].loc["Pix", "Total"] if "Pix" in relatorio["variacao_payment"].index else 0
+            ant_pix = tot_pix - var_pix
+            if ant_pix > 0:
+                pct_pix = (var_pix / ant_pix) * 100
+                if pct_pix > 20:
+                    alertas_positivos.append(f"⚡ **Aceleração Pix:** Uso de Pix cresceu **{formatar_numero_br(pct_pix, 1)}%** no volume financeiro da semana.")
+
+    # 5. Alta Rotação Semanal (> 2.000 unidades)
+    if "total_por_linha_produto" in relatorio:
+        linhas_altas = relatorio["total_por_linha_produto"][relatorio["total_por_linha_produto"]["Quantity"] > 2000]
+        if not linhas_altas.empty:
+            linhas_str = ", ".join(linhas_altas.index)
+            alertas_positivos.append(f"📦 **Alta Rotação Semanal:** As categorias **{linhas_str}** superaram 2.000 unidades vendidas — programar reposição.")
+
+    # 6. Baixa Aquisição Semanal de Clientes (< 25% novos clientes)
+    tx_tipo = novas.get("taxa_tipo_cliente", {})
+    perc_normal = tx_tipo.get("Normal", tx_tipo.get("normal", 0))
+    if perc_normal > 0 and perc_normal < 25:
+        alertas_negativos.append(f"👥 **Baixa Entrada de Clientes:** Clientes novos representaram apenas **{formatar_numero_br(perc_normal, 1)}%** das vendas da semana.")
+
+    # 7. Índice Crítico de Insatisfação Semanal (> 5% rating < 5.0)
+    taxa_critica = novas.get("taxa_satisfacao_critica", 0)
+    if taxa_critica > 5:
+        alertas_negativos.append(f"⚠️ **Alerta de Qualidade Semanal:** **{formatar_numero_br(taxa_critica, 1)}%** das compras da semana receberam avaliações críticas (< 5.0).")
+
+    # 8. Concentração Semanal de Risco Regional (> 55%)
+    conc = novas.get("concentracao_geografica", {})
+    if conc.get("percentual", 0) > 55:
+        alertas_negativos.append(f"🌐 **Concentração Semanal de Risco:** A filial **{conc.get('cidade')}** concentrou **{formatar_numero_br(conc.get('percentual', 0), 1)}%** da receita da semana.")
+
+    # 9. Queda de UPV Semanal (> 15%)
+    upv = novas.get("upv", {})
+    upv_var = upv.get("variacao")
+    upv_atual = upv.get("atual", 0)
+    if upv_var is not None and upv_atual > 0:
+        upv_ant = upv_atual - upv_var
+        if upv_ant > 0:
+            queda = (upv_var / upv_ant) * 100
+            if queda < -15:
+                alertas_negativos.append(f"🏷️ **Erosão de Preço Semanal:** O Preço Médio por Unidade (UPV) caiu **{formatar_numero_br(abs(queda), 1)}%** frente à semana anterior.")
+
+    # 10. Queda de Pagamentos Digitais Semanal (< 75%)
+    mix_dig = novas.get("mix_digital_pct", 100)
+    if mix_dig < 75:
+        alertas_negativos.append(f"💳 **Alerta de Caixa Físico:** Pagamentos digitais somaram apenas **{formatar_numero_br(mix_dig, 1)}%** na semana — risco operacional com dinheiro.")
+
+    return {
+        "alertas_positivos": alertas_positivos,
+        "alertas_negativos": alertas_negativos,
+        "total_alertas": len(alertas_positivos) + len(alertas_negativos)
+    }
+
+def calcular_alertas_mensais(relatorio):
+    """
+    Calcula os 10 alertas mensais (consolidados nos dias 30/31 ou fechamento de ciclo de 30 dias).
+    """
+    alertas_positivos = []
+    alertas_negativos = []
+
+    if not relatorio:
+        return {"alertas_positivos": [], "alertas_negativos": [], "total_alertas": 0}
+
+    # 1. Superação de Meta Mensal por Filial (> R$ 750.000,00)
+    if "total_por_cidade" in relatorio:
+        cidades_meta = relatorio["total_por_cidade"][relatorio["total_por_cidade"]["Total"] > 750000]
+        if not cidades_meta.empty:
+            cidades_str = ", ".join(cidades_meta.index)
+            alertas_positivos.append(f"🎯 **Meta Mensal Batida:** As filiais **{cidades_str}** superaram a meta mensal com mais de R$ 750.000,00 faturados.")
+
+    # 2. Recuo Mensal de Vendas por Cidade (> 15%)
+    if "total_por_cidade" in relatorio and "variacao_cidade" in relatorio:
+        tot_atual = relatorio["total_por_cidade"]["Total"]
+        var_abs = relatorio["variacao_cidade"]["Total"]
+        tot_ant = tot_atual - var_abs
+        valid = tot_ant[tot_ant > 0].index
+        if not valid.empty:
+            var_pct = (var_abs.loc[valid] / tot_ant.loc[valid]) * 100
+            quedas = var_pct[var_pct < -15]
+            if not quedas.empty:
+                cidades_str = ", ".join(quedas.index)
+                alertas_negativos.append(f"📉 **Recuo Mensal:** As filiais **{cidades_str}** registraram queda superior a 15% no faturamento consolidado do mês.")
+
+    # 3. Produto Campeão do Mês
+    novas = relatorio.get("novas_metricas", {})
+    prod_top = novas.get("produto_top", {})
+    if prod_top.get("nome") and prod_top.get("nome") != "N/A":
+        alertas_positivos.append(f"🏆 **Campeão do Mês:** O produto **{prod_top.get('nome')}** foi o líder absoluto de faturamento mensal gerando {formatar_moeda_br(prod_top.get('total', 0))}.")
+
+    # 4. Crescimento Consolidado de Pix no Mês (+15%)
+    if "total_por_payment" in relatorio and "variacao_payment" in relatorio:
+        if "Pix" in relatorio["total_por_payment"].index:
+            tot_pix = relatorio["total_por_payment"].loc["Pix", "Total"]
+            var_pix = relatorio["variacao_payment"].loc["Pix", "Total"] if "Pix" in relatorio["variacao_payment"].index else 0
+            ant_pix = tot_pix - var_pix
+            if ant_pix > 0:
+                pct_pix = (var_pix / ant_pix) * 100
+                if pct_pix > 15:
+                    alertas_positivos.append(f"🚀 **Expansão Mensal do Pix:** O volume via Pix cresceu **{formatar_numero_br(pct_pix, 1)}%** no consolidado do mês.")
+
+    # 5. Alta Demanda Mensal (> 8.000 unidades)
+    if "total_por_linha_produto" in relatorio:
+        linhas_altas = relatorio["total_por_linha_produto"][relatorio["total_por_linha_produto"]["Quantity"] > 8000]
+        if not linhas_altas.empty:
+            linhas_str = ", ".join(linhas_altas.index)
+            alertas_positivos.append(f"📦 **Alta Demanda Mensal:** As categorias **{linhas_str}** ultrapassaram 8.000 unidades vendidas — planejar compras com fornecedores.")
+
+    # 6. Alerta Mensal de Aquisição de Clientes (< 20% novos clientes)
+    tx_tipo = novas.get("taxa_tipo_cliente", {})
+    perc_normal = tx_tipo.get("Normal", tx_tipo.get("normal", 0))
+    if perc_normal > 0 and perc_normal < 20:
+        alertas_negativos.append(f"👥 **Estagnação de Base:** Clientes novos representaram apenas **{formatar_numero_br(perc_normal, 1)}%** das vendas mensais — necessidade de novas campanhas.")
+
+    # 7. Satisfação Crítica Mensal (> 6% rating < 5.0)
+    taxa_critica = novas.get("taxa_satisfacao_critica", 0)
+    if taxa_critica > 6:
+        alertas_negativos.append(f"⚠️ **Índice Crítico de CSAT Mensal:** **{formatar_numero_br(taxa_critica, 1)}%** das avaliações do mês foram negativas (< 5.0) — revisar processos de atendimento.")
+
+    # 8. Dependência Geográfica Mensal (> 50%)
+    conc = novas.get("concentracao_geografica", {})
+    if conc.get("percentual", 0) > 50:
+        alertas_negativos.append(f"🌐 **Dependência Regional Mensal:** A filial **{conc.get('cidade')}** respondeu por **{formatar_numero_br(conc.get('percentual', 0), 1)}%** de toda a receita da rede no mês.")
+
+    # 9. Queda Estrutural de UPV Mensal (> 10%)
+    upv = novas.get("upv", {})
+    upv_var = upv.get("variacao")
+    upv_atual = upv.get("atual", 0)
+    if upv_var is not None and upv_atual > 0:
+        upv_ant = upv_atual - upv_var
+        if upv_ant > 0:
+            queda = (upv_var / upv_ant) * 100
+            if queda < -10:
+                alertas_negativos.append(f"🏷️ **Queda Estrutural de UPV:** O Preço Médio por Unidade caiu **{formatar_numero_br(abs(queda), 1)}%** no mês — auditar política de descontos.")
+
+    # 10. Queda de Eficiência Noturna Mensal (< 25%)
+    efic = novas.get("eficiencia_noturna_pct", {})
+    efic_val = efic.get("atual", 0) if isinstance(efic, dict) else efic
+    if efic_val < 25:
+        alertas_negativos.append(f"🌙 **Oportunidade Noturna:** Apenas **{formatar_numero_br(efic_val, 1)}%** da receita do mês ocorreu após as 18h — reavaliar horários de pico e escalas.")
 
     return {
         "alertas_positivos": alertas_positivos,

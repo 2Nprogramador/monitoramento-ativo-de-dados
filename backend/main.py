@@ -60,9 +60,23 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
 # --- FUNÇÕES AUXILIARES DE LÓGICA DE DADOS ---
 
 try:
-    from .report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+    from .report_utils import (
+        fetch_data_from_db,
+        relatorio_por_dia_com_variacoes,
+        relatorio_por_periodo,
+        calcular_alertas_dia,
+        calcular_alertas_semanais,
+        calcular_alertas_mensais
+    )
 except ImportError:
-    from report_utils import fetch_data_from_db, relatorio_por_dia_com_variacoes, calcular_alertas_dia
+    from report_utils import (
+        fetch_data_from_db,
+        relatorio_por_dia_com_variacoes,
+        relatorio_por_periodo,
+        calcular_alertas_dia,
+        calcular_alertas_semanais,
+        calcular_alertas_mensais
+    )
 
 # --- ROTAS DA API ---
 
@@ -81,28 +95,66 @@ def get_available_dates(username: str = Depends(authenticate)):
         raise HTTPException(status_code=500, detail=f"Erro ao buscar datas: {str(e)}")
 
 @app.get("/api/report")
-def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-DD"), username: str = Depends(authenticate)):
+def get_full_report(
+    date: str = Query(None, description="Data no formato YYYY-MM-DD (para modo diário)"),
+    start_date: str = Query(None, description="Data inicial YYYY-MM-DD"),
+    end_date: str = Query(None, description="Data final YYYY-MM-DD"),
+    period_type: str = Query("daily", description="Tipo de período: daily, weekly, monthly, custom"),
+    username: str = Depends(authenticate)
+):
     """
-    Retorna o relatório analítico completo de um dia selecionado (dados + variações + alertas).
+    Retorna o relatório analítico completo para uma data ou período selecionado (KPIs + variações + alertas).
     """
     try:
-        target_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        df = fetch_data_from_db(target_date=target_date)
+        if start_date and end_date:
+            s_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            e_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+            date_label = f"{start_date} até {end_date}"
+        elif date:
+            s_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+            e_date = s_date
+            date_label = date
+        else:
+            # Pega a data máxima disponível
+            with engine.connect() as conn:
+                max_d = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
+            if not max_d:
+                raise HTTPException(status_code=404, detail="Banco de dados vazio.")
+            s_date = max_d
+            e_date = max_d
+            date_label = str(max_d)
+
+        df = fetch_data_from_db(start_date=s_date, end_date=e_date)
         if df.empty:
-            raise HTTPException(status_code=404, detail="Banco de dados vazio.")
+            raise HTTPException(status_code=404, detail="Nenhum dado encontrado para o período.")
 
-        relatorio = relatorio_por_dia_com_variacoes(target_date, df)
-
+        relatorio = relatorio_por_periodo(s_date, e_date, df)
         if not relatorio:
-            raise HTTPException(status_code=404, detail="Nenhum registro para esta data.")
+            raise HTTPException(status_code=404, detail="Nenhum registro para este período.")
 
-        # Gerar os alertas
-        alertas = calcular_alertas_dia(relatorio)
+        # Calcular todos os conjuntos de alertas
+        alertas_diarios = calcular_alertas_dia(relatorio)
+        alertas_semanais = calcular_alertas_semanais(relatorio)
+        alertas_mensais = calcular_alertas_mensais(relatorio)
+
+        # Escolher alerta padrão baseado no período
+        if period_type == "weekly":
+            alertas_padrao = alertas_semanais
+        elif period_type == "monthly":
+            alertas_padrao = alertas_mensais
+        else:
+            alertas_padrao = alertas_diarios
 
         # Formatar DataFrames para dicionários amigáveis no JSON
         response = {
-            "date": date,
-            "alertas": alertas,
+            "date": date_label,
+            "start_date": str(s_date),
+            "end_date": str(e_date),
+            "period_type": period_type,
+            "alertas": alertas_padrao,
+            "alertas_diarios": alertas_diarios,
+            "alertas_semanais": alertas_semanais,
+            "alertas_mensais": alertas_mensais,
             "metrics": {
                 "cidade": format_dataframe_for_json(relatorio["total_por_cidade"], relatorio["variacao_cidade"]),
                 "tipo_cliente": format_dataframe_for_json(relatorio["total_por_tipo_cliente"], relatorio["variacao_tipo_cliente"]),
@@ -122,6 +174,49 @@ def get_full_report(date: str = Query(..., description="Data no formato YYYY-MM-
     except Exception as e:
         import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/alerts")
+def get_alerts(
+    date: str = Query(None, description="Data de referência YYYY-MM-DD"),
+    username: str = Depends(authenticate)
+):
+    """
+    Retorna o pacote completo de alertas (Diários, Semanais e Mensais) para a data de referência.
+    """
+    try:
+        if date:
+            ref_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        else:
+            with engine.connect() as conn:
+                ref_date = conn.execute(sa_text("SELECT MAX(data) FROM vendas")).scalar()
+            if not ref_date:
+                return {"alertas_diarios": {}, "alertas_semanais": {}, "alertas_mensais": {}}
+
+        # 1. Alertas Diários (1 dia: ref_date)
+        df_dia = fetch_data_from_db(target_date=ref_date)
+        rel_dia = relatorio_por_dia_com_variacoes(ref_date, df_dia) if not df_dia.empty else {}
+        alertas_d = calcular_alertas_dia(rel_dia)
+
+        # 2. Alertas Semanais (Últimos 7 dias: ref_date - 6 até ref_date)
+        s_sem = ref_date - datetime.timedelta(days=6)
+        df_sem = fetch_data_from_db(start_date=s_sem, end_date=ref_date)
+        rel_sem = relatorio_por_periodo(s_sem, ref_date, df_sem) if not df_sem.empty else {}
+        alertas_s = calcular_alertas_semanais(rel_sem)
+
+        # 3. Alertas Mensais (Últimos 30 dias: ref_date - 29 até ref_date)
+        s_mes = ref_date - datetime.timedelta(days=29)
+        df_mes = fetch_data_from_db(start_date=s_mes, end_date=ref_date)
+        rel_mes = relatorio_por_periodo(s_mes, ref_date, df_mes) if not df_mes.empty else {}
+        alertas_m = calcular_alertas_mensais(rel_mes)
+
+        return {
+            "date": str(ref_date),
+            "alertas_diarios": alertas_d,
+            "alertas_semanais": alertas_s,
+            "alertas_mensais": alertas_m
+        }
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 def format_dataframe_for_json(df_main, df_var):
