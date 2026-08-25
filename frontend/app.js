@@ -525,9 +525,9 @@ function renderGlossary() {
             <div class="glossary-item-title">
                 <i class="fa-solid fa-bell"></i> ${alerta.title}
             </div>
-            <div class="glossary-item-desc">${alerta.desc}</div>
+            <div class="glossary-item-desc">${adaptarTextoPorPeriodo(alerta.desc)}</div>
             <div class="glossary-item-pain">
-                <strong>Dor Solucionada:</strong> ${alerta.dor}
+                <strong>Dor Solucionada:</strong> ${adaptarTextoPorPeriodo(alerta.dor)}
             </div>
         </div>
     `).join('');
@@ -1623,6 +1623,70 @@ function inicializarHelpers() {
 /* --- SISTEMA GLOBAL DE POPOVER & MODAL TOUCH (DESKTOP, NOTEBOOK, ANDROID E IOS) --- */
 let helperHideTimeout = null;
 
+function adaptarTextoPorPeriodo(texto) {
+    if (!texto || typeof texto !== 'string') return texto;
+    
+    const tipo = periodoAtual.type || 'daily';
+    
+    if (tipo === 'weekly') {
+        return texto
+            .replace(/na data selecionada/gi, 'no período de 7 dias selecionado')
+            .replace(/no dia selecionado/gi, 'nos últimos 7 dias')
+            .replace(/do dia selecionado/gi, 'dos últimos 7 dias')
+            .replace(/ao dia anterior/gi, 'aos 7 dias anteriores')
+            .replace(/do dia anterior/gi, 'do período anterior')
+            .replace(/frente ao dia anterior/gi, 'frente aos 7 dias anteriores')
+            .replace(/em relação ao dia anterior/gi, 'em relação aos 7 dias anteriores')
+            .replace(/ao longo do dia/gi, 'ao longo dos 7 dias')
+            .replace(/às compras do dia/gi, 'às compras do período semanal')
+            .replace(/no dia/gi, 'no período semanal')
+            .replace(/do dia/gi, 'da semana')
+            .replace(/receita financeira diária/gi, 'receita financeira semanal')
+            .replace(/saída de estoque diário/gi, 'saída de estoque semanal')
+            .replace(/diária/gi, 'semanal')
+            .replace(/diário/gi, 'semanal');
+    } else if (tipo === 'monthly') {
+        return texto
+            .replace(/na data selecionada/gi, 'no período de 30 dias selecionado')
+            .replace(/no dia selecionado/gi, 'nos últimos 30 dias')
+            .replace(/do dia selecionado/gi, 'dos últimos 30 dias')
+            .replace(/ao dia anterior/gi, 'aos 30 dias anteriores')
+            .replace(/do dia anterior/gi, 'do mês anterior')
+            .replace(/frente ao dia anterior/gi, 'frente aos 30 dias anteriores')
+            .replace(/em relação ao dia anterior/gi, 'em relação aos 30 dias anteriores')
+            .replace(/ao longo do dia/gi, 'ao longo dos 30 dias')
+            .replace(/às compras do dia/gi, 'às compras do período mensal')
+            .replace(/no dia/gi, 'no período mensal')
+            .replace(/do dia/gi, 'do mês')
+            .replace(/receita financeira diária/gi, 'receita financeira mensal')
+            .replace(/saída de estoque diário/gi, 'saída de estoque mensal')
+            .replace(/diária/gi, 'mensal')
+            .replace(/diário/gi, 'mensal');
+    } else if (tipo === 'custom') {
+        const intervalo = (periodoAtual.startDate && periodoAtual.endDate) 
+            ? ` (${formatarDataBR(periodoAtual.startDate)} a ${formatarDataBR(periodoAtual.endDate)})`
+            : '';
+        return texto
+            .replace(/na data selecionada/gi, `no período selecionado${intervalo}`)
+            .replace(/no dia selecionado/gi, `no período selecionado${intervalo}`)
+            .replace(/do dia selecionado/gi, 'do período selecionado')
+            .replace(/ao dia anterior/gi, 'ao período anterior equivalente')
+            .replace(/do dia anterior/gi, 'do período anterior equivalente')
+            .replace(/frente ao dia anterior/gi, 'frente ao período anterior equivalente')
+            .replace(/em relação ao dia anterior/gi, 'em relação ao período anterior equivalente')
+            .replace(/ao longo do dia/gi, 'ao longo do período selecionado')
+            .replace(/às compras do dia/gi, 'às compras do período selecionado')
+            .replace(/no dia/gi, 'no período selecionado')
+            .replace(/do dia/gi, 'do período')
+            .replace(/receita financeira diária/gi, 'receita financeira do período')
+            .replace(/saída de estoque diário/gi, 'saída de estoque do período')
+            .replace(/diária/gi, 'do período')
+            .replace(/diário/gi, 'do período');
+    }
+    
+    return texto;
+}
+
 function exibirHelperGlobal(btnElement) {
     clearTimeout(helperHideTimeout);
     
@@ -1649,6 +1713,10 @@ function exibirHelperGlobal(btnElement) {
     }
     
     if (!desc) return;
+
+    // Adaptar dinamicamente os termos de período (diário, 7 dias, 30 dias, personalizado)
+    desc = adaptarTextoPorPeriodo(desc);
+    dor = adaptarTextoPorPeriodo(dor);
 
     const isMobile = window.innerWidth <= 768;
     

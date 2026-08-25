@@ -125,7 +125,7 @@ body {
     flex-wrap: wrap;
 }
 
-/* SELECT DATA CUSTOMIZADO */
+/* SELECTS CUSTOMIZADOS (PERÍODO E DATA) */
 .select-wrapper {
     position: relative;
     display: flex;
@@ -135,30 +135,51 @@ body {
 .select-icon {
     position: absolute;
     left: 1rem;
-    color: var(--text-secondary);
+    color: var(--color-accent, #6366f1);
     pointer-events: none;
+    z-index: 2;
+    font-size: 0.95rem;
 }
 
+.select-wrapper select,
+#period-mode-select,
 #date-select {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-card);
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
-    color: var(--text-primary);
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    color: #f8fafc;
+    padding: 0.72rem 2.2rem 0.72rem 2.6rem;
     font-family: var(--font-body);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 500;
     outline: none;
     cursor: pointer;
     transition: var(--transition-smooth);
-    min-width: 180px;
+    min-width: 155px;
     appearance: none;
     -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 0.95rem;
 }
 
-#date-select:hover, #date-select:focus {
+.select-wrapper select:hover,
+.select-wrapper select:focus,
+#period-mode-select:hover,
+#period-mode-select:focus,
+#date-select:hover,
+#date-select:focus {
     border-color: var(--color-accent);
     box-shadow: 0 0 0 3px var(--color-accent-glow);
+    background-color: #1e293b;
+}
+
+.select-wrapper select option {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 0.6rem;
 }
 
 /* BOTÃO PREMIUM */
