@@ -1,9 +1,11 @@
 import os
 import json
+import time
+from collections import defaultdict
 import datetime
 from sqlalchemy import text as sa_text
 import pandas as pd
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, Query, HTTPException, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -13,6 +15,35 @@ from .database import engine, get_db
 from .config import RABBITMQ_URL, APP_USER, APP_PASSWORD, AUTH_ENABLED
 
 app = FastAPI(title="Monitoramento Ativo de Dados API", version="2.0.0")
+
+# --- TRAVA DE SEGURANÇA E CONTROLE DE TAXA (RATE LIMITER) ---
+SIMULATE_RATE_LIMIT = 10       # Máximo de 10 simulações
+SIMULATE_WINDOW_SECONDS = 60   # Por janela deslizante de 60 segundos
+simulate_request_history = defaultdict(list)
+
+def check_simulate_rate_limit(request: Request):
+    """
+    Trava de segurança:
+    Limita a geração de dados a 10 requisições por minuto por cliente para evitar automações abusivas.
+    """
+    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.time()
+    window_start = now - SIMULATE_WINDOW_SECONDS
+    
+    # Limpar timestamps fora da janela de 60s
+    timestamps = [ts for ts in simulate_request_history[client_ip] if ts > window_start]
+    simulate_request_history[client_ip] = timestamps
+    
+    if len(timestamps) >= SIMULATE_RATE_LIMIT:
+        oldest_in_window = timestamps[0]
+        retry_after = max(1, int(SIMULATE_WINDOW_SECONDS - (now - oldest_in_window)) + 1)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Limite de segurança atingido: máximo de 10 gerações por minuto. Aguarde {retry_after}s antes de simular novamente.",
+            headers={"Retry-After": str(retry_after)}
+        )
+    
+    simulate_request_history[client_ip].append(now)
 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import status
@@ -230,11 +261,14 @@ def format_dataframe_for_json(df_main, df_var):
 # --- ROTA DE SIMULAÇÃO (PUBLICAÇÃO EM FILA RABBITMQ) ---
 
 @app.post("/api/simulate")
-def trigger_sales_simulation(username: str = Depends(authenticate)):
+def trigger_sales_simulation(request: Request, username: str = Depends(authenticate)):
     """
     Coloca uma mensagem na fila do RabbitMQ para gerar vendas fictícias para o próximo dia em segundo plano.
-    Garante tempo de resposta imediato sem prender o servidor web.
+    Garante tempo de resposta imediato sem prender o servidor web e aplica trava de segurança (máx 10 req/min).
     """
+    # 1. Aplicar trava de segurança contra automações maliciosas (10 geracoes por minuto)
+    check_simulate_rate_limit(request)
+    
     rabbitmq_url = RABBITMQ_URL
     try:
         params = pika.URLParameters(rabbitmq_url)

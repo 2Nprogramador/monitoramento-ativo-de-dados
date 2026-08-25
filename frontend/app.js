@@ -204,20 +204,46 @@ async function carregarRelatorioPorPeriodo() {
 
 async function executarSimulacao() {
     const btn = document.getElementById('simulate-btn');
+    if (!btn || btn.disabled) return;
+    
     btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando para a Fila...';
+    const originalText = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Simular Próximo Dia</span>';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Enviando para a Fila...</span>';
 
     try {
         const response = await fetch('/api/simulate', { method: 'POST' });
         const result = await response.json();
 
+        if (response.status === 429) {
+            // Trava de segurança: limite de 10 gerações por minuto atingido
+            const mensagem = result.detail || 'Limite de 10 gerações por minuto atingido. Aguarde alguns instantes.';
+            showToast(mensagem, 'warning');
+            
+            let segundosRestantes = 30;
+            btn.innerHTML = `<i class="fa-solid fa-shield-halved"></i> <span>Bloqueado (${segundosRestantes}s)</span>`;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+
+            const timerBloqueio = setInterval(() => {
+                segundosRestantes--;
+                if (segundosRestantes <= 0) {
+                    clearInterval(timerBloqueio);
+                    btn.disabled = false;
+                    btn.style.opacity = '';
+                    btn.style.cursor = '';
+                    btn.innerHTML = originalText;
+                } else {
+                    btn.innerHTML = `<i class="fa-solid fa-shield-halved"></i> <span>Bloqueado (${segundosRestantes}s)</span>`;
+                }
+            }, 1000);
+            return;
+        }
+
         if (response.ok) {
             showToast('Simulação agendada! O processamento está sendo executado via RabbitMQ.', 'success');
             
-            // Aguardar 2 segundos para o worker rodar e então recarregar as datas
+            // Aguardar 2.5 segundos para o worker rodar e então recarregar as datas
             setTimeout(async () => {
-                // Obter a lista mais recente e selecionar a última data inserida
                 await carregarDatas();
                 btn.disabled = false;
                 btn.innerHTML = originalText;
