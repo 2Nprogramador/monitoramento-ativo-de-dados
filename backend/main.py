@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 import pika
 
 from .database import engine, get_db
-from .config import RABBITMQ_URL, APP_USER, APP_PASSWORD
+from .config import RABBITMQ_URL, APP_USER, APP_PASSWORD, AUTH_ENABLED
 
 app = FastAPI(title="Monitoramento Ativo de Dados API", version="2.0.0")
 
@@ -31,10 +31,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Fábrica de autenticação básica para proteção dos dados comerciais
-security = HTTPBasic()
+# Fábrica de autenticação básica opcional para suporte a modo aberto/fechado
+security = HTTPBasic(auto_error=False)
 
 def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    # Se autenticação estiver desativada (ex: para recrutadores), libera acesso público
+    if not AUTH_ENABLED:
+        return "public_viewer"
+
+    # Se autenticação estiver ativada, exige credenciais válidas
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Autenticação necessária",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
     correct_username = secrets.compare_digest(credentials.username, APP_USER)
     correct_password = secrets.compare_digest(credentials.password, APP_PASSWORD)
     if not (correct_username and correct_password):

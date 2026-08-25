@@ -45,6 +45,8 @@ if not RABBITMQ_URL:
     RABBITMQ_URL = f"amqp://{rmq_user}:{rmq_pass}@{rmq_host}:{rmq_port}/"
 
 # --- 3. DADOS DE LOGIN DA APLICAÇÃO ---
+# Flag para ativar/desativar autenticação básica (útil para modo portfólio / recrutadores)
+AUTH_ENABLED = os.getenv("AUTH_ENABLED", "false").lower() in ("true", "1", "yes", "t")
 APP_USER = get_secret("APP_USER", "admin")
 APP_PASSWORD = get_secret("APP_PASSWORD", "m2n_seguro_app_pass")  # gitleaks:allow
 
@@ -59,7 +61,8 @@ if DB_HOST_CHECK != "localhost":
     if db_pass_check == "sua_senha_segura" or not db_pass_check:
          raise ValueError("[Segurança] ERRO CRÍTICO: Senha do banco de dados está usando o valor padrão ou está ausente!")
 
-    # 2. Garante que as credenciais do admin da aplicação foram alteradas em relação ao padrão
-    if APP_PASSWORD == "m2n_seguro_app_pass" or not APP_PASSWORD:  # gitleaks:allow
+    # 2. Garante que as credenciais do admin da aplicação foram alteradas se a autenticação estiver ativada
+    if AUTH_ENABLED and (APP_PASSWORD == "m2n_seguro_app_pass" or not APP_PASSWORD):  # gitleaks:allow
          raise ValueError("[Segurança] ERRO CRÍTICO: Senha padrão do administrador (APP_PASSWORD) não foi alterada!")
+
 
