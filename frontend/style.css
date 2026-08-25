@@ -1069,6 +1069,71 @@ body {
 }
 
 @media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .logo-area {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .controls-area {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+
+    .select-wrapper,
+    .period-mode-wrapper,
+    .date-select-wrapper {
+        width: 100%;
+    }
+
+    .select-wrapper select,
+    #period-mode-select,
+    #date-select {
+        width: 100%;
+        min-width: 0;
+        font-size: 0.82rem;
+        padding: 0.65rem 1.8rem 0.65rem 2.2rem;
+        background-position: right 0.5rem center;
+        background-size: 0.85rem;
+    }
+
+    .select-icon {
+        left: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    #simulate-btn,
+    #glossary-btn {
+        width: 100%;
+        padding: 0.65rem 0.5rem;
+        font-size: 0.82rem;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .custom-dates-wrapper {
+        grid-column: 1 / -1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4rem;
+    }
+
+    .custom-date-input {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+
     .alerts-header-bar {
         flex-direction: column;
         align-items: flex-start;
@@ -1080,10 +1145,6 @@ body {
     .alert-tab-btn {
         flex: 1;
         justify-content: center;
-    }
-    .custom-dates-wrapper {
-        flex-wrap: wrap;
-        width: 100%;
     }
 }
 
