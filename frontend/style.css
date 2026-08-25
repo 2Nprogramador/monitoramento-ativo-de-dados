@@ -1118,14 +1118,17 @@ body {
     background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 18px;
-    width: 100%;
-    max-width: 920px;
+    width: 92vw;
+    max-width: 940px;
+    min-height: 460px;
     max-height: 88vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.25);
     overflow: hidden;
     animation: modalScaleUp 0.25s ease-out;
+    position: relative;
+    z-index: 10001;
 }
 
 @keyframes modalScaleUp {
