@@ -122,11 +122,11 @@ def force_redeploy_services():
 # 2. Testar o status de saúde da aplicação pós-deploy
 def monitor_health():
     print("\n=== Iniciando teste de saúde (Health Check) pós-deploy ===")
-    print("Aguardando 20 segundos para início do rollout do Docker Swarm...")
-    time.sleep(20)
+    print("Aguardando 30 segundos para início do rollout do Docker Swarm...")
+    time.sleep(30)
     
     success_count = 0
-    attempts = 15
+    attempts = 20
     delay = 6
     
     for i in range(attempts):
