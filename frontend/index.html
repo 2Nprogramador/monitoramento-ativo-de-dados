@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Folha de estilo personalizada -->
-    <link rel="stylesheet" href="style.css?v=1.0.49">
+    <link rel="stylesheet" href="style.css?v=1.0.50">
 </head>
 <body>
     <!-- Fundo dinâmico com gradientes -->
@@ -33,41 +33,45 @@
             </div>
             
             <div class="controls-area">
-                <div class="select-wrapper period-mode-wrapper">
-                    <i class="fa-solid fa-clock-rotate-left select-icon"></i>
-                    <select id="period-mode-select" aria-label="Selecione o período de análise">
-                        <option value="daily">Diário</option>
-                        <option value="weekly">Últimos 7 dias</option>
-                        <option value="monthly">Últimos 30 dias</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
+                <div class="header-filters-group">
+                    <div class="select-wrapper period-mode-wrapper">
+                        <i class="fa-solid fa-clock-rotate-left select-icon"></i>
+                        <select id="period-mode-select" aria-label="Selecione o período de análise">
+                            <option value="daily">Diário</option>
+                            <option value="weekly">Últimos 7 dias</option>
+                            <option value="monthly">Últimos 30 dias</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
 
-                <div class="select-wrapper date-select-wrapper" id="single-date-wrapper">
-                    <i class="fa-regular fa-calendar-days select-icon"></i>
-                    <select id="date-select" aria-label="Selecione a data para visualização">
-                        <option value="">Carregando datas...</option>
-                    </select>
-                </div>
+                    <div class="select-wrapper date-select-wrapper" id="single-date-wrapper">
+                        <i class="fa-regular fa-calendar-days select-icon"></i>
+                        <select id="date-select" aria-label="Selecione a data para visualização">
+                            <option value="">Carregando datas...</option>
+                        </select>
+                    </div>
 
-                <div class="custom-dates-wrapper" id="custom-dates-wrapper" style="display: none;">
-                    <input type="date" id="custom-start-date" class="custom-date-input" aria-label="Data Inicial">
-                    <span class="custom-date-separator">até</span>
-                    <input type="date" id="custom-end-date" class="custom-date-input" aria-label="Data Final">
-                    <button id="apply-custom-dates-btn" class="btn btn-sm btn-primary" onclick="aplicarPeriodoCustomizado()">
-                        <i class="fa-solid fa-check"></i>
-                    </button>
+                    <div class="custom-dates-wrapper" id="custom-dates-wrapper" style="display: none;">
+                        <input type="date" id="custom-start-date" class="custom-date-input" aria-label="Data Inicial">
+                        <span class="custom-date-separator">até</span>
+                        <input type="date" id="custom-end-date" class="custom-date-input" aria-label="Data Final">
+                        <button id="apply-custom-dates-btn" class="btn btn-sm btn-primary" onclick="aplicarPeriodoCustomizado()">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
                 </div>
                 
-                <button id="simulate-btn" class="btn btn-primary">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Simular Próximo Dia</span>
-                </button>
+                <div class="header-actions-group">
+                    <button id="simulate-btn" class="btn btn-primary">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Simular Próximo Dia</span>
+                    </button>
 
-                <button id="glossary-btn" class="btn btn-primary" onclick="toggleGlossary()">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Glossário</span>
-                </button>
+                    <button id="glossary-btn" class="btn btn-primary" onclick="toggleGlossary()">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Glossário</span>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -631,6 +635,6 @@
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.49"></script>
+    <script src="app.js?v=1.0.50"></script>
 </body>
 </html>
