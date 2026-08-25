@@ -1086,3 +1086,292 @@ body {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   MODAL DO GLOSSÁRIO DE ALERTAS INTELIGENTES
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 1.5rem;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.glossary-modal-card {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 920px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.25);
+    overflow: hidden;
+    animation: modalScaleUp 0.25s ease-out;
+}
+
+@keyframes modalScaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.modal-header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.modal-header-title i {
+    font-size: 1.6rem;
+    color: var(--color-accent, #6366f1);
+}
+
+.modal-header-title h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.modal-header-title p {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0.2rem 0 0 0;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    transform: rotate(90deg);
+}
+
+.glossary-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.75rem;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glossary-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.glossary-tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.glossary-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.glossary-tab-btn.active {
+    background: var(--color-accent, #6366f1);
+    color: #ffffff;
+    border-color: var(--color-accent, #6366f1);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+.glossary-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 220px;
+    max-width: 320px;
+}
+
+.glossary-search-icon {
+    position: absolute;
+    left: 0.85rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+#glossary-search-input {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #f8fafc;
+    padding: 0.45rem 0.8rem 0.45rem 2.2rem;
+    font-size: 0.82rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#glossary-search-input:focus {
+    border-color: var(--color-accent, #6366f1);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+.glossary-body {
+    padding: 1.5rem 1.75rem;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .glossary-modal-card {
+        max-height: 94vh;
+        border-radius: 12px;
+    }
+    .modal-header {
+        padding: 1rem;
+    }
+    .glossary-controls {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .glossary-search-wrapper {
+        max-width: 100%;
+    }
+    .glossary-body {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+}
+
+.glossary-item {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.2s ease;
+}
+
+.glossary-item:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-2px);
+}
+
+.glossary-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.glossary-item-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.glossary-item-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.glossary-item-badge.diario {
+    background: rgba(59, 130, 246, 0.18);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.glossary-item-badge.semanal {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.glossary-item-badge.mensal {
+    background: rgba(236, 72, 153, 0.18);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.glossary-item-desc {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+}
+
+.glossary-item-pain {
+    background: rgba(15, 23, 42, 0.6);
+    border-left: 3px solid var(--color-accent, #6366f1);
+    padding: 0.55rem 0.75rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.glossary-item-pain strong {
+    color: #38bdf8;
+}

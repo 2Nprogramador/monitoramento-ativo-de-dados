@@ -438,92 +438,384 @@ function atualizarMetricasNovas(novas) {
     setTimeout(inicializarHelpers, 100);
 }
 
-// --- GLOSSÁRIO DE ALERTAS ---
+// --- GLOSSÁRIO COMPLETO DE ALERTAS (30 REGRAS: DIÁRIOS, SEMANAIS E MENSAIS) ---
 const alertasGlossario = [
+    // === 1. ALERTAS DIÁRIOS (10 REGRAS) ===
     {
         key: 'ultrapassaram R$',
-        title: 'Meta de Faturamento por Cidade',
-        desc: 'Sinaliza quando uma ou mais cidades atingem marcos expressivos de faturamento (ex: acima de R$ 30.000,00) no dia.',
-        dor: 'Permite bonificar equipes locais de alta performance e reavaliar o potencial de expansão da praça.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-bullseye',
+        title: 'Meta Diária de Faturamento por Cidade',
+        desc: 'Sinaliza quando uma ou mais filiais atingem marcos expressivos de faturamento (acima de R$ 30.000,00) no dia.',
+        dor: 'Permite parabenizar equipes de alto desempenho e identificar rapidamente praças com tração acelerada.'
     },
     {
         key: 'queda superior a 30%',
-        title: 'Queda Brusca de Vendas (Cidade)',
-        desc: 'Alerta disparado se o faturamento de uma cidade cair mais de 30% em relação ao dia anterior.',
-        dor: 'Possibilita ação rápida para investigar problemas operacionais na filial ou instabilidades regionais.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-arrow-trend-down',
+        title: 'Queda Brusca de Vendas Diárias',
+        desc: 'Disparado se o faturamento de uma cidade cair mais de 30% em relação ao dia anterior.',
+        dor: 'Permite intervenção tática imediata da gerência para investigar problemas de estoque, equipe ou concorrência local.'
     },
     {
         key: 'Pix',
-        title: 'Aumento de Pagamentos via Pix',
-        desc: 'Notifica se o uso do Pix apresentou crescimento relevante frente ao dia anterior.',
-        dor: 'Indica sucesso em campanhas de incentivo a meios de menor custo, melhorando a margem líquida da empresa.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-bolt',
+        title: 'Aumento de Pagamentos via Pix no Dia',
+        desc: 'Notifica se o volume financeiro transacionado via Pix cresceu de forma expressiva frente ao dia anterior.',
+        dor: 'Avalia a eficácia de campanhas de incentivo ao Pix, reduzindo taxas de cartão de crédito e aumentando margem líquida.'
     },
     {
         key: '400 vendas',
-        title: 'Alta Demanda de Produtos',
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-boxes-stacked',
+        title: 'Alta Demanda de Linhas de Produto (400+ un)',
         desc: 'Alerta para categorias que ultrapassaram a marca crítica de 400 unidades vendidas no dia.',
-        dor: 'Previne ruptura de estoque (desabastecimento), permitindo reposição ágil de mercadorias.'
+        dor: 'Evita a ruptura de estoque (desabastecimento), permitindo reposição ágil de mercadorias no dia seguinte.'
     },
     {
         key: 'Não-Membros',
-        title: 'Baixa Aquisição de Novos Clientes',
-        desc: 'Avisa quando clientes normais (não membros) representam menos de 20% das vendas totais.',
-        dor: 'Sinaliza que o negócio parou de atrair público novo, dependendo exclusivamente da base recorrente.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-user-group',
+        title: 'Baixa Aquisição Diária de Novos Clientes',
+        desc: 'Avisa quando clientes normais (não membros) representam menos de 20% das vendas totais do dia.',
+        dor: 'Sinaliza que o negócio parou de atrair público novo, dependendo exclusivamente da base já fidelizada.'
     },
     {
         key: 'rating abaixo de 5.0',
-        title: 'Alerta Crítico de Satisfação',
-        desc: 'Dispara quando mais de 5% das vendas recebem avaliação abaixo de 5 (escala de 1 a 10).',
-        dor: 'Permite identificar dias de mau atendimento, falhas operacionais ou produtos com defeito.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-triangle-exclamation',
+        title: 'Alerta Crítico de Satisfação Diária',
+        desc: 'Dispara quando mais de 5% das vendas recebem avaliação abaixo de 5.0 (escala de 1 a 10).',
+        dor: 'Identifica dias pontuais de mau atendimento, falhas operacionais graves ou lotes de produtos com defeito.'
     },
     {
         key: 'dependência geográfica',
-        title: 'Risco de Concentração Geográfica',
-        desc: 'Alerta quando uma única cidade representa mais de 60% de todo o faturamento da empresa.',
-        dor: 'Sinaliza vulnerabilidade: imprevistos ou feriados nessa praça comprometem a receita global.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-globe',
+        title: 'Risco de Concentração Geográfica Diária',
+        desc: 'Alerta quando uma única filial concentra mais de 60% de todo o faturamento da empresa no dia.',
+        dor: 'Sinaliza alta vulnerabilidade da operação a imprevistos, paralisações ou feriados locais nessa praça.'
     },
     {
         key: '(UPV)',
-        title: 'Queda de Preço Médio (UPV)',
-        desc: 'Avisa quando o cliente passa a comprar produtos de menor valor unitário em relação à média.',
-        dor: 'Evidencia retração no poder de compra ou ineficácia nas campanhas de up-selling dos vendedores.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-tags',
+        title: 'Queda Diária de Preço Médio (UPV)',
+        desc: 'Avisa quando o valor unitário médio por produto vendido cai em relação à média histórica.',
+        dor: 'Evidencia retração no poder de compra dos clientes ou ineficácia da equipe de vendas em cross-selling.'
     },
     {
         key: 'digitais',
-        title: 'Queda de Pagamentos Digitais',
-        desc: 'Alerta quando menos de 70% das transações são efetuadas por canais digitais (Pix/Cartões).',
-        dor: 'Maior circulação de dinheiro em espécie eleva o risco de segurança e os custos de transporte de valores.'
-    },
-    {
-        key: 'nenhuma venda',
-        title: 'Linha de Produto Zerada',
-        desc: 'Sinaliza categorias que não registraram nenhuma transação durante todo o expediente.',
-        dor: 'Giro de estoque zero representa capital parado, demandando promoções ou reposicionamento de vitrine.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-credit-card',
+        title: 'Queda Diária de Pagamentos Digitais',
+        desc: 'Alerta quando menos de 70% das transações são efetuadas por meios eletrônicos (Pix e Cartões).',
+        dor: 'Maior circulação de dinheiro em espécie aumenta o risco de perdas, fraudes e custos com transporte de valores.'
     },
     {
         key: 'destaque do dia',
-        title: 'Campeão de Vendas',
-        desc: 'Destaca o produto ou linha que gerou a maior receita bruta no dia selecionado.',
-        dor: 'Informa a liderança com precisão sobre qual produto é o principal motor de faturamento no momento.'
+        categoria: 'diario',
+        badge: 'Diário',
+        icon: 'fa-trophy',
+        title: 'Produto Campeão de Vendas do Dia',
+        desc: 'Destaca o produto específico que gerou a maior receita bruta no fechamento diário.',
+        dor: 'Informa a liderança com precisão sobre qual produto é a locomotiva de receita no momento.'
+    },
+
+    // === 2. ALERTAS SEMANAIS (10 REGRAS) ===
+    {
+        key: 'Meta Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-bullseye',
+        title: 'Meta Semanal por Filial Batida',
+        desc: 'Dispara quando filiais superam a meta semanal consolidada de R$ 180.000,00 de faturamento nos últimos 7 dias.',
+        dor: 'Reconhece consistência operacional semanal e embasa a distribuição de metas para os próximos ciclos.'
+    },
+    {
+        key: 'Recuo Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-arrow-trend-down',
+        title: 'Recuo Semanal de Vendas por Cidade',
+        desc: 'Notifica filiais que apresentaram queda superior a 20% no faturamento consolidado frente à semana anterior.',
+        dor: 'Evita a consolidação de perdas no mês, permitindo reajuste de estoque e campanhas promocionais locais na semana seguinte.'
+    },
+    {
+        key: 'Campeão da Semana',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-trophy',
+        title: 'Produto Campeão da Semana',
+        desc: 'Evidencia o produto com maior faturamento acumulado no bloco de 7 dias.',
+        dor: 'Garante que o produto mais rentável da semana tenha reposição prioritária no centro de distribuição.'
+    },
+    {
+        key: 'Aceleração Pix',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-bolt',
+        title: 'Aceleração Semanal do Volume via Pix',
+        desc: 'Alerta quando o faturamento via Pix cresce mais de 20% em comparação com a semana anterior.',
+        dor: 'Comprova ganho de eficiência no fluxo de caixa semanal e redução de despesas com adquirentes de cartão.'
+    },
+    {
+        key: 'Alta Rotação Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-boxes-stacked',
+        title: 'Alta Rotação Semanal de Estoque (2.000+ un)',
+        desc: 'Sinaliza categorias que venderam mais de 2.000 unidades durante a semana.',
+        dor: 'Permite planejar pedidos antecipados aos fornecedores antes do desabastecimento na loja física.'
+    },
+    {
+        key: 'Baixa Entrada Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-user-plus',
+        title: 'Baixa Aquisição Semanal de Clientes (< 25%)',
+        desc: 'Avisa quando clientes novos representam menos de 25% do faturamento da semana.',
+        dor: 'Alerta sobre perda de força no topo do funil de marketing e estagnação na atração de novos consumidores.'
+    },
+    {
+        key: 'Qualidade Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-star-half-stroke',
+        title: 'Alerta de Qualidade Semanal (> 5% notas < 5.0)',
+        desc: 'Notifica se mais de 5% de todas as compras da semana receberam notas críticas de avaliação.',
+        dor: 'Evita a degradação da reputação da marca e direciona treinamentos de atendimento para as equipes.'
+    },
+    {
+        key: 'Concentração Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-chart-pie',
+        title: 'Concentração Semanal de Risco (> 55%)',
+        desc: 'Dispara se uma única cidade responder por mais de 55% da receita líquida da semana.',
+        dor: 'Aponta dependência estrutural semanal de uma praça, sinalizando necessidade de estímulo nas demais filiais.'
+    },
+    {
+        key: 'Erosão de Preço Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-tag',
+        title: 'Erosão Semanal de Preço Médio (UPV)',
+        desc: 'Sinaliza quando o Preço Médio por Unidade cai mais de 15% em relação à semana anterior.',
+        dor: 'Detecta concessão excessiva de descontos ou migração forçada de clientes para linhas de baixa margem.'
+    },
+    {
+        key: 'Caixa Físico Semanal',
+        categoria: 'semanal',
+        badge: 'Semanal',
+        icon: 'fa-money-bill-wave',
+        title: 'Alerta de Caixa Físico Semanal (< 75% digital)',
+        desc: 'Avisa se o mix de meios digitais (Pix/Cartão) ficar abaixo de 75% no consolidado semanal.',
+        dor: 'Avisa sobre excesso de dinheiro físico nos cofres das filiais, mitigando riscos de segurança e sangria.'
+    },
+
+    // === 3. ALERTAS MENSAIS (10 REGRAS) ===
+    {
+        key: 'Meta Mensal',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-bullseye',
+        title: 'Meta Mensal por Filial Batida (> R$ 750k)',
+        desc: 'Reconhece filiais que ultrapassaram a meta global de R$ 750.000,00 faturados no mês.',
+        dor: 'Valida o plano de negócios e fundamenta o cálculo de bonificações e metas do próximo mês.'
+    },
+    {
+        key: 'Recuo Mensal',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-arrow-trend-down',
+        title: 'Recuo Mensal Consolidado de Filial',
+        desc: 'Notifica filiais com retração superior a 15% no faturamento mensal frente ao mês anterior.',
+        dor: 'Permite auditoria estratégica profunda para reestruturar estratégias regionais e rever custos fixos.'
+    },
+    {
+        key: 'Campeão do Mês',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-trophy',
+        title: 'Campeão Absoluto de Vendas do Mês',
+        desc: 'Destaca o produto de maior faturamento acumulado nos 30 dias de fechamento.',
+        dor: 'Direciona contratos de longo prazo e negociações de volume com os fabricantes principais.'
+    },
+    {
+        key: 'Expansão Mensal do Pix',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-bolt',
+        title: 'Expansão Mensal Consolidada do Pix',
+        desc: 'Alerta sobre crescimento superior a 15% no uso de Pix no volume fechado do mês.',
+        dor: 'Mede a economia direta obtida em taxas bancárias no fechamento contábil mensal.'
+    },
+    {
+        key: 'Alta Demanda Mensal',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-boxes-stacked',
+        title: 'Alta Demanda Mensal de Categorias (8.000+ un)',
+        desc: 'Sinaliza linhas de produto que venderam mais de 8.000 unidades no ciclo mensal.',
+        dor: 'Base para o planejamento anual de compras (S&OP) e dimensionamento da capacidade logística.'
+    },
+    {
+        key: 'Estagnação de Base',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-users-slash',
+        title: 'Estagnação Mensal de Base (< 20% novos)',
+        desc: 'Avisa quando clientes normais representam menos de 20% do faturamento mensal.',
+        dor: 'Sinaliza envelhecimento da base de clientes e risco futuro de sustentabilidade do negócio.'
+    },
+    {
+        key: 'CSAT Mensal',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-face-frown',
+        title: 'Índice Crítico de CSAT Mensal (> 6% < 5.0)',
+        desc: 'Dispara se mais de 6% das avaliações do mês consolidado forem insatisfatórias.',
+        dor: 'Prevenção de churn (perda de clientes) e revisão obrigatória dos processos de pós-venda.'
+    },
+    {
+        key: 'Dependência Regional Mensal',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-globe-americas',
+        title: 'Dependência Regional Mensal (> 50%)',
+        desc: 'Alerta quando uma única cidade responde por mais de 50% de toda a receita da rede no mês.',
+        dor: 'Identifica concentração de risco corporativo, orientando investimentos de expansão em outras regiões.'
+    },
+    {
+        key: 'Queda Estrutural de UPV',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-hand-holding-dollar',
+        title: 'Queda Estrutural de Preço Médio (UPV)',
+        desc: 'Avisa se o Preço Médio Unitário cair mais de 10% no acumulado mensal.',
+        dor: 'Audita a política de precificação da empresa, evitando erosão perigosa das margens de lucro líquidas.'
+    },
+    {
+        key: 'Oportunidade Noturna',
+        categoria: 'mensal',
+        badge: 'Mensal',
+        icon: 'fa-moon',
+        title: 'Oportunidade em Vendas Noturnas (< 25%)',
+        desc: 'Sinaliza quando o faturamento após as 18h representa menos de 25% da receita mensal.',
+        dor: 'Apoia a decisão sobre horário de funcionamento de lojas, escalas de funcionários e campanhas noturnas.'
     }
 ];
 
+let filtroGlossarioAtivo = 'todos';
+let termoBuscaGlossario = '';
+
 function toggleGlossary() {
     const modal = document.getElementById('glossary-modal');
+    if (!modal) return;
     if (modal.classList.contains('show')) {
         modal.classList.remove('show');
+        document.body.style.overflow = '';
     } else {
+        filtroGlossarioAtivo = 'todos';
+        termoBuscaGlossario = '';
+        const searchInput = document.getElementById('glossary-search-input');
+        if (searchInput) searchInput.value = '';
+        
+        // Atualiza botões de abas
+        document.querySelectorAll('.glossary-tab-btn').forEach(btn => {
+            if (btn.dataset.filter === 'todos') {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
         renderGlossary();
         modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
     }
+}
+
+function fecharGlossarioModal(event) {
+    if (event && event.target && event.target.closest('.glossary-modal-card') && !event.target.closest('.modal-close-btn')) {
+        return; // Não fecha se clicou no conteúdo do card
+    }
+    const modal = document.getElementById('glossary-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+function filtrarGlossario(categoria) {
+    filtroGlossarioAtivo = categoria;
+    
+    document.querySelectorAll('.glossary-tab-btn').forEach(btn => {
+        if (btn.dataset.filter === categoria) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    renderGlossary();
+}
+
+function pesquisarGlossario(termo) {
+    termoBuscaGlossario = (termo || '').toLowerCase().trim();
+    renderGlossary();
 }
 
 function renderGlossary() {
     const body = document.getElementById('glossary-body');
-    body.innerHTML = alertasGlossario.map(alerta => `
+    if (!body) return;
+
+    let itens = alertasGlossario;
+
+    // Filtro por frequência (todos, diario, semanal, mensal)
+    if (filtroGlossarioAtivo !== 'todos') {
+        itens = itens.filter(a => a.categoria === filtroGlossarioAtivo);
+    }
+
+    // Filtro por busca textual
+    if (termoBuscaGlossario) {
+        itens = itens.filter(a => 
+            a.title.toLowerCase().includes(termoBuscaGlossario) ||
+            a.desc.toLowerCase().includes(termoBuscaGlossario) ||
+            a.dor.toLowerCase().includes(termoBuscaGlossario) ||
+            a.badge.toLowerCase().includes(termoBuscaGlossario)
+        );
+    }
+
+    if (itens.length === 0) {
+        body.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 0.75rem; color: #64748b;"></i>
+                <p style="font-size: 0.95rem; margin: 0;">Nenhum alerta encontrado para o filtro aplicado.</p>
+            </div>
+        `;
+        return;
+    }
+
+    body.innerHTML = itens.map(alerta => `
         <div class="glossary-item">
-            <div class="glossary-item-title">
-                <i class="fa-solid fa-bell"></i> ${alerta.title}
+            <div class="glossary-item-header">
+                <div class="glossary-item-title">
+                    <i class="fa-solid ${alerta.icon || 'fa-bell'}" style="color: var(--color-accent, #6366f1);"></i>
+                    <span>${alerta.title}</span>
+                </div>
+                <span class="glossary-item-badge ${alerta.categoria}">${alerta.badge}</span>
             </div>
             <div class="glossary-item-desc">${adaptarTextoPorPeriodo(alerta.desc)}</div>
             <div class="glossary-item-pain">

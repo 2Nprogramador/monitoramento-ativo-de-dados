@@ -542,9 +542,50 @@
         </div>
     </div>
 
+    <!-- Modal do Glossário de Alertas Inteligentes (Diários, Semanais e Mensais) -->
+    <div id="glossary-modal" class="modal-overlay" onclick="fecharGlossarioModal(event)">
+        <div class="modal-card glossary-modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <div>
+                        <h3>Glossário de Alertas Inteligentes</h3>
+                        <p>Catálogo de regras analíticas, critérios de disparo e dores estratégicas solucionadas</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="toggleGlossary()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="glossary-controls">
+                <div class="glossary-tabs">
+                    <button type="button" class="glossary-tab-btn active" data-filter="todos" onclick="filtrarGlossario('todos')">
+                        <i class="fa-solid fa-layer-group"></i> Todos (30)
+                    </button>
+                    <button type="button" class="glossary-tab-btn" data-filter="diario" onclick="filtrarGlossario('diario')">
+                        <i class="fa-solid fa-calendar-day"></i> Diários (10)
+                    </button>
+                    <button type="button" class="glossary-tab-btn" data-filter="semanal" onclick="filtrarGlossario('semanal')">
+                        <i class="fa-solid fa-calendar-week"></i> Semanais (10)
+                    </button>
+                    <button type="button" class="glossary-tab-btn" data-filter="mensal" onclick="filtrarGlossario('mensal')">
+                        <i class="fa-solid fa-calendar-days"></i> Mensais (10)
+                    </button>
+                </div>
+                <div class="glossary-search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass glossary-search-icon"></i>
+                    <input type="text" id="glossary-search-input" placeholder="Buscar alerta por nome ou regra..." oninput="pesquisarGlossario(this.value)">
+                </div>
+            </div>
+
+            <div id="glossary-body" class="glossary-body">
+                <!-- Itens injetados dinamicamente via JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <!-- Chart.js de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Script lógico principal -->
-    <script src="app.js?v=1.0.43"></script>
+    <script src="app.js?v=1.0.44"></script>
 </body>
 </html>
