@@ -198,10 +198,10 @@ def gerar_dados_para_data(data_alvo):
     generos = ['Homem', 'Mulher']
     pagamentos = ['Pix', 'Cartao de Credito', 'Debito']
     
-    print(f"[Worker] Gerando {qtd_transacoes} transações para a data {data_alvo}...")
-
-    for _ in range(qtd_transacoes):
-        invoice_id = f"{random.randint(100, 999)}-{random.randint(10, 99)}-{random.randint(1000, 9999)}"
+    data_prefix = data_alvo.strftime('%Y%m%d') if hasattr(data_alvo, 'strftime') else str(data_alvo).replace('-', '')
+    
+    for idx in range(qtd_transacoes):
+        invoice_id = f"{data_prefix}-{idx+1:04d}-{random.randint(100, 999)}"
         city = random.choice(cidades)
         customer_type = random.choice(tipos_cliente)
         gender = random.choice(generos)
