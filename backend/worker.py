@@ -255,7 +255,7 @@ def salvar_dados_postgres(df_novos_dados):
         print(f"[Worker] Erro ao gravar dados no PostgreSQL: {e}")
         return False
 
-def disparar_alertas_webhook(dia_date):
+def disparar_alertas_webhook(dia_date, visitor_phone=None):
     """
     Carrega dados do banco, gera alertas para dia_date (diários) e, quando aplicável,
     dispara também os relatórios consolidados semanais (aos domingos) e mensais (fechamento de mês) para o n8n.
@@ -320,7 +320,8 @@ def disparar_alertas_webhook(dia_date):
             "period_label": periodo_str,
             "total_alertas": total,
             "alertas": alertas_dict,
-            "message": msg
+            "message": msg,
+            "visitor_phone": visitor_phone
         }
 
         try:
@@ -412,6 +413,7 @@ def callback(ch, method, properties, body):
         action = data.get("action")
         
         if action == "simulate_next_day":
+            visitor_phone = data.get("visitor_phone")
             df_simulado = gerar_dados_proximo_dia()
             sucesso = salvar_dados_postgres(df_simulado)
             if sucesso:
@@ -423,7 +425,7 @@ def callback(ch, method, properties, body):
                             dia_gerado = dia_gerado.date()
                         elif isinstance(dia_gerado, str):
                             dia_gerado = datetime.datetime.strptime(dia_gerado[:10], "%Y-%m-%d").date()
-                        disparar_alertas_webhook(dia_gerado)
+                        disparar_alertas_webhook(dia_gerado, visitor_phone)
                 except Exception as ex:
                     print(f"[Worker] Erro ao disparar alertas pós-simulação: {ex}")
             else:

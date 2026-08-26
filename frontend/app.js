@@ -210,8 +210,19 @@ async function executarSimulacao() {
     const originalText = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Simular Próximo Dia</span>';
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Enviando para a Fila...</span>';
 
+    const phoneInput = document.getElementById('visitor-phone');
+    let visitorPhone = phoneInput ? phoneInput.value : '';
+    // Limpar o número mantendo apenas os dígitos
+    visitorPhone = visitorPhone.replace(/\D/g, '');
+
     try {
-        const response = await fetch('/api/simulate', { method: 'POST' });
+        const response = await fetch('/api/simulate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ visitor_phone: visitorPhone || null })
+        });
         const result = await response.json();
 
         if (response.status === 429) {

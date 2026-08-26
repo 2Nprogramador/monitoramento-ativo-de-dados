@@ -5,6 +5,8 @@ from collections import defaultdict
 import datetime
 from sqlalchemy import text as sa_text
 import pandas as pd
+from pydantic import BaseModel
+from typing import Optional
 from fastapi import FastAPI, Query, HTTPException, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -260,8 +262,11 @@ def format_dataframe_for_json(df_main, df_var):
 
 # --- ROTA DE SIMULAÇÃO (PUBLICAÇÃO EM FILA RABBITMQ) ---
 
+class SimulateRequest(BaseModel):
+    visitor_phone: Optional[str] = None
+
 @app.post("/api/simulate")
-def trigger_sales_simulation(request: Request, username: str = Depends(authenticate)):
+def trigger_sales_simulation(payload: SimulateRequest, request: Request, username: str = Depends(authenticate)):
     """
     Coloca uma mensagem na fila do RabbitMQ para gerar vendas fictícias para o próximo dia em segundo plano.
     Garante tempo de resposta imediato sem prender o servidor web e aplica trava de segurança (máx 10 req/min).
@@ -282,7 +287,10 @@ def trigger_sales_simulation(request: Request, username: str = Depends(authentic
         channel.queue_declare(queue="sales_tasks", durable=True)
         
         # Enviar corpo da mensagem
-        task_data = {"action": "simulate_next_day"}
+        task_data = {
+            "action": "simulate_next_day",
+            "visitor_phone": payload.visitor_phone
+        }
         channel.basic_publish(
             exchange="",
             routing_key="sales_tasks",
