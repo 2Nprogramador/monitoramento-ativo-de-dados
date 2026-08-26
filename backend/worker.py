@@ -12,8 +12,12 @@ import urllib.request
 import urllib.error
 
 # Importar o engine de banco de dados e URL do RabbitMQ
-from database import engine
-from config import RABBITMQ_URL, N8N_WEBHOOK_URL
+try:
+    from database import engine
+    from config import RABBITMQ_URL, N8N_WEBHOOK_URL
+except ImportError:
+    from .database import engine
+    from .config import RABBITMQ_URL, N8N_WEBHOOK_URL
 
 try:
     from report_utils import (
