@@ -401,20 +401,23 @@ def relatorio_por_periodo(start_date, end_date, df):
             "max_itens_cupom": int(maior_cupom)
         })
 
-    # 10. Ritmo de Saída / Burn Rate (Velocidade diária de unidades vendidas)
+    # 10. Ritmo de Saída / Burn Rate (Velocidade diária de unidades vendidas e projeção 30d)
+    dias_no_periodo = max(1, (end_date - start_date).days + 1)
     burn_rate_produtos = []
     for prod_name, group in df_dia.groupby(col_prod):
-        unidades_dia = int(group["Quantity"].sum())
+        unidades_total = int(group["Quantity"].sum())
+        media_diaria = round(unidades_total / dias_no_periodo, 1)
         receita_prod = float(group["Total"].sum())
         linha_prod = group["Product line"].iloc[0] if "Product line" in group.columns else "Geral"
         burn_rate_produtos.append({
             "produto": prod_name,
             "linha": linha_prod,
-            "saida_diaria": unidades_dia,
+            "saida_total": unidades_total,
+            "saida_diaria": media_diaria if dias_no_periodo > 1 else unidades_total,
             "receita": round(receita_prod, 2),
-            "estoque_estimado_30d": unidades_dia * 30
+            "estoque_estimado_30d": int(round(media_diaria * 30))
         })
-    burn_rate_produtos = sorted(burn_rate_produtos, key=lambda x: x["saida_diaria"], reverse=True)[:10]
+    burn_rate_produtos = sorted(burn_rate_produtos, key=lambda x: x["saida_total"], reverse=True)[:10]
 
     produtos_analises = {
         "curva_abc": curva_abc,

@@ -1719,13 +1719,22 @@ function renderizarGraficos(metrics) {
             const saidaDiaria = prodAnalises.burn_rate_produtos.map(b => b.saida_diaria);
             const projecao30d = prodAnalises.burn_rate_produtos.map(b => b.estoque_estimado_30d);
 
+            let labelSaida = 'Saída Diária (Unidades/Dia)';
+            if (periodoAtual.type === 'weekly') {
+                labelSaida = 'Média Diária nos 7 Dias (Unidades/Dia)';
+            } else if (periodoAtual.type === 'monthly') {
+                labelSaida = 'Média Diária nos 30 Dias (Unidades/Dia)';
+            } else if (periodoAtual.type === 'custom') {
+                labelSaida = 'Média Diária no Período (Unidades/Dia)';
+            }
+
             criarGrafico('chart-burn-rate', {
                 type: 'bar',
                 data: {
                     labels: labelsBurn,
                     datasets: [
                         {
-                            label: 'Saída Diária (Unidades/Dia)',
+                            label: labelSaida,
                             data: saidaDiaria,
                             backgroundColor: '#DD00BC', // Magenta
                             borderRadius: 4,
@@ -1747,7 +1756,21 @@ function renderizarGraficos(metrics) {
                         legend: {
                             display: true,
                             position: 'bottom',
-                            labels: { boxWidth: 12, padding: 15 }
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 12 },
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw || 0;
+                                    const dsLabel = context.dataset.label || '';
+                                    return ` ${dsLabel}: ${formatarNumero(val, 1)}`;
+                                }
+                            }
                         }
                     },
                     scales: {
