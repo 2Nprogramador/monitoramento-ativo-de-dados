@@ -302,6 +302,11 @@ body {
     line-height: 1.5;
 }
 
+.alert-item > span {
+    flex: 1;
+    min-width: 0;
+}
+
 .alert-item.positive {
     background: var(--color-success-glow);
     border: 1px solid rgba(16, 185, 129, 0.25);
@@ -350,7 +355,7 @@ body {
 
 @media (min-width: 1366px) {
     .top-dashboard-section {
-        grid-template-columns: 360px minmax(0, 1fr); /* Largura fixa para alertas apenas em telas ultrawide/grandes */
+        grid-template-columns: 400px minmax(0, 1fr); /* Largura fixa maior para os alertas respirarem */
     }
 }
 

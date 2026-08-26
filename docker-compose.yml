@@ -35,7 +35,7 @@ services:
           memory: 512M
 
   web:
-    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.44
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.45
     container_name: monitoramento-web
     networks:
       - 2nnet
@@ -77,7 +77,7 @@ services:
         - traefik.http.routers.monitoramento.tls=true
 
   worker:
-    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.44
+    image: ghcr.io/2nprogramador/monitoramento-ativo-de-dados:1.0.45
     container_name: monitoramento-worker
     command: python -u backend/worker.py
     networks:
