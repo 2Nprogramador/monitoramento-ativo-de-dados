@@ -378,6 +378,26 @@ def disparar_alertas_webhook(dia_date):
     except Exception as e:
         print(f"[Worker] Erro ao processar fluxo de alertas: {e}")
 
+def gerar_e_salvar_intervalo(data_inicio, data_fim):
+    """
+    Gera e salva dados de vendas para cada dia dentro do intervalo especificado [data_inicio, data_fim].
+    """
+    print(f"[Worker] Iniciando população de histórico de {data_inicio} até {data_fim}...")
+    curr = data_inicio
+    total_gerado = 0
+    dias_processados = 0
+    
+    while curr <= data_fim:
+        df_dia = gerar_dados_para_data(curr)
+        if not df_dia.empty:
+            salvar_dados_postgres(df_dia)
+            total_gerado += len(df_dia)
+            dias_processados += 1
+        curr += datetime.timedelta(days=1)
+        
+    print(f"[Worker] População histórica concluída com sucesso: {dias_processados} dias e {total_gerado} vendas geradas!")
+    return True
+
 def callback(ch, method, properties, body):
     """
     Função de processamento chamada sempre que uma nova mensagem chega na fila.
@@ -404,6 +424,14 @@ def callback(ch, method, properties, body):
                     print(f"[Worker] Erro ao disparar alertas pós-simulação: {ex}")
             else:
                 print(f"[Worker] Falha ao processar simulação.")
+
+        elif action == "populate_history":
+            dt_inicio_str = data.get("start_date", "2025-08-01")
+            dt_fim_str = data.get("end_date", "2026-08-19")
+            dt_inicio = datetime.datetime.strptime(dt_inicio_str, "%Y-%m-%d").date()
+            dt_fim = datetime.datetime.strptime(dt_fim_str, "%Y-%m-%d").date()
+            gerar_e_salvar_intervalo(dt_inicio, dt_fim)
+
         else:
             print(f"[Worker] Ação '{action}' não reconhecida.")
             
