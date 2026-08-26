@@ -340,17 +340,17 @@ body {
 }
 
 /* --- LAYOUT SUPERIOR (Alertas + KPIs) --- */
-/* --- LAYOUT SUPERIOR (Alertas + KPIs) --- */
 .top-dashboard-section {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.25rem;
     margin-bottom: 2rem;
+    width: 100%;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1366px) {
     .top-dashboard-section {
-        grid-template-columns: 360px 1fr; /* Largura fixa ideal para alertas, restante fluido para os 6 KPIs */
+        grid-template-columns: 360px minmax(0, 1fr); /* Largura fixa para alertas apenas em telas ultrawide/grandes */
     }
 }
 
@@ -358,7 +358,7 @@ body {
 .kpi-carousel-container {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     position: relative;
     width: 100%;
     min-width: 0; /* Impede que o flexbox force a coluna do grid a vazar */
@@ -381,21 +381,28 @@ body {
 .kpi-slide {
     flex: 0 0 100%;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Mobile / Tablets: 2 por linha */
-    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
     min-width: 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 580px) {
     .kpi-slide {
-        grid-template-columns: 1fr; /* Telas muito pequenas: 1 por linha */
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 colunas em mobile */
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .kpi-slide {
+        grid-template-columns: 1fr; /* 1 coluna em telas muito estreitas */
     }
 }
 
 @media (min-width: 1024px) {
     .kpi-slide {
-        grid-template-columns: repeat(3, minmax(0, 1fr)); /* Desktop/Notebook: 3 por linha */
-        gap: 0.85rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 por linha em telas normais */
+        gap: 0.75rem;
     }
 }
 
@@ -403,8 +410,8 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-card);
     color: var(--text-primary);
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -427,10 +434,10 @@ body {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-card);
     border-radius: 14px;
-    padding: 1.1rem 1.15rem;
+    padding: 0.9rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
     transition: var(--transition-smooth);
     min-width: 0;
     overflow: hidden;
@@ -442,15 +449,15 @@ body {
 }
 
 .kpi-icon-wrapper {
-    width: 46px;
-    height: 46px;
-    min-width: 46px;
-    min-height: 46px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     flex-shrink: 0 !important;
 }
 
@@ -484,24 +491,25 @@ body {
 }
 
 .kpi-info h3 {
-    font-size: 0.72rem;
+    font-size: clamp(0.65rem, 0.75vw, 0.75rem);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     color: var(--text-secondary);
     margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: nowrap;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
 }
 
 .kpi-info p {
     font-family: var(--font-heading);
-    font-size: clamp(1.1rem, 1.2vw, 1.38rem);
+    font-size: clamp(1rem, 1.15vw, 1.3rem);
     font-weight: 700;
-    line-height: 1.15;
+    line-height: 1.2;
     margin-bottom: 0.15rem;
     white-space: nowrap;
     overflow: hidden;
@@ -510,7 +518,7 @@ body {
 }
 
 .kpi-variation {
-    font-size: 0.72rem;
+    font-size: clamp(0.68rem, 0.72vw, 0.75rem);
     font-weight: 600;
     display: inline-flex;
     align-items: center;
@@ -621,7 +629,9 @@ body {
     font-size: 1.1rem;
 }
 
-/* --- RESPONSIVIDADE --- */
+/* --- RESPONSIVIDADE COMPLETA (Smartphones iOS/Android, Tablets, Notebooks, Desktops, Zoom) --- */
+
+/* == TABLETS E NOTEBOOKS PEQUENOS (< 1024px) == */
 @media (max-width: 1024px) {
     .charts-grid {
         grid-template-columns: 1fr;
@@ -630,26 +640,255 @@ body {
     .card-double-width {
         grid-column: span 1;
     }
+
+    .top-dashboard-section {
+        grid-template-columns: 1fr !important;
+    }
 }
 
+/* == TABLETS (< 768px) == */
 @media (max-width: 768px) {
     body {
-        padding: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .dashboard-container {
+        gap: 1rem;
     }
     
     .dashboard-header {
         flex-direction: column;
-        align-items: flex-start;
-        padding: 1.25rem;
+        align-items: stretch;
+        padding: 1rem;
+        gap: 1rem;
+        border-radius: 12px;
+    }
+    
+    .logo-area {
+        gap: 0.75rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.75rem;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.2rem;
     }
     
     .controls-area {
         width: 100%;
-        justify-content: space-between;
+        gap: 0.5rem;
     }
     
+    .header-filters-group {
+        flex: 1;
+        gap: 0.5rem;
+    }
+    
+    .header-actions-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .select-wrapper select,
+    #period-mode-select,
     #date-select {
-        min-width: 140px;
+        min-width: 120px;
+        padding: 0.6rem 1.8rem 0.6rem 2.2rem;
+        font-size: 0.82rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 0.9rem;
+        font-size: 0.82rem;
+        gap: 0.4rem;
+    }
+    
+    .alerts-section {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .section-title h2 {
+        font-size: 1rem;
+    }
+    
+    .alert-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.82rem;
+    }
+    
+    .chart-card {
+        padding: 1rem;
+        border-radius: 12px;
+        gap: 1rem;
+    }
+    
+    .chart-header h3 {
+        font-size: 0.95rem;
+    }
+    
+    .chart-wrapper {
+        min-height: 260px;
+    }
+
+    .kpi-carousel-container {
+        gap: 0.35rem;
+    }
+
+    .kpi-nav-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+}
+
+/* == SMARTPHONES (< 580px) == */
+@media (max-width: 580px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .dashboard-header {
+        padding: 0.85rem;
+        gap: 0.75rem;
+        border-radius: 10px;
+    }
+    
+    .logo-icon {
+        font-size: 1.5rem;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.05rem;
+    }
+    
+    .logo-text p {
+        font-size: 0.7rem;
+    }
+    
+    .controls-area {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .header-filters-group {
+        width: 100%;
+    }
+    
+    .header-filters-group .select-wrapper {
+        flex: 1;
+    }
+    
+    .header-filters-group .select-wrapper select,
+    .header-filters-group #period-mode-select,
+    .header-filters-group #date-select {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .header-actions-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .header-actions-group .btn {
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+    }
+    
+    .kpi-slide {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem;
+    }
+    
+    .kpi-card {
+        padding: 0.7rem 0.65rem;
+        gap: 0.5rem;
+        border-radius: 10px;
+    }
+    
+    .kpi-icon-wrapper {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    .kpi-info h3 {
+        font-size: 0.6rem !important;
+        letter-spacing: 0.3px;
+    }
+    
+    .kpi-info p {
+        font-size: 0.95rem !important;
+    }
+    
+    .kpi-variation {
+        font-size: 0.65rem !important;
+    }
+    
+    .alerts-section {
+        padding: 0.85rem;
+        border-radius: 10px;
+    }
+    
+    .section-title h2 {
+        font-size: 0.9rem;
+    }
+    
+    .alert-item {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        border-radius: 8px;
+    }
+
+    .chart-card {
+        padding: 0.85rem;
+        border-radius: 10px;
+    }
+    
+    .chart-header h3 {
+        font-size: 0.88rem;
+    }
+    
+    .chart-header p {
+        font-size: 0.72rem;
+    }
+    
+    .chart-wrapper {
+        min-height: 220px;
+    }
+    
+    .toast {
+        bottom: 0.5rem;
+        right: 0.5rem;
+        left: 0.5rem;
+        font-size: 0.82rem;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+    }
+}
+
+/* == SMARTPHONES MUITO PEQUENOS (< 380px) == */
+@media (max-width: 380px) {
+    .kpi-slide {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .logo-text h1 {
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 0.55rem 0.65rem;
+        font-size: 0.78rem;
     }
 }
 
@@ -920,9 +1159,9 @@ body {
 .kpi-info h3 {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    flex-wrap: wrap;
-    line-height: 1.3;
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    line-height: 1.2;
 }
 
 .chart-header h3 {
