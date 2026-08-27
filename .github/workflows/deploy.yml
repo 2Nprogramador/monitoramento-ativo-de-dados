@@ -60,7 +60,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:1.0.50
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:1.0.51
 
       - name: Setup Python
         uses: actions/setup-python@v4
