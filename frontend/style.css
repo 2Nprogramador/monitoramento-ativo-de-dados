@@ -201,7 +201,6 @@ body {
     position: relative;
     display: flex;
     align-items: center;
-    width: 100%;
 }
 
 .phone-input-inner {
@@ -854,14 +853,21 @@ body {
         min-width: 0;
     }
     
-    .phone-input-wrapper, .phone-input-inner {
-        width: 100%;
+    .phone-input-wrapper {
+        flex: 1 1 100% !important;
+        width: 100% !important;
         order: 3;
+        margin-top: 0.5rem;
+    }
+    
+    .phone-input-inner {
+        width: 100% !important;
     }
     
     #visitor-phone {
-        width: 100%;
-        min-width: unset;
+        flex: 1 1 100%;
+        width: 100% !important;
+        min-width: unset !important;
     }
     
     .kpi-slide {
