@@ -204,6 +204,7 @@ body {
     flex: 1 1 100%;
     width: 100%;
     order: 3;
+    grid-column: 1 / -1;
 }
 
 .phone-input-inner {
