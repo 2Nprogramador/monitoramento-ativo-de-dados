@@ -744,6 +744,23 @@ body {
         gap: 0.5rem;
     }
     
+    .phone-input-wrapper {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        order: 3;
+        margin-top: 0.5rem;
+    }
+    
+    .phone-input-inner {
+        width: 100% !important;
+    }
+    
+    #visitor-phone {
+        flex: 1 1 100%;
+        width: 100% !important;
+        min-width: unset !important;
+    }
+    
     .select-wrapper select,
     #period-mode-select,
     #date-select {
